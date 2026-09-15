@@ -10,9 +10,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+//how icons will be displayed
 enum class IconSize(val dp: Dp) {
     RegularIcon(20.dp),
-    ExceptionIcon(24.dp)
+    LargeIcon(24.dp)
 }
 
 @Composable
