@@ -1,8 +1,12 @@
 package com.example.adaxintegra.presentation.views.designsystem.atoms
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -17,4 +21,13 @@ object AppIcons {
 
     val Profile: ImageVector
         get() = Icons.Default.Person
+
+    val Return: ImageVector
+        get() = Icons.AutoMirrored.Filled.ArrowBack
+
+    val Notifications: ImageVector
+        get() = Icons.Default.Notifications
+
+    val CheckMark: ImageVector
+        get() = Icons.Default.Check
 }
