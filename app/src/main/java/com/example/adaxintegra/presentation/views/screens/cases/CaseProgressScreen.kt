@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 
 @Composable
 fun CaseProgressScreen(
@@ -19,12 +19,10 @@ fun CaseProgressScreen(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Caso $caseState"
-        )
-
-        Text(
-            text = "ID: $caseId"
+        AppHeader(
+            title = "Caso $caseState",
+            subtitle = "ID: $caseId",
+            onBack = onBack
         )
     }
 }

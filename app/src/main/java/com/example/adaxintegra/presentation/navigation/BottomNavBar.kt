@@ -5,13 +5,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.example.adaxintegra.presentation.navigation.BottomNavBarItem
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 
 @Composable
@@ -46,7 +47,7 @@ fun BottomNavBar(
                 label = {
                     Text(
                         text = item.title,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = AppTextStyle.LabelMedium,
                         fontWeight = if (isSelected) {
                             FontWeight.Bold
                         } else {

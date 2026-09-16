@@ -5,5 +5,4 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
 @Composable
 fun HomeScreen() {
-    Text("pagina principal")
 }

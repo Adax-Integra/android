@@ -11,6 +11,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.BottomNavBar
+import com.example.adaxintegra.presentation.views.screens.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
+
 
 //provide values(screens) to BottomNavBar
 @Composable
@@ -36,15 +39,28 @@ fun AppNavigation() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                Text("Home Screen")
             }
 
             composable("cases") {
-                //CasesScreen
+            //CasesScreen
+
             }
 
             composable("profile") {
                 //ProfileScreen
+            }
+
+            composable("case/{caseId}/{caseState}") { backStackEntry ->
+
+                val caseId = backStackEntry.arguments?.getString("caseId")
+                val caseState = backStackEntry.arguments?.getString("caseState")
+
+                CaseProgressScreen(
+                    caseId = caseId ?: "",
+                    caseState = caseState ?: "",
+                    onBack = {
+                        navController.popBackStack()
+                    })
             }
         }
     }
