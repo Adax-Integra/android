@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.navigation
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 
+//bottom navigation bar items (icon and label)
 sealed class BottomNavBarItem(
     val route: String,
     val title: String,

@@ -12,6 +12,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
+//general header to be used across screens
 @Composable
 fun AppHeader(
     title: String,

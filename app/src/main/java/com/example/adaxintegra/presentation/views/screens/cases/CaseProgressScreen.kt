@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 
+//case progress screen external view, reached by clicking on a case from case screen
 @Composable
 fun CaseProgressScreen(
     caseState: String,

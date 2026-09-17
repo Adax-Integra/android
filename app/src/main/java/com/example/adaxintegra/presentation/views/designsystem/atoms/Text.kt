@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
+//text styles and parameters to be reused
 enum class AppTextStyle {
     TitleLarge,
     TitleMedium,

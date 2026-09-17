@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+//small pill badge visible on some screens
 @Composable
 fun AppBadge(
     text: String,
