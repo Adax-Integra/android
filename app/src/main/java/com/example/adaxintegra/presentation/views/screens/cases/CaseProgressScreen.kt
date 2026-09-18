@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseProgressCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.timeline.CaseProgressTimeline
 
 //case progress screen external view, reached by clicking on a case from case screen
 @Composable
@@ -28,6 +29,9 @@ fun CaseProgressScreen(
             subtitle = "ID: $caseId",
             onBack = onBack
         )
+
+        CaseProgressTimeline()
+
         CaseProgressCard(
             stepNumber = 1,
             title = "Primer contacto",
@@ -38,7 +42,7 @@ fun CaseProgressScreen(
         CaseProgressCard(
             stepNumber = 2,
             title = "Evaluación inicial",
-            status = "Completado",
+            status = "En curso",
             description = "Se realizó la evaluación inicial para conocer su situación y necesidades específicas.",
             note = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
                     "sed do eiusmod tempor incididunt ut labore et dolore magna " +
@@ -53,7 +57,7 @@ fun CaseProgressScreen(
         CaseProgressCard(
             stepNumber = 3,
             title = "Acompañamiento",
-            status = "En curso",
+            status = "Pendiente",
             description = "Actualmente se brinda acompañamiento según las necesidades identificadas.",
             note = "Sesiones psicologicas semanales."
         )
