@@ -15,6 +15,7 @@ fun VerticalTimelineLine() {
     Box(
         modifier = Modifier
             .width(2.dp)
+            //will stretch down dynamically depending on size of content
             .fillMaxHeight()
             .background(
                 color = MaterialTheme.colorScheme.outlineVariant
