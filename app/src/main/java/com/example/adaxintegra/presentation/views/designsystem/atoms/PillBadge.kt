@@ -13,12 +13,11 @@ import androidx.compose.ui.unit.dp
 
 //small pill badge visible on some screens
 @Composable
-fun AppBadge(
-    text: String,
-    modifier: Modifier = Modifier
+fun PillBadge(
+    text: String
 ) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .background(
                 color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(percent = 50)
@@ -30,7 +29,7 @@ fun AppBadge(
             text = text,
             style = AppTextStyle.LabelSmall,
             color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Bold
         )
     }
 }
