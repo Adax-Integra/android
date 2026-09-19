@@ -40,13 +40,7 @@ fun AppNavigation() {
             }
 
             composable("cases") {
-                CaseProgressScreen(
-                    caseState = "Activo",
-                    caseId = "2026-089",
-                    onBack = {
-                        navController.popBackStack()
-                    }
-                )
+
             }
 
             composable("profile") {
