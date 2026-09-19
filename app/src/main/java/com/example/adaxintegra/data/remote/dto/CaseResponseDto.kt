@@ -1,4 +1,4 @@
-package com.example.adaxintegra.data.dto
+package com.example.adaxintegra.data.remote.dto
 
 //response from controller
 data class CaseResponseDto (

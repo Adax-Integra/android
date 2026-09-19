@@ -1,4 +1,4 @@
-package com.example.adaxintegra.data.dto
+package com.example.adaxintegra.data.remote.dto
 
 data class CaseDto (
     val case_id: String,
