@@ -23,8 +23,7 @@ fun CaseProgressCard(
     stepNumber: Int,
     title: String,
     status: String,
-    description: String,
-    note: String? = null
+    description: String
 ) {
     Column(
         modifier = Modifier
@@ -74,12 +73,5 @@ fun CaseProgressCard(
             style = AppTextStyle.BodySmall,
             fontWeight = FontWeight.Normal
         )
-
-        //notes IF and ONLY IF left by collaborator
-        if (note != null) {
-            NotesBox(
-                note = note
-            )
-        }
     }
 }
