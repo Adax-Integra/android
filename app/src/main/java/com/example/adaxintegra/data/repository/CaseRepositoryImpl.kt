@@ -3,7 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.domain.model.Case
 import com.example.adaxintegra.domain.repository.CaseRepository
-import com.example.adaxintegra.data.mapper.CaseMapper
+import com.example.adaxintegra.data.mapper.toDomain
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,6 +13,7 @@ class CaseRepositoryImpl @Inject constructor(
 ) : CaseRepository {
 
     override suspend fun getCaseById(caseId: String): Case {
-        return api.getCaseById(caseId).toDomain()
+        val response = api.getCaseById(caseId)
+        return response.data.toDomain()
     }
 }
