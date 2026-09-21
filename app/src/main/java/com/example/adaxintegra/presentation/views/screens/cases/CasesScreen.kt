@@ -1,9 +1,8 @@
-package com.example.adaxintegra.presentation.views.screens
+package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.runtime.Composable
-import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
+//main case screen, reached through bottom nav bar option
 @Composable
 fun CasesScreen() {
-    Text("Mis Casos")
 }
