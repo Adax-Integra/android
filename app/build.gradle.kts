@@ -71,3 +71,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 }
+
+// Automatically install the git hook before building
+tasks.named("preBuild") {
+    dependsOn(rootProject.tasks.named("addKtlintFormatGitPreCommitHook"))
+}
