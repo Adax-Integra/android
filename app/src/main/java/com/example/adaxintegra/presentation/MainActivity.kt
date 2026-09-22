@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AdaxIntegraTheme {
                 AppNavigation()
-                }
             }
         }
     }
+}

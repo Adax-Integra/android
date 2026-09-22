@@ -5,15 +5,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 
-
-//provide values(screens) to BottomNavBar
-//general navigation routes, provides screens
+// provide values(screens) to BottomNavBar
+// general navigation routes, provides screens
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -26,25 +27,24 @@ fun AppNavigation() {
                 currentRoute = currentRoute,
                 onNavigateToRoute = { route ->
                     navController.navigate(route)
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
 
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         ) {
             composable("home") {
             }
 
             composable("cases") {
-
             }
 
             composable("profile") {
-                //ProfileScreen
+                // ProfileScreen
             }
 
             composable("case/{caseId}/{caseState}") { backStackEntry ->
@@ -57,7 +57,8 @@ fun AppNavigation() {
                     caseState = caseState ?: "",
                     onBack = {
                         navController.popBackStack()
-                    })
+                    },
+                )
             }
         }
     }

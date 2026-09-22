@@ -12,66 +12,78 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.PillBadge
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
-//progress cards shown when clicking on case details
+// progress cards shown when clicking on case details
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseProgressCard(
     stepNumber: Int,
     title: String,
     status: String,
-    description: String
+    description: String,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                ).border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(12.dp),
+                ).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-
-        //title and status
+        // title and status
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = "$stepNumber.",
                     style = AppTextStyle.BodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Text(
                     text = title,
                     style = AppTextStyle.BodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
             PillBadge(
-                text = status
+                text = status,
             )
         }
 
-        //description
+        // description
         Text(
             text = description,
             style = AppTextStyle.BodySmall,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
         )
     }
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true)
+@Composable
+fun CardProgressCardPreview() {
+    CaseProgressCard(
+        stepNumber = 1,
+        title = "Title",
+        status = "Status",
+        description = "Description",
+    )
 }

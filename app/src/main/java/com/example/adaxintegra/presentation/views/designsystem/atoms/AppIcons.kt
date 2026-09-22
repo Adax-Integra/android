@@ -9,9 +9,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
-//icons available to use
+// icons available to use
 object AppIcons {
-
     val Home: ImageVector
         get() = Icons.Default.Home
 

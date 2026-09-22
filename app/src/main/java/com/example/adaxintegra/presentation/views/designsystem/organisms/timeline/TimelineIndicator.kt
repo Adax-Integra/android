@@ -16,64 +16,66 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
-fun TimelineIndicator(
-    status: TimelineStatus
-) {
+fun TimelineIndicator(status: TimelineStatus) {
     when (status) {
-
-        //checkmark for completed step
+        // checkmark for completed step
         TimelineStatus.Completed -> {
             Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape,
+                        ),
+                contentAlignment = Alignment.Center,
             ) {
                 AppIcon(
                     imageVector = AppIcons.CheckMark,
                     contentDescription = "Completado",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary,
                 )
             }
         }
 
-        //filled circle for step in progress
+        // filled circle for step in progress
         TimelineStatus.InProgress -> {
             Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape,
+                        ),
+                contentAlignment = Alignment.Center,
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        )
+                    modifier =
+                        Modifier
+                            .size(10.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape,
+                            ),
                 )
             }
         }
 
-        //open circle for not started step
+        // open circle for not started step
         TimelineStatus.NotStarted -> {
             Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = CircleShape
-                    )
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = CircleShape,
+                        ),
             )
         }
     }

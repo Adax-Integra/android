@@ -1,7 +1,7 @@
 package com.example.adaxintegra.data.remote.dto
 
-//individual step
+// individual step
 data class CaseStepDto(
     val step_number: Int,
-    val status: String
+    val status: String,
 )
