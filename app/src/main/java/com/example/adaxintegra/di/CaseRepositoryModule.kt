@@ -8,14 +8,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-//when asked for CaseRepository, give CaseRepositoryImpl
+// when asked for CaseRepository, give CaseRepositoryImpl
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class CaseRepositoryModule {
-
     @Binds
     @Singleton
-    abstract fun bindCaseRepository(
-        implementation: CaseRepositoryImpl
-    ): CaseRepository
+    abstract fun bindCaseRepository(implementation: CaseRepositoryImpl): CaseRepository
 }

@@ -9,16 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-//actual line for the timeline
+// actual line for the timeline
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun VerticalTimelineLine() {
     Box(
-        modifier = Modifier
-            .width(2.dp)
-            //will stretch down dynamically depending on size of content
-            .fillMaxHeight()
-            .background(
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
+        modifier =
+            Modifier
+                .width(2.dp)
+                // will stretch down dynamically depending on size of content
+                .fillMaxHeight()
+                .background(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                ),
     )
 }

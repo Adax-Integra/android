@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,7 +18,8 @@ import com.example.adaxintegra.presentation.viewmodel.CaseProgressViewModel
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.timeline.CaseProgressTimeline
 
-//case progress screen external view, reached by clicking on a case from case screen
+// case progress screen external view, reached by clicking on a case from case screen
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseProgressScreen(
     caseState: String,
@@ -34,15 +36,16 @@ fun CaseProgressScreen(
     val case = uiState.case
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppHeader(
             title = "Caso $caseState",
             subtitle = "ID: ${case?.caseNumber ?: caseId}",
-            onBack = onBack
+            onBack = onBack,
         )
         when {
             uiState.isLoading -> {
@@ -50,12 +53,12 @@ fun CaseProgressScreen(
             }
 
             uiState.error != null -> {
-                Text(text = uiState.error!!,)
+                Text(text = uiState.error!!)
             }
 
             case != null -> {
                 CaseProgressTimeline(
-                    caseSteps = case.caseSteps
+                    caseSteps = case.caseSteps,
                 )
             }
         }

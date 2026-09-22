@@ -13,36 +13,33 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
-fun NotesBox(
-    note: String
-) {
+fun NotesBox(note: String) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)
-            .background(
-                color = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(8.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+                .background(
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                ).padding(8.dp),
     ) {
-
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
                 text = "Notas: ",
                 style = AppTextStyle.LabelSmall,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
 
-            //actual notes left in by collaborator
+            // actual notes left in by collaborator
             Text(
                 text = note,
                 style = AppTextStyle.BodySmall,
-                fontWeight = FontWeight.Normal
-
+                fontWeight = FontWeight.Normal,
             )
         }
     }

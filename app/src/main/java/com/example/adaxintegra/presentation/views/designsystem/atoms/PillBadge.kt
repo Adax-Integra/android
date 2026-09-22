@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
-// small pill badge visible on some screens
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun PillBadge(text: String) {
     Box(
@@ -34,6 +34,7 @@ fun PillBadge(text: String) {
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
 fun PillBadgePreviewShortText() {
@@ -42,6 +43,7 @@ fun PillBadgePreviewShortText() {
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
 fun PillBadgePreviewLongText() {

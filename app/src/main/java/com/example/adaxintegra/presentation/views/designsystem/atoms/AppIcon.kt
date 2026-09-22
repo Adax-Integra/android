@@ -10,24 +10,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-//how icons will be displayed
-enum class IconSize(val dp: Dp) {
+// how icons will be displayed
+enum class IconSize(
+    val dp: Dp,
+) {
     RegularIcon(20.dp),
-    LargeIcon(24.dp)
+    LargeIcon(24.dp),
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppIcon(
     imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
     size: IconSize = IconSize.RegularIcon,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
 ) {
     Icon(
         imageVector = imageVector,
         contentDescription = contentDescription,
         modifier = modifier.size(size.dp),
-        tint = tint
+        tint = tint,
     )
 }

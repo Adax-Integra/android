@@ -14,6 +14,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
 // general header to be used across screens
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppHeader(
     title: String,
@@ -54,6 +55,7 @@ fun AppHeader(
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
 fun AppHeaderPreviewWithoutSubtitle() {
@@ -62,6 +64,7 @@ fun AppHeaderPreviewWithoutSubtitle() {
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
 fun AppHeaderPreviewWithSubtitle() {
