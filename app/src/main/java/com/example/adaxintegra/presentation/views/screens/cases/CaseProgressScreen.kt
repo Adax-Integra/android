@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,9 +36,9 @@ fun CaseProgressScreen(
 
     Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppHeader(

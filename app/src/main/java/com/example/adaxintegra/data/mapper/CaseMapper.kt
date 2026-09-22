@@ -6,16 +6,20 @@ import com.example.adaxintegra.domain.model.Case
 import com.example.adaxintegra.domain.model.CaseProgressStep
 
 // object from DTO converted to case or case progress step
-fun CaseDto.toDomain(): Case =
-    Case(
-        caseId = case_id,
-        caseNumber = case_number,
-        state = state,
-        caseSteps = case_steps.map { it.toDomain() },
-    )
+fun CaseDto.toDomain(): Case = Case(
+    caseId = case_id,
+    caseNumber = case_number,
+    state = state,
+    caseSteps = case_steps.map { it.toDomain() },
+    description = description,
+    helpWanted = null,
+    hasLawyer = null,
+    violenceList = emptyList(),
+    createdAt = null,
+    helpList = emptyList(),
+)
 
-fun CaseStepDto.toDomain(): CaseProgressStep =
-    CaseProgressStep(
-        stepNumber = step_number,
-        status = status,
-    )
+fun CaseStepDto.toDomain(): CaseProgressStep = CaseProgressStep(
+    stepNumber = step_number,
+    status = status,
+)

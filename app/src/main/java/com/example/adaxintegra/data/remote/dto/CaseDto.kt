@@ -5,4 +5,5 @@ data class CaseDto(
     val case_number: String,
     val state: String,
     val case_steps: List<CaseStepDto>,
+    val description: String,
 )
