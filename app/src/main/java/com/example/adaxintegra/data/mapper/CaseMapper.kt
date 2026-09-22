@@ -10,7 +10,6 @@ fun CaseDto.toDomain(): Case =
     Case(
         caseId = case_id,
         caseNumber = case_number,
-        state = state,
         caseSteps = case_steps.map { it.toDomain() },
     )
 

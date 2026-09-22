@@ -4,6 +4,5 @@ package com.example.adaxintegra.domain.model
 data class Case(
     val caseId: String,
     val caseNumber: String,
-    val state: String,
     val caseSteps: List<CaseProgressStep>,
 )
