@@ -2,14 +2,14 @@ package com.example.adaxintegra.domain.model
 
 import android.net.Uri
 
-// Catálogos cargados desde el backend para llenar los dropdowns
+// Catalogs charged from backend for filling the dropdowns
 data class ExpedientCatalogs(
     val municipalities: List<String> = emptyList(),
     val localities: List<String> = emptyList(),
     val violenceTypes: List<String> = emptyList(),
 )
 
-// Datos recopilados en paso 1
+// Data compiled in step 1
 data class PersonalDataForm(
     val fullName: String = "",
     val municipality: String = "",
@@ -18,7 +18,7 @@ data class PersonalDataForm(
     val proofUri: Uri? = null, // Local URI of the selected document/photo
 )
 
-// Datos recopilados en paso 2
+// Data compiled from step 2
 data class CaseDataForm(
     val violenceType: String = "",
     val caseDescription: String = "",

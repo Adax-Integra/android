@@ -51,10 +51,10 @@ fun RegisterExpedientScreen(
     onCancel: () -> Unit,
     onSuccess: () -> Unit,
 ) {
-    // El estado del viewmodel se actualiza en pantalla
+    // Viewmodel state updates in screen
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Valida registro exitoso
+    // Validates success in register
     if (uiState.isSuccess) {
         onSuccess()
     }
@@ -64,7 +64,7 @@ fun RegisterExpedientScreen(
             TopAppBar(
                 title = { Text(if (uiState.currentStep == 1) "Paso 1: Datos Personales" else "Paso 2: Datos del Caso") },
                 navigationIcon = {
-                    // Boton de cancelar registro
+                    // Cancel register button
                     IconButton(onClick = onCancel) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = "Cancelar")
                     }
@@ -81,14 +81,14 @@ fun RegisterExpedientScreen(
             if (uiState.isLoadingCatalogs) {
                 CircularProgressIndicator(modifier = Modifier.align(androidx.compose.ui.Alignment.Center))
             } else {
-                // Alterna entre los pasos 1 y 2 segun el uiState
+                // Alternates between step 1 and 2 depending on uiState
                 when {
-                    // Si está cargando catálogos o enviando el formulario al servidor
+                    // If charging the catalogs or sending the form to the server
                     uiState.isLoadingCatalogs || uiState.isSubmitting -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
 
-                    // Muestra el Paso 1
+                    // Shows step 1
                     uiState.currentStep == 1 -> {
                         PersonalDataStepContent(
                             uiState = uiState,
@@ -97,7 +97,7 @@ fun RegisterExpedientScreen(
                         )
                     }
 
-                    // Muestra el Paso 2
+                    // Shows step 2
                     uiState.currentStep == 2 -> {
                         CaseDataStepContent(
                             uiState = uiState,
@@ -119,15 +119,15 @@ fun PersonalDataStepContent(
     onDataChange: (PersonalDataForm) -> Unit,
     onNextClick: () -> Unit,
 ) {
-    // Permite que la pantalla se desplace hacia abajo si los campos quedan muy largos
+    // Allows the screen to scroll down if the fields are large
     val scrollState = rememberScrollState()
 
-    // Selector de archivos
+    // Files selector
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
         ) { uri: Uri? ->
-            // Al elegir un archivo se actualiza la ruta con uri
+            // When selecting a file, the route updates with uri
             if (uri != null) {
                 onDataChange(uiState.personalData.copy(proofUri = uri))
             }
@@ -146,7 +146,7 @@ fun PersonalDataStepContent(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        // Campo del nombre
+        // Name field
         OutlinedTextField(
             value = uiState.personalData.fullName,
             onValueChange = { newValue ->
@@ -162,7 +162,7 @@ fun PersonalDataStepContent(
             },
         )
 
-        // Campo de telefono
+        // Phone number field
         OutlinedTextField(
             value = uiState.personalData.phoneNumber,
             onValueChange = { newValue ->
@@ -173,7 +173,7 @@ fun PersonalDataStepContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // Campo del municipio
+        // Municipality field
         OutlinedTextField(
             value = uiState.personalData.municipality,
             onValueChange = { newValue ->
@@ -191,9 +191,9 @@ fun PersonalDataStepContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Selector de archivos
+        // File selector
         OutlinedButton(
-            onClick = { filePickerLauncher.launch("image/*") }, // Abre la galería para seleccionar imágenes
+            onClick = { filePickerLauncher.launch("image/*") }, // Opens the phone's gallery for image selecting
             modifier = Modifier.fillMaxWidth(),
         ) {
             val buttonText =
@@ -207,7 +207,7 @@ fun PersonalDataStepContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón para continuar
+        // Continue button
         Button(
             onClick = onNextClick,
             modifier = Modifier.fillMaxWidth(),
@@ -240,7 +240,7 @@ fun CaseDataStepContent(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        // Campo de tipo de violencia
+        // Violence type field
         OutlinedTextField(
             value = uiState.caseData.violenceType,
             onValueChange = { newValue ->
@@ -256,7 +256,7 @@ fun CaseDataStepContent(
             },
         )
 
-        // Campo de descripcion del caso
+        // Case description field
         OutlinedTextField(
             value = uiState.caseData.caseDescription,
             onValueChange = { newValue ->
@@ -264,7 +264,7 @@ fun CaseDataStepContent(
             },
             label = { Text("Descripción del Caso *") },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 4, // Permite escribir texto más largo de forma cómoda
+            minLines = 4, // Allows to write larger texts comfortabely
             isError = uiState.caseDataErrors.containsKey("caseDescription"),
             supportingText = {
                 uiState.caseDataErrors["caseDescription"]?.let { errorMsg ->
@@ -273,7 +273,7 @@ fun CaseDataStepContent(
             },
         )
 
-        // Campo de notas adicionales
+        // Aditional notes field
         OutlinedTextField(
             value = uiState.caseData.additionalNotes,
             onValueChange = { newValue ->
@@ -286,7 +286,7 @@ fun CaseDataStepContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botones de Atrás y Guardar
+        // Back and save buttons
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),

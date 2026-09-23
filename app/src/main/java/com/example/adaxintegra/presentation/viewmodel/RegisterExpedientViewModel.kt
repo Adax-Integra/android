@@ -29,10 +29,10 @@ class RegisterExpedientViewModel
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoadingCatalogs = true) }
 
-                // Simula un delay de la red
+                // Simulate a network delay
                 delay(1000)
 
-                // Datos de prueba
+                // Mock data for testing
                 val mockCatalogs =
                     ExpedientCatalogs(
                         municipalities =
@@ -62,17 +62,17 @@ class RegisterExpedientViewModel
             }
         }
 
-        // Actualizaciones de la parte 1 del formulario
+        // Update of the part 1 of the form
         fun onPersonalDataChange(updated: PersonalDataForm) {
             _uiState.update { it.copy(personalData = updated, personalDataErrors = emptyMap()) }
         }
 
-        // Actualizaciones de la parte 2 del formulario
+        // Update of the part 2 of the form
         fun onCaseDataChange(updated: CaseDataForm) {
             _uiState.update { it.copy(caseData = updated, caseDataErrors = emptyMap()) }
         }
 
-        // Validación de la parte 1
+        // Part 1 validation
         fun onNextStepClick() {
             val current = _uiState.value.personalData
             val errors = mutableMapOf<String, String>()
@@ -89,7 +89,7 @@ class RegisterExpedientViewModel
             _uiState.update { it.copy(currentStep = 1) }
         }
 
-        // Validación de la parte 2
+        // Part 2 validation
         fun onSubmitClick() {
             val current = _uiState.value.caseData
             val errors = mutableMapOf<String, String>()
@@ -98,7 +98,7 @@ class RegisterExpedientViewModel
             if (errors.isNotEmpty()) {
                 _uiState.update { it.copy(caseDataErrors = errors) }
             } else {
-                // Si la validación es correcta muestra la confirmación
+                // If validation is correct, shows a confirmation
                 _uiState.update { it.copy(showConfirmationDialog = true, caseDataErrors = emptyMap()) }
             }
         }
@@ -107,11 +107,11 @@ class RegisterExpedientViewModel
             _uiState.update { it.copy(showConfirmationDialog = false) }
         }
 
-        // Proceso de subida de archivos y guardado
+        // Data upload and save process
         fun onConfirmSubmit() {
             viewModelScope.launch {
                 _uiState.update { it.copy(showConfirmationDialog = false, isSubmitting = true) }
-                // Simula subida a bucket y guardado en backend
+                // Simulates a bucket upload and data save in backend
                 delay(2000)
                 _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }
             }
