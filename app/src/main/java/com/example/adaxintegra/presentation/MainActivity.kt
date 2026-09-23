@@ -1,47 +1,32 @@
 package com.example.adaxintegra
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.activity.viewModels
+import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
+import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint // Requerido por Hilt para inyectar dependencias en Activity
 class MainActivity : ComponentActivity() {
+
+    // Instanciamos el ViewModel administrado por Hilt
+    private val viewModel: RegisterExpedientViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            AdaxIntegraTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            RegisterExpedientScreen(
+                viewModel = viewModel,
+                onCancel = {
+                    Toast.makeText(this, "Registro cancelado", Toast.LENGTH_SHORT).show()
+                },
+                onSuccess = {
+                    Toast.makeText(this, "¡Expediente registrado exitosamente!", Toast.LENGTH_LONG).show()
                 }
-            }
+            )
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AdaxIntegraTheme {
-        Greeting("Android")
     }
 }
