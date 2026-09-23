@@ -1,0 +1,16 @@
+root = true
+
+# All files
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Kotlin files
+[*.{kt,kts}]
+indent_size = 4
+ktlint_code_style = intellij_idea
+
+# Optional: Disable ktlint on generated build files
+[**/build/**/*.kt]
+ktlint = disabled
