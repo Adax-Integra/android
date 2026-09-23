@@ -21,7 +21,6 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.timelin
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseProgressScreen(
-    caseState: String,
     caseId: String,
     onBack: () -> Unit,
     viewModel: CaseProgressViewModel = hiltViewModel(),
@@ -42,7 +41,7 @@ fun CaseProgressScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppHeader(
-            title = "Caso $caseState",
+            title = "Progreso de caso",
             subtitle = "ID: ${case?.caseNumber ?: caseId}",
             onBack = onBack,
         )
