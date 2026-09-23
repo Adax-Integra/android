@@ -5,7 +5,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -47,14 +46,12 @@ fun AppNavigation() {
                 // ProfileScreen
             }
 
-            composable("case/{caseId}/{caseState}") { backStackEntry ->
+            composable("case/{caseId}") { backStackEntry ->
 
                 val caseId = backStackEntry.arguments?.getString("caseId")
-                val caseState = backStackEntry.arguments?.getString("caseState")
 
                 CaseProgressScreen(
                     caseId = caseId ?: "",
-                    caseState = caseState ?: "",
                     onBack = {
                         navController.popBackStack()
                     },

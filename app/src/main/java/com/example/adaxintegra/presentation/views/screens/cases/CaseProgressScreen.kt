@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,7 +21,6 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.timelin
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseProgressScreen(
-    caseState: String,
     caseId: String,
     onBack: () -> Unit,
     viewModel: CaseProgressViewModel = hiltViewModel(),
@@ -43,7 +41,7 @@ fun CaseProgressScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppHeader(
-            title = "Caso $caseState",
+            title = "Progreso de caso",
             subtitle = "ID: ${case?.caseNumber ?: caseId}",
             onBack = onBack,
         )
