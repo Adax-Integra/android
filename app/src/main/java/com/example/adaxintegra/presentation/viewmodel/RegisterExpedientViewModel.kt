@@ -2,9 +2,9 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.adaxintegra.domain.model.CatalogosExpediente
-import com.example.adaxintegra.domain.model.DatosCasoForm
-import com.example.adaxintegra.domain.model.DatosPersonalesForm
+import com.example.adaxintegra.domain.model.CaseDataForm
+import com.example.adaxintegra.domain.model.ExpedientCatalogs
+import com.example.adaxintegra.domain.model.PersonalDataForm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.delay
@@ -34,21 +34,21 @@ class RegisterExpedientViewModel
 
                 // Datos de prueba
                 val mockCatalogs =
-                    CatalogosExpediente(
-                        municipios =
+                    ExpedientCatalogs(
+                        municipalities =
                             listOf(
                                 "Querétaro",
                                 "San Juan del Río",
                                 "Corregidora",
                                 "Jalpan de Serra",
                             ),
-                        localidades =
+                        localities =
                             listOf(
                                 "Centro",
                                 "Santa Rosa Jáuregui",
                                 "Felipe Carrillo Puerto",
                             ),
-                        tiposViolencia =
+                        violenceTypes =
                             listOf(
                                 "Violencia sexual",
                                 "Violencia digital",
@@ -63,12 +63,12 @@ class RegisterExpedientViewModel
         }
 
         // Actualizaciones de la parte 1 del formulario
-        fun onPersonalDataChange(updated: DatosPersonalesForm) {
+        fun onPersonalDataChange(updated: PersonalDataForm) {
             _uiState.update { it.copy(personalData = updated, personalDataErrors = emptyMap()) }
         }
 
         // Actualizaciones de la parte 2 del formulario
-        fun onCaseDataChange(updated: DatosCasoForm) {
+        fun onCaseDataChange(updated: CaseDataForm) {
             _uiState.update { it.copy(caseData = updated, caseDataErrors = emptyMap()) }
         }
 
@@ -76,8 +76,8 @@ class RegisterExpedientViewModel
         fun onNextStepClick() {
             val current = _uiState.value.personalData
             val errors = mutableMapOf<String, String>()
-            if (current.nombreCompleto.isBlank()) errors["nombre"] = "Este campo es obligatorio"
-            if (current.municipio.isBlank()) errors["municipio"] = "Selecciona un municipio"
+            if (current.fullName.isBlank()) errors["nombre"] = "Este campo es obligatorio"
+            if (current.municipality.isBlank()) errors["municipio"] = "Selecciona un municipio"
             if (errors.isNotEmpty()) {
                 _uiState.update { it.copy(personalDataErrors = errors) }
             } else {
@@ -93,8 +93,8 @@ class RegisterExpedientViewModel
         fun onSubmitClick() {
             val current = _uiState.value.caseData
             val errors = mutableMapOf<String, String>()
-            if (current.tipoViolencia.isBlank()) errors["tipoViolencia"] = "Selecciona el tipo de violencia"
-            if (current.descripcionCaso.isBlank()) errors["descripcion"] = "Ingresa la descripción del caso"
+            if (current.violenceType.isBlank()) errors["tipoViolencia"] = "Selecciona el tipo de violencia"
+            if (current.caseDescription.isBlank()) errors["descripcion"] = "Ingresa la descripción del caso"
             if (errors.isNotEmpty()) {
                 _uiState.update { it.copy(caseDataErrors = errors) }
             } else {

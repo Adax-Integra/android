@@ -1,17 +1,17 @@
 package com.example.adaxintegra.presentation.viewmodel
 
-import com.example.adaxintegra.domain.model.CatalogosExpediente
-import com.example.adaxintegra.domain.model.DatosCasoForm
-import com.example.adaxintegra.domain.model.DatosPersonalesForm
+import com.example.adaxintegra.domain.model.CaseDataForm
+import com.example.adaxintegra.domain.model.ExpedientCatalogs
+import com.example.adaxintegra.domain.model.PersonalDataForm
 
 data class ExpedientUiState(
     val currentStep: Int = 1, // Paso 1 de datos personales
     val isLoadingCatalogs: Boolean = false,
     val isSubmitting: Boolean = false,
     // Datos ingresados
-    val personalData: DatosPersonalesForm = DatosPersonalesForm(),
-    val caseData: DatosCasoForm = DatosCasoForm(),
-    val catalogs: CatalogosExpediente = CatalogosExpediente(),
+    val personalData: PersonalDataForm = PersonalDataForm(),
+    val caseData: CaseDataForm = CaseDataForm(),
+    val catalogs: ExpedientCatalogs = ExpedientCatalogs(),
     // Errores de validación
     val personalDataErrors: Map<String, String> = emptyMap(),
     val caseDataErrors: Map<String, String> = emptyMap(),
