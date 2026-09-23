@@ -4,4 +4,6 @@ import com.example.adaxintegra.domain.model.Case
 
 interface CaseRepository {
     suspend fun getCaseById(caseId: String): Case
+
+    suspend fun getAllCasesFromUser(userId: String): List<Case>
 }

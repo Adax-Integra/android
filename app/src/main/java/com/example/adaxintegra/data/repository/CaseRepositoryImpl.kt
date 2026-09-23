@@ -17,4 +17,9 @@ constructor(
         val response = api.getCaseById(caseId)
         return response.data.toDomain()
     }
+
+    override suspend fun getAllCasesFromUser(userId: String): List<Case> {
+        val response = api.getCasesFromUser(userId)
+        return response.data.map { it.toDomain() }
+    }
 }

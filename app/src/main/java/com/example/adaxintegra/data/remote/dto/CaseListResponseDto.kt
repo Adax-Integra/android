@@ -1,4 +1,6 @@
 package com.example.adaxintegra.data.remote.dto
 
-class CaseListResponseDto {
-}
+data class CaseListResponseDto(
+    val success: Boolean,
+    val data: List<CaseListItemDto>,
+)
