@@ -9,12 +9,17 @@ import javax.inject.Singleton
 
 @Singleton
 class CaseRepositoryImpl
-    @Inject
-    constructor(
-        private val api: CaseApi,
-    ) : CaseRepository {
-        override suspend fun getCaseById(caseId: String): Case {
-            val response = api.getCaseById(caseId)
-            return response.data.toDomain()
-        }
+@Inject
+constructor(
+    private val api: CaseApi,
+) : CaseRepository {
+    override suspend fun getCaseById(caseId: String): Case {
+        val response = api.getCaseById(caseId)
+        return response.data.toDomain()
     }
+
+    override suspend fun getCasesFromUser(userId: String): List<Case> {
+        val response = api.getCasesFromUser(userId)
+        return response.data.map { it.toDomain() }
+    }
+}
