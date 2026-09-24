@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://api.example.com/"
+    private const val BASE_URL = "https://api.adaxintegra.com/"
 
     @Provides
     @Singleton
@@ -33,3 +33,5 @@ object NetworkModule {
     fun provideAuthApi(retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
     }
+}
+
