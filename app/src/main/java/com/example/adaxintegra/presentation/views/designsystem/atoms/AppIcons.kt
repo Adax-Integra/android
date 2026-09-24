@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // icons available to use
@@ -28,4 +29,7 @@ object AppIcons {
 
     val CheckMark: ImageVector
         get() = Icons.Default.Check
+
+    val Search: ImageVector
+        get() = Icons.Default.Search
 }
