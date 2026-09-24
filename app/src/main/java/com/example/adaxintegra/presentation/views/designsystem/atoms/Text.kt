@@ -1,14 +1,16 @@
 package com.example.adaxintegra.presentation.views.designsystem.atoms
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
+// text styles and parameters to be reused
 enum class AppTextStyle {
     TitleLarge,
     TitleMedium,
@@ -16,9 +18,10 @@ enum class AppTextStyle {
     BodyMedium,
     BodySmall,
     LabelMedium,
-    LabelSmall
+    LabelSmall,
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun Text(
     text: String,
@@ -26,17 +29,19 @@ fun Text(
     style: AppTextStyle = AppTextStyle.BodyMedium,
     color: Color = Color.Unspecified,
     textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip
+    overflow: TextOverflow = TextOverflow.Clip,
+    fontWeight: FontWeight,
 ) {
-    val textStyle: TextStyle = when (style) {
-        AppTextStyle.TitleLarge -> MaterialTheme.typography.titleLarge
-        AppTextStyle.TitleMedium -> MaterialTheme.typography.titleMedium
-        AppTextStyle.BodyLarge -> MaterialTheme.typography.bodyLarge
-        AppTextStyle.BodyMedium -> MaterialTheme.typography.bodyMedium
-        AppTextStyle.BodySmall -> MaterialTheme.typography.bodySmall
-        AppTextStyle.LabelMedium -> MaterialTheme.typography.labelMedium
-        AppTextStyle.LabelSmall -> MaterialTheme.typography.labelSmall
-    }
+    val textStyle: TextStyle =
+        when (style) {
+            AppTextStyle.TitleLarge -> MaterialTheme.typography.titleLarge
+            AppTextStyle.TitleMedium -> MaterialTheme.typography.titleMedium
+            AppTextStyle.BodyLarge -> MaterialTheme.typography.bodyLarge
+            AppTextStyle.BodyMedium -> MaterialTheme.typography.bodyMedium
+            AppTextStyle.BodySmall -> MaterialTheme.typography.bodySmall
+            AppTextStyle.LabelMedium -> MaterialTheme.typography.labelMedium
+            AppTextStyle.LabelSmall -> MaterialTheme.typography.labelSmall
+        }
 
     Text(
         text = text,
@@ -44,6 +49,7 @@ fun Text(
         style = textStyle,
         color = color,
         textAlign = textAlign,
-        overflow = overflow
+        overflow = overflow,
+        fontWeight = fontWeight,
     )
 }
