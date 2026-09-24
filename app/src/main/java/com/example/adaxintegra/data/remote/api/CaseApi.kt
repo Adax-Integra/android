@@ -20,4 +20,9 @@ interface CaseApi {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
+      
+    @GET("api/internal-users/{userId}/allCases")
+    suspend fun getCasesFromUser(
+        @Path("userId") userId: String,
+    ): CaseListResponseDto
 }

@@ -44,4 +44,9 @@ constructor(
             limit = data.limit,
         )
     }
+
+    override suspend fun getCasesFromUser(userId: String): List<Case> {
+        val response = api.getCasesFromUser(userId)
+        return response.data.map { it.toDomain() }
+    }
 }

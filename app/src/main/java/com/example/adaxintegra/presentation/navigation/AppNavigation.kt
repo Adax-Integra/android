@@ -65,14 +65,12 @@ fun AppNavigation() {
                 // ProfileScreen
             }
 
-            composable("case/{caseId}/{caseState}") { backStackEntry ->
+            composable("case/{caseId}") { backStackEntry ->
 
                 val caseId = backStackEntry.arguments?.getString("caseId")
-                val caseState = backStackEntry.arguments?.getString("caseState")
 
                 CaseProgressScreen(
                     caseId = caseId ?: "",
-                    caseState = caseState ?: "",
                     onBack = {
                         navController.popBackStack()
                     },

@@ -12,4 +12,7 @@ interface CaseRepository {
         page: Int = 1,
         limit: Int = 20,
     ): CasePage
+  
+    suspend fun getCasesFromUser(userId: String): List<Case>
+  
 }

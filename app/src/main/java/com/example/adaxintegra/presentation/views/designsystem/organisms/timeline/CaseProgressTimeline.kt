@@ -11,9 +11,9 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.CasePro
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseProgressTimeline(
-    caseSteps: List<CaseProgressStep>,
+    caseSteps: List<CaseProgressStep>?,
 ) {
-    val sortedSteps = caseSteps.sortedBy { it.stepNumber }
+    val sortedSteps = caseSteps?.sortedBy { it.stepNumber } ?: emptyList()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
