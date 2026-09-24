@@ -13,6 +13,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
+    // in AndroidManifest and run "adb reverse tcp:3001 tcp:3001".
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit = Retrofit.Builder()
