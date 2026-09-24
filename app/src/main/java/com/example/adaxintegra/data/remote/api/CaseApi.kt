@@ -2,6 +2,7 @@ package com.example.adaxintegra.data.remote.api
 
 import com.example.adaxintegra.data.remote.dto.CaseListResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseResponseDto
+import com.example.adaxintegra.data.remote.dto.UserCasesResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -20,15 +21,15 @@ interface CaseApi {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
-      
+
     @GET("api/internal-users/{userId}/allCases")
     suspend fun getCasesFromUser(
         @Path("userId") userId: String,
-    ): CaseListResponseDto
+    ): UserCasesResponseDto
 
     // V-04: cases of the external user
     @GET("api/users/{userId}/cases")
     suspend fun getExternalUserCases(
         @Path("userId") userId: String,
-    ): CaseListResponseDto
+    ): UserCasesResponseDto
 }
