@@ -14,4 +14,5 @@ data class Case(
     val violenceList: List<Violence>?,
     val helpList: List<Helps>?,
     val createdAt: Date?,
+    val updatedAt: Date?,
 )

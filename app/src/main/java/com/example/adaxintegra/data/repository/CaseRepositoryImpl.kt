@@ -49,4 +49,9 @@ constructor(
         val response = api.getCasesFromUser(userId)
         return response.data.map { it.toDomain() }
     }
+
+    override suspend fun getExternalUserCases(userId: String): List<Case> {
+        val response = api.getExternalUserCases(userId)
+        return response.data.map { it.toDomain() }
+    }
 }

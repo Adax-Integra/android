@@ -12,7 +12,8 @@ interface CaseRepository {
         page: Int = 1,
         limit: Int = 20,
     ): CasePage
-  
+
     suspend fun getCasesFromUser(userId: String): List<Case>
-  
+
+    suspend fun getExternalUserCases(userId: String): List<Case>
 }
