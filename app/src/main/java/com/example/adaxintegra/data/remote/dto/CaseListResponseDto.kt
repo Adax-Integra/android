@@ -29,6 +29,6 @@ data class CaseListItemDto(
     val severity: Int?,
     val urgency: String,
 
-    @SerializedName("update_at")
+    @SerializedName("updated_at")
     val updatedAt: String?,
 )

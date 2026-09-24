@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +33,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,35 +43,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.adaxintegra.domain.entities.Case
+import com.example.adaxintegra.presentation.viewmodel.CasesUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import java.text.Normalizer
-import java.util.Locale
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CasesScreen(
-    cases: List<Case>,
+    uiState: CasesUiState,
     onBackClick: () -> Unit,
+    onSearchChange: (String) -> Unit,
+    onUrgencyChange: (String) -> Unit,
+    onClearFilters: () -> Unit,
+    onRetry: () -> Unit,
+    onNextPage: () -> Unit,
+    onPreviousPage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Save simple UI state when the device rotates.
-    var searchQuery by rememberSaveable { mutableStateOf("") }
-    var selectedUrgency by rememberSaveable { mutableStateOf("Todas") }
     var pendingUrgency by rememberSaveable { mutableStateOf("Todas") }
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
-    // This first version searches the supplied local list, not the entire API.
-    val visibleCases = remember(cases, searchQuery, selectedUrgency) {
-        val query = normalizeSearch(searchQuery.trim())
-        cases.filter { case ->
-            val matchesSearch = normalizeSearch(case.name).contains(query) ||
-                normalizeSearch(case.caseId).contains(query)
-            val matchesUrgency = selectedUrgency == "Todas" ||
-                case.urgency == selectedUrgency
-            matchesSearch && matchesUrgency
-        }.sortedByDescending { it.severity ?: 0 }
-    }
+    val selectedUrgency = uiState.urgency.ifEmpty { "Todas" }
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
@@ -100,8 +91,8 @@ fun CasesScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    value = uiState.search,
+                    onValueChange = onSearchChange,
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
@@ -132,7 +123,7 @@ fun CasesScreen(
                     Text("Filtrar")
                 }
             }
-            if (searchQuery.isNotEmpty() || selectedUrgency != "Todas") {
+            if (uiState.search.isNotEmpty() || selectedUrgency != "Todas") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -142,10 +133,7 @@ fun CasesScreen(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    TextButton(onClick = {
-                        searchQuery = ""
-                        selectedUrgency = "Todas"
-                    }) {
+                    TextButton(onClick = onClearFilters) {
                         Text("Limpiar")
                     }
                 }
@@ -166,30 +154,92 @@ fun CasesScreen(
                     shape = RoundedCornerShape(50),
                 ) {
                     Text(
-                        text = "${visibleCases.size} ${if (visibleCases.size == 1) "caso" else "casos"}",
+                        text = "${uiState.total} ${if (uiState.total == 1) "caso" else "casos"}",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }
             }
-            if (visibleCases.isEmpty()) {
-                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        CircularProgressIndicator()
+                    }
+
+                    uiState.error != null -> {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                text = uiState.error ?: "No se pudieron cargar los casos.",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+
+                            OutlinedButton(onClick = onRetry) {
+                                Text("Reintentar")
+                            }
+                        }
+                    }
+
+                    uiState.cases.isEmpty() -> {
+                        Text(
+                            text = if (
+                                uiState.search.isNotBlank() ||
+                                selectedUrgency != "Todas"
+                            ) {
+                                "No hay casos que coincidan con tu busqueda y filtro."
+                            } else {
+                                "No hay casos disponibles"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            items(
+                                items = uiState.cases,
+                                key = { it.caseId },
+                            ) { case ->
+                                CaseCard(case = case)
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!uiState.isLoading && uiState.error == null && uiState.total > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(
+                        onClick = onPreviousPage,
+                        enabled = uiState.page > 1,
+                    ) {
+                        Text("Anterior")
+                    }
+
                     Text(
-                        text = if (cases.isEmpty()) {
-                            "No hay casos disponibles."
-                        } else {
-                            "No hay casos que coincidan con tu búsqueda y filtro."
-                        },
+                        text = "Página ${uiState.page}",
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    items(items = visibleCases, key = { it.caseId }) { case ->
-                        CaseCard(case = case)
+
+                    TextButton(
+                        onClick = onNextPage,
+                        enabled = uiState.page.toLong() * uiState.limit < uiState.total,
+                    ) {
+                        Text("Siguiente")
                     }
                 }
             }
@@ -224,7 +274,9 @@ fun CasesScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    selectedUrgency = pendingUrgency
+                    onUrgencyChange(
+                        if (pendingUrgency == "Todas") "" else pendingUrgency,
+                    )
                     showFilters = false
                 }) {
                     Text("Aplicar")
@@ -239,19 +291,24 @@ fun CasesScreen(
     }
 }
 
-// Let searches such as "Maria" match names such as "María".
-private fun normalizeSearch(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFD)
-    .replace(Regex("\\p{M}+"), "")
-    .lowercase(Locale.ROOT)
-
 @Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true, widthDp = 400, heightDp = 850)
 @Composable
 private fun CasesScreenPreview() {
+    val mockCases = Case.getMockData()
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(
-            cases = Case.getMockData(),
-            onBackClick = {}, // When connecting to navigation system: navController.popBackStack()
+            uiState = CasesUiState(
+                cases = mockCases,
+                total = mockCases.size,
+            ),
+            onBackClick = {},
+            onSearchChange = {},
+            onUrgencyChange = {},
+            onClearFilters = {},
+            onRetry = {},
+            onNextPage = {},
+            onPreviousPage = {},
         )
     }
 }
