@@ -10,13 +10,13 @@ data class CaseListResponseDto(
 
 // List of cases and pagination information
 data class CaseListDataDto(
-    val cases: List<CaseListItemDto>,
+    val cases: List<CollaboratorCaseListItemDto>,
     val total: Int,
     val page: Int,
     val limit: Int,
 )
 
-data class CaseListItemDto(
+data class CollaboratorCaseListItemDto(
     @SerializedName("case_id")
     val caseId: String,
 
