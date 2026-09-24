@@ -6,4 +6,6 @@ interface CaseRepository {
     suspend fun getCaseById(caseId: String): Case
 
     suspend fun getCasesFromUser(userId: String): List<Case>
+
+    suspend fun getExternalUserCases(userId: String): List<Case>
 }

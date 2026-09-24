@@ -16,4 +16,10 @@ interface CaseApi {
     suspend fun getCasesFromUser(
         @Path("userId") userId: String,
     ): CaseListResponseDto
+
+    // V-04: cases of the external user
+    @GET("api/users/{userId}/cases")
+    suspend fun getExternalUserCases(
+        @Path("userId") userId: String,
+    ): CaseListResponseDto
 }
