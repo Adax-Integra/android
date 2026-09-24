@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
+
 // login's screen brain...
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -34,7 +37,18 @@ class LoginViewModel @Inject constructor(
                     when (result) {
                         is Result.Loading -> state.copy(isLoading = true, error = null)
                         is Result.Success -> state.copy(isLoading = false, isLoginSuccess = true)
-                        is Result.Error -> state.copy(isLoading = false, error = "Credenciales incorrectas")
+                        is Result.Error -> {
+                            val errorMessage = when (val e = result.exception) {
+                                is HttpException -> when (e.code()) {
+                                    401 -> "Credenciales incorrectas"
+                                    404 -> "Endpoint no encontrado (404)"
+                                    else -> "Error del servidor (${e.code()})"
+                                }
+                                is IOException -> "Error de conexión: ${e.localizedMessage}"
+                                else -> e.localizedMessage ?: "Error desconocido"
+                            }
+                            state.copy(isLoading = false, error = errorMessage)
+                        }
                     }
                 }
             }

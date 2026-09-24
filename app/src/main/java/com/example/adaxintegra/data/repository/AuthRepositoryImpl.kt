@@ -22,7 +22,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.login(LoginRequestDto(email, password))
 
             // 3 If success, emit the token
-            emit(Result.Success(response.token))
+            emit(Result.Success(response.data.token))
         } catch (e: Exception) {
             // 4 If failure, (throw error {red, 401, etc.})
             emit(Result.Error(e))

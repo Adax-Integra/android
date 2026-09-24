@@ -2,15 +2,16 @@ package com.example.adaxintegra.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class LoginResponseDto(
+data class LoginDataDto(
     @SerializedName("token")
     val token: String,
-    @SerializedName("user")
-    val user: UserDto, // returning user data...
+    @SerializedName("user_id")
+    val userId: String? = null,
 )
 
-data class UserDto(
-    val id: String,
-    val name: String,
-    val email: String,
+data class LoginResponseDto(
+    @SerializedName("success")
+    val success: Boolean,
+    @SerializedName("data")
+    val data: LoginDataDto,
 )
