@@ -17,8 +17,9 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 
 // TODO: replace with the authenticated user's role once login is ready.
-// true: external user case list (V-04). false: collaborator case list (V-03).
-private const val IS_EXTERNAL_USER = true
+// false: collaborator case list (V-03). true: external user case list (V-04).
+// Temporary: set to true to test V-04 locally.
+private const val IS_EXTERNAL_USER = false
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens

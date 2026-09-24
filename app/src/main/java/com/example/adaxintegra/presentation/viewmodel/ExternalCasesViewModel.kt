@@ -72,6 +72,7 @@ class ExternalCasesViewModel @Inject constructor(
 
     companion object {
         // TODO: replace with the authenticated user's real userId once login is ready.
+        // Temporary: external test user from the database, used to test V-04 locally.
         private const val TEST_USER_ID = "c4d665c3-56b7-4616-b322-69d3ffa261d4"
     }
 }
