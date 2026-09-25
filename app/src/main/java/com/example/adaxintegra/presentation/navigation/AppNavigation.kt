@@ -18,6 +18,12 @@ import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
+
+// TODO: replace with the authenticated user's role once login is ready.
+// false: collaborator case list (V-03). true: external user case list (V-04).
+// Temporary: set to true to test V-04 locally.
+private const val IS_EXTERNAL_USER = false
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
@@ -75,21 +81,29 @@ fun AppNavigation() {
             }
 
             composable("cases") {
-                val viewModel: CasesViewModel = hiltViewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                if (IS_EXTERNAL_USER) {
+                    ExternalCasesScreen(
+                        onCaseClick = { caseId ->
+                            navController.navigate("case/$caseId")
+                        },
+                    )
+                } else {
+                    val viewModel: CasesViewModel = hiltViewModel()
+                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-                CasesScreen(
-                    uiState = uiState,
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
-                    onSearchChange = viewModel::searchCases,
-                    onUrgencyChange = viewModel::filterCases,
-                    onClearFilters = viewModel::clearFilters,
-                    onRetry = viewModel::retry,
-                    onNextPage = viewModel::nextPage,
-                    onPreviousPage = viewModel::previousPage,
-                )
+                    CasesScreen(
+                        uiState = uiState,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onSearchChange = viewModel::searchCases,
+                        onUrgencyChange = viewModel::filterCases,
+                        onClearFilters = viewModel::clearFilters,
+                        onRetry = viewModel::retry,
+                        onNextPage = viewModel::nextPage,
+                        onPreviousPage = viewModel::previousPage,
+                    )
+                }
             }
 
             composable("profile") {

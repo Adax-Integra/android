@@ -13,7 +13,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-// object from DTO converted to case or case progress step
+// object from DTO converted to case or case progress steps
 fun CaseDto.toDomain(): Case = Case(
     caseId = case_id,
     caseNumber = case_number,

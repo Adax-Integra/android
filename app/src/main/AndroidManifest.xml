@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Local development: to allow http to the backend on your computer, add this
+         attribute to <application> (see NetworkModule.kt for the full steps):
+
+         android:networkSecurityConfig="@xml/network_security_config" -->
     <application
         android:name=".AdaxApplication"
         android:usesCleartextTraffic="true"
