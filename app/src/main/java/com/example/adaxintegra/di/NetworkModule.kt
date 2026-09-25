@@ -17,7 +17,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    // 127.0.0.1 connects directly to localhost:3001 via ADB reverse port forwarding
     private const val BASE_URL = "http://127.0.0.1:3001/"
 
     @Provides

@@ -69,7 +69,6 @@ fun AppNavigation() {
             }
 
             composable("cases") {
-                CasesScreen()
                 val viewModel: CasesViewModel = hiltViewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -91,9 +90,7 @@ fun AppNavigation() {
                 ProfileScreen()
             }
 
-            composable("case/{caseId}/{caseState}") { backStackEntry ->
             composable("case/{caseId}") { backStackEntry ->
-
                 val caseId = backStackEntry.arguments?.getString("caseId")
 
                 CaseProgressScreen(
