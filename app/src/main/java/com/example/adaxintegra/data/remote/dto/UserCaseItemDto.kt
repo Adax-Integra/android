@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.remote.dto
 
-data class CaseListItemDto(
+// case item returned by the user cases endpoints
+data class UserCaseItemDto(
     val caseId: String?,
     val writtenDescription: String?,
     val writtenHelpsWanted: String?,
