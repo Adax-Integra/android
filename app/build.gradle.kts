@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.converter.gson)
     // Navegación entre pantallas (NavHost, rememberNavController, composable...)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.okhttp.logging.interceptor)
 }
 
 // Automatically install the git hook before building

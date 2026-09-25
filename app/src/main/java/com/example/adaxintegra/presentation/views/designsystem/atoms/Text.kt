@@ -30,7 +30,7 @@ fun Text(
     color: Color = Color.Unspecified,
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
-    fontWeight: FontWeight,
+    fontWeight: FontWeight = FontWeight.Normal,
 ) {
     val textStyle: TextStyle =
         when (style) {
