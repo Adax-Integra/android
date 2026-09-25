@@ -22,11 +22,16 @@ fun BottomNavBar(
     currentRoute: String?,
     onNavigateToRoute: (String) -> Unit,
     modifier: Modifier = Modifier,
+    isInternal: Boolean = false,
 ) {
     val items =
         listOf(
             BottomNavBarItem.Inicio,
-            BottomNavBarItem.MisCasos,
+            if (isInternal) {
+                BottomNavBarItem.MisExpedientes
+            } else {
+                BottomNavBarItem.MisCasos
+            },
             BottomNavBarItem.Perfil,
         )
 
@@ -52,22 +57,22 @@ fun BottomNavBar(
                         text = item.title,
                         style = AppTextStyle.LabelMedium,
                         fontWeight =
-                            if (isSelected) {
-                                FontWeight.Bold
-                            } else {
-                                FontWeight.Medium
-                            },
+                        if (isSelected) {
+                            FontWeight.Bold
+                        } else {
+                            FontWeight.Medium
+                        },
                     )
                 },
                 alwaysShowLabel = true,
                 colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = Color.Transparent,
-                    ),
+                NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = Color.Transparent,
+                ),
             )
         }
     }
@@ -100,5 +105,16 @@ fun BottomNavBarPreviewPerfil() {
     BottomNavBar(
         currentRoute = BottomNavBarItem.Perfil.route,
         onNavigateToRoute = {},
+    )
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true)
+@Composable
+fun BottomNavBarPreviewMisExpedientes() {
+    BottomNavBar(
+        currentRoute = BottomNavBarItem.MisExpedientes.route,
+        onNavigateToRoute = {},
+        isInternal = true,
     )
 }
