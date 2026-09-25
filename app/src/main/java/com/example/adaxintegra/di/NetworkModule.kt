@@ -17,7 +17,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://127.0.0.1:3001/"
+    private const val BASE_URL = "https://adax-integra.duckdns.org"
 
     @Provides
     @Singleton

@@ -36,7 +36,12 @@ class LoginViewModel @Inject constructor(
                 _uiState.update { state ->
                     when (result) {
                         is Result.Loading -> state.copy(isLoading = true, error = null)
-                        is Result.Success -> state.copy(isLoading = false, isLoginSuccess = true)
+                        is Result.Success -> state.copy(
+                            isLoading = false,
+                            isLoginSuccess = true,
+                            userId = result.data.userId,
+                            userRole = result.data.role,
+                        )
                         is Result.Error -> {
                             val errorMessage = when (val e = result.exception) {
                                 is HttpException -> when (e.code()) {

@@ -7,6 +7,8 @@ data class LoginDataDto(
     val token: String,
     @SerializedName("user_id")
     val userId: String? = null,
+    @SerializedName("roles")
+    val roles: List<String>? = null,
 )
 
 data class LoginResponseDto(
