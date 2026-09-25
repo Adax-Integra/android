@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">AdaxIntegra</string>
+    <string name="back">Regresar</string>
+    <string name="privacy_notice_title">Aviso de privacidad</string>
+    <string name="privacy_notice_subtitle">Tu información está segura con nosotras</string>
+    <string name="privacy_notice_body">Antes de continuar, es importante que conozcas cómo usamos y protegemos tus datos personales.</string>
 </resources>
