@@ -11,11 +11,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
-import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 
@@ -56,8 +56,9 @@ fun AppNavigation() {
                 val viewModel: LoginViewModel = hiltViewModel()
                 LoginScreen(
                     viewModel = viewModel,
-                    onNavigateToHome = {
-                        navController.navigate("home") {
+                    onNavigateToHome = { userRole ->
+                        val targetRoute = if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
+                        navController.navigate(targetRoute) {
                             popUpTo("login") { inclusive = true }
                         }
                     },
@@ -65,7 +66,12 @@ fun AppNavigation() {
             }
 
             composable("home") {
-                HomeScreen()
+                HomeScreen(role = "sin rol")
+            }
+
+            composable("home/{role}") { backStackEntry ->
+                val role = backStackEntry.arguments?.getString("role") ?: "sin rol"
+                HomeScreen(role = role)
             }
 
             composable("cases") {

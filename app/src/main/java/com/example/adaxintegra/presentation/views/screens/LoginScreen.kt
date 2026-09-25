@@ -22,14 +22,14 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onNavigateToHome: () -> Unit,
+    onNavigateToHome: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
-            onNavigateToHome()
+            onNavigateToHome(uiState.userRole)
         }
     }
 
@@ -52,8 +52,8 @@ fun LoginScreen(
             passwordValue = uiState.password,
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
-            onRegisterClick = { /* Registrarse acción */ },
-            onForgotPasswordClick = { /* Recuperar contraseña acción */ },
+            onRegisterClick = { /* register action*/ },
+            onForgotPasswordClick = { /* recover password */ },
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
         )
