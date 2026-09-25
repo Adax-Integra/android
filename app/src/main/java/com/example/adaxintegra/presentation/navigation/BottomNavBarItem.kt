@@ -26,4 +26,10 @@ sealed class BottomNavBarItem(
         title = "Perfil",
         icon = AppIcons.Profile,
     )
+
+    data object MisExpedientes : BottomNavBarItem(
+        route = "records",
+        title = "Mis expedientes",
+        icon = AppIcons.Folder,
+    )
 }

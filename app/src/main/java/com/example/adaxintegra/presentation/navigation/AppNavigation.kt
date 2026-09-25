@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.navigation
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -14,12 +15,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun AppNavigation() {
+fun AppNavigation(isInternal: Boolean = true) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -27,10 +29,19 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigateToRoute = { route ->
-                    navController.navigate(route)
+                currentRoute = if (
+                    isInternal && currentRoute == "collaboratorCases"
+                ) {
+                    "records"
+                } else {
+                    currentRoute
                 },
+                onNavigateToRoute = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                    }
+                },
+                isInternal = isInternal,
             )
         },
     ) { innerPadding ->
@@ -38,12 +49,28 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("home") {
             }
 
+            composable("records") {
+                RecordsMenuScreen(
+                    onAllCasesClick = {
+                        navController.navigate("collaboratorCases") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
             composable("cases") {
+                // Connect the external user's case history here.
+            }
+
+            composable("collaboratorCases") {
                 val viewModel: CasesViewModel = hiltViewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
