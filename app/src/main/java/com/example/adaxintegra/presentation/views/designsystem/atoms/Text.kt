@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 
 // text styles and parameters to be reused
@@ -30,7 +31,8 @@ fun Text(
     color: Color = Color.Unspecified,
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
-    fontWeight: FontWeight,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textDecoration: TextDecoration? = null,
 ) {
     val textStyle: TextStyle =
         when (style) {
@@ -51,5 +53,6 @@ fun Text(
         textAlign = textAlign,
         overflow = overflow,
         fontWeight = fontWeight,
+        textDecoration = textDecoration,
     )
 }
