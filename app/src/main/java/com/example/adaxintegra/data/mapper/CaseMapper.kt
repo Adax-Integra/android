@@ -1,8 +1,8 @@
 package com.example.adaxintegra.data.mapper
 
 import com.example.adaxintegra.data.remote.dto.CaseDto
-import com.example.adaxintegra.data.remote.dto.CaseListItemDto
 import com.example.adaxintegra.data.remote.dto.CaseStepDto
+import com.example.adaxintegra.data.remote.dto.UserCaseItemDto
 import com.example.adaxintegra.domain.model.Case
 import com.example.adaxintegra.domain.model.CaseProgressStep
 import com.example.adaxintegra.domain.model.Helps
@@ -28,7 +28,7 @@ fun CaseDto.toDomain(): Case = Case(
     helpList = emptyList(),
 )
 
-fun CaseListItemDto.toDomain(): Case = Case(
+fun UserCaseItemDto.toDomain(): Case = Case(
     caseId = caseId ?: "",
     caseNumber = null,
     state = state,

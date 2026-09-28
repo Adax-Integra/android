@@ -13,6 +13,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
+import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.views.screens.HomeScreen
+import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
@@ -21,7 +25,7 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScr
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun AppNavigation(isInternal: Boolean = true) {
+fun AppNavigation(isInternal: Boolean = false) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -48,12 +52,31 @@ fun AppNavigation(isInternal: Boolean = true) {
 
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = "login",
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
         ) {
+            composable("login") {
+                val viewModel: LoginViewModel = hiltViewModel()
+                LoginScreen(
+                    viewModel = viewModel,
+                    onNavigateToHome = { userRole ->
+                        val targetRoute = if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
+                        navController.navigate(targetRoute) {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             composable("home") {
+                HomeScreen(role = "sin rol")
+            }
+
+            composable("home/{role}") { backStackEntry ->
+                val role = backStackEntry.arguments?.getString("role") ?: "sin rol"
+                HomeScreen(role = role)
             }
 
             composable("records") {
@@ -89,11 +112,10 @@ fun AppNavigation(isInternal: Boolean = true) {
             }
 
             composable("profile") {
-                // ProfileScreen
+                ProfileScreen()
             }
 
             composable("case/{caseId}") { backStackEntry ->
-
                 val caseId = backStackEntry.arguments?.getString("caseId")
 
                 CaseProgressScreen(

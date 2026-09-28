@@ -10,3 +10,6 @@ val Orange = Color(0xFFF68744)
 val GreyWhite = Color(0xFFE3E3E3)
 val Black = Color(0xFF090709)
 val White = Color(0xFFFFFFFF)
+
+val IconGrey = Color(0xFF6B7280)
+val BackgroundGrey = Color(0xFFECECEB)
