@@ -19,6 +19,7 @@ import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 // provide values(screens) to BottomNavBar
@@ -89,8 +90,13 @@ fun AppNavigation(isInternal: Boolean = false) {
                 )
             }
 
+            // V-04: external user's case history
             composable("cases") {
-                // Connect the external user's case history here.
+                ExternalCasesScreen(
+                    onCaseClick = { caseId ->
+                        navController.navigate("case/$caseId")
+                    },
+                )
             }
 
             composable("collaboratorCases") {
