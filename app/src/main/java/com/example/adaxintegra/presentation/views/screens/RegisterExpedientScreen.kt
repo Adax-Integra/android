@@ -8,40 +8,39 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.adaxintegra.domain.model.CaseDataForm
 import com.example.adaxintegra.domain.model.PersonalDataForm
 import com.example.adaxintegra.presentation.viewmodel.ExpedientUiState
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 
 @Suppress("ktlint:standard:function-naming")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,51 +60,32 @@ fun RegisterExpedientScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (uiState.currentStep == 1) "Paso 1: Datos Personales" else "Paso 2: Datos del Caso") },
-                navigationIcon = {
-                    // Cancel register button
-                    IconButton(onClick = onCancel) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "Cancelar")
-                    }
-                },
-            )
+            Box(modifier = Modifier.statusBarsPadding()) {
+                AppHeader(
+                    title = "Registrar Expediente",
+                    subtitle = "Datos personales de la solicitante",
+                    onBack = onCancel,
+                )
+            }
         },
     ) { paddingValues ->
         Box(
             modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
         ) {
-            if (uiState.isLoadingCatalogs) {
-                CircularProgressIndicator(modifier = Modifier.align(androidx.compose.ui.Alignment.Center))
-            } else {
-                // Alternates between step 1 and 2 depending on uiState
-                when {
-                    // If charging the catalogs or sending the form to the server
-                    uiState.isLoadingCatalogs || uiState.isSubmitting -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    }
+            when {
+                uiState.isLoadingCatalogs || uiState.isSubmitting -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-                    // Shows step 1
-                    uiState.currentStep == 1 -> {
-                        PersonalDataStepContent(
-                            uiState = uiState,
-                            onDataChange = viewModel::onPersonalDataChange,
-                            onNextClick = viewModel::onNextStepClick,
-                        )
-                    }
-
-                    // Shows step 2
-                    uiState.currentStep == 2 -> {
-                        CaseDataStepContent(
-                            uiState = uiState,
-                            onDataChange = viewModel::onCaseDataChange,
-                            onBackClick = viewModel::onPreviousStepClick,
-                            onSubmitClick = viewModel::onSubmitClick,
-                        )
-                    }
+                else -> {
+                    PersonalDataStepContent(
+                        uiState = uiState,
+                        onDataChange = viewModel::onPersonalDataChange,
+                        onSubmitClick = viewModel::onSubmitClick,
+                    )
                 }
             }
         }
@@ -117,10 +97,12 @@ fun RegisterExpedientScreen(
 fun PersonalDataStepContent(
     uiState: ExpedientUiState,
     onDataChange: (PersonalDataForm) -> Unit,
-    onNextClick: () -> Unit,
+    onSubmitClick: () -> Unit,
 ) {
     // Allows the screen to scroll down if the fields are large
     val scrollState = rememberScrollState()
+    // Design System spacing rules
+    val spacing = Spacing()
 
     // Files selector
     val filePickerLauncher =
@@ -135,15 +117,16 @@ fun PersonalDataStepContent(
 
     Column(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState),
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
             text = "Ingresa la información de la usuaria",
-            style = MaterialTheme.typography.bodyMedium,
+            style = AppTextStyle.BodyMedium,
+            fontWeight = FontWeight.Normal,
         )
 
         // Name field
@@ -152,12 +135,23 @@ fun PersonalDataStepContent(
             onValueChange = { newValue ->
                 onDataChange(uiState.personalData.copy(fullName = newValue))
             },
-            label = { Text("Nombre Completo *") },
+            label = {
+                Text(
+                    text = "Nombre Completo *",
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("fullName"),
             supportingText = {
                 uiState.personalDataErrors["fullName"]?.let { errorMsg ->
-                    Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = errorMsg,
+                        style = AppTextStyle.LabelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Normal,
+                    )
                 }
             },
         )
@@ -168,7 +162,13 @@ fun PersonalDataStepContent(
             onValueChange = { newValue ->
                 onDataChange(uiState.personalData.copy(phoneNumber = newValue))
             },
-            label = { Text("Teléfono de contacto") },
+            label = {
+                Text(
+                    text = "Teléfono de contacto",
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
+                )
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -179,12 +179,23 @@ fun PersonalDataStepContent(
             onValueChange = { newValue ->
                 onDataChange(uiState.personalData.copy(municipality = newValue))
             },
-            label = { Text("Municipio *") },
+            label = {
+                Text(
+                    text = "Municipio *",
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("municipality"),
             supportingText = {
                 uiState.personalDataErrors["municipality"]?.let { errorMsg ->
-                    Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = errorMsg,
+                        style = AppTextStyle.LabelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Normal,
+                    )
                 }
             },
         )
@@ -202,108 +213,26 @@ fun PersonalDataStepContent(
                 } else {
                     "Adjuntar comprobante / foto"
                 }
-            Text(buttonText)
+            Text(
+                text = buttonText,
+                style = AppTextStyle.LabelMedium,
+                fontWeight = FontWeight.Medium,
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Continue button
+        // Submit button
         Button(
-            onClick = onNextClick,
+            onClick = onSubmitClick,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Continuar")
-        }
-    }
-}
-
-@Suppress("ktlint:standard:function-naming")
-@Composable
-fun CaseDataStepContent(
-    uiState: ExpedientUiState,
-    onDataChange: (CaseDataForm) -> Unit,
-    onBackClick: () -> Unit,
-    onSubmitClick: () -> Unit,
-) {
-    val scrollState = rememberScrollState()
-
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = "Describe los detalles del caso o incidente reportado.",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-
-        // Violence type field
-        OutlinedTextField(
-            value = uiState.caseData.violenceType,
-            onValueChange = { newValue ->
-                onDataChange(uiState.caseData.copy(violenceType = newValue))
-            },
-            label = { Text("Tipo de Violencia *") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = uiState.caseDataErrors.containsKey("violenceType"),
-            supportingText = {
-                uiState.caseDataErrors["violenceType"]?.let { errorMsg ->
-                    Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
-                }
-            },
-        )
-
-        // Case description field
-        OutlinedTextField(
-            value = uiState.caseData.caseDescription,
-            onValueChange = { newValue ->
-                onDataChange(uiState.caseData.copy(caseDescription = newValue))
-            },
-            label = { Text("Descripción del Caso *") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 4, // Allows to write larger texts comfortabely
-            isError = uiState.caseDataErrors.containsKey("caseDescription"),
-            supportingText = {
-                uiState.caseDataErrors["caseDescription"]?.let { errorMsg ->
-                    Text(text = errorMsg, color = MaterialTheme.colorScheme.error)
-                }
-            },
-        )
-
-        // Aditional notes field
-        OutlinedTextField(
-            value = uiState.caseData.additionalNotes,
-            onValueChange = { newValue ->
-                onDataChange(uiState.caseData.copy(additionalNotes = newValue))
-            },
-            label = { Text("Observaciones / Notas adicionales") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Back and save buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            OutlinedButton(
-                onClick = onBackClick,
-                modifier = Modifier.weight(1f),
-            ) {
-                Text("Atrás")
-            }
-
-            Button(
-                onClick = onSubmitClick,
-                modifier = Modifier.weight(1f),
-            ) {
-                Text("Guardar")
-            }
+            Text(
+                text = "Guardar Expediente",
+                style = AppTextStyle.LabelMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
         }
     }
 }
@@ -316,16 +245,37 @@ fun ConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Confirmar Registro") },
-        text = { Text("¿Estás segura de que deseas guardar este expediente?") },
+        title = {
+            Text(
+                text = "Confirmar Registro",
+                style = AppTextStyle.TitleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = "¿Estás segura de que deseas guardar este expediente?",
+                style = AppTextStyle.BodyMedium,
+                fontWeight = FontWeight.Normal,
+            )
+        },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text("Confirmar")
+                Text(
+                    text = "Confirmar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
             }
         },
         dismissButton = {
             OutlinedButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(
+                    text = "Cancelar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Normal,
+                )
             }
         },
     )
