@@ -90,24 +90,24 @@ fun PrivacyNoticeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIcon(
-                    imageVector = AppIcons.Return,
+                    imageVector = AppIcons.ArrowBack,
                     contentDescription = "Regresar",
                     tint = Purple,
                     size = IconSize.LargeIcon,
                     modifier = Modifier.clickable { onBackClick() }
                 )
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 Text(
                     text = "Aviso de privacidad",
                     style = AppTextStyle.TitleLarge,
                     color = Color.Black
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // Subtitle
             Text(
                 text = "Tu información está segura con nosotras",
@@ -115,9 +115,9 @@ fun PrivacyNoticeScreen(
                 color = Purple,
                 modifier = Modifier.padding(start = 32.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             // Description paragraph
             Text(
                 text = "Antes de continuar, es importante que conozcas cómo usamos y protegemos tus datos personales.",
@@ -125,9 +125,9 @@ fun PrivacyNoticeScreen(
                 color = Color(0xFF757575),
                 modifier = Modifier.padding(start = 32.dp, end = 16.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Main Content Card containing the numbered list
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -159,9 +159,9 @@ fun PrivacyNoticeScreen(
                                     modifier = Modifier.align(Alignment.Center)
                                 )
                             }
-                            
+
                             Spacer(modifier = Modifier.width(16.dp))
-                            
+
                             // Text block (Title and Description)
                             Column(
                                 modifier = Modifier.weight(1f)
@@ -179,7 +179,7 @@ fun PrivacyNoticeScreen(
                                 )
                             }
                         }
-                        
+
                         // Thin separator line between items (except the last one)
                         if (index < privacyItems.lastIndex) {
                             HorizontalDivider(
@@ -191,7 +191,7 @@ fun PrivacyNoticeScreen(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

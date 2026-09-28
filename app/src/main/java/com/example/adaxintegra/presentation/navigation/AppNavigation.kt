@@ -1,31 +1,20 @@
 package com.example.adaxintegra.presentation.navigation
 
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.BottomNavBar
-import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
-import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
-import com.example.adaxintegra.presentation.views.screens.HomeScreen
-import com.example.adaxintegra.presentation.views.screens.LoginScreen
-import com.example.adaxintegra.presentation.views.screens.ProfileScreen
-import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
-import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
-import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 //provide values(screens) to BottomNavBar
 @Composable
-fun AppNavigation(isInternal: Boolean = false) {
+fun AppNavigation() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -33,97 +22,29 @@ fun AppNavigation(isInternal: Boolean = false) {
     Scaffold(
         bottomBar = {
             BottomNavBar(
-                currentRoute = if (
-                    isInternal && currentRoute == "collaboratorCases"
-                ) {
-                    "records"
-                } else {
-                    currentRoute
-                },
+                currentRoute = currentRoute,
                 onNavigateToRoute = { route ->
-                    navController.navigate(route) {
-                        launchSingleTop = true
-                    }
-                },
-                isInternal = isInternal,
+                    navController.navigate(route)
+                }
             )
         }
     ) { innerPadding ->
 
         NavHost(
             navController = navController,
-            startDestination = "login",
-            modifier = Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
         ) {
-            composable("login") {
-                val viewModel: LoginViewModel = hiltViewModel()
-                LoginScreen(
-                    viewModel = viewModel,
-                    onNavigateToHome = { userRole ->
-                        val targetRoute = if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
-                        navController.navigate(targetRoute) {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    },
-                )
-            }
-
             composable("home") {
-                HomeScreen(role = "sin rol")
-            }
-
-            composable("home/{role}") { backStackEntry ->
-                val role = backStackEntry.arguments?.getString("role") ?: "sin rol"
-                HomeScreen(role = role)
-            }
-
-            composable("records") {
-                RecordsMenuScreen(
-                    onAllCasesClick = {
-                        navController.navigate("collaboratorCases") {
-                            launchSingleTop = true
-                        }
-                    },
-                )
+                Text("Home Screen")
             }
 
             composable("cases") {
-                // Connect the external user's case history here.
-            }
-
-            composable("collaboratorCases") {
-                val viewModel: CasesViewModel = hiltViewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                CasesScreen(
-                    uiState = uiState,
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
-                    onSearchChange = viewModel::searchCases,
-                    onUrgencyChange = viewModel::filterCases,
-                    onClearFilters = viewModel::clearFilters,
-                    onRetry = viewModel::retry,
-                    onNextPage = viewModel::nextPage,
-                    onPreviousPage = viewModel::previousPage,
-                )
+                //CasesScreen
             }
 
             composable("profile") {
-                ProfileScreen()
-            }
-
-            composable("case/{caseId}") { backStackEntry ->
-                val caseId = backStackEntry.arguments?.getString("caseId")
-
-                CaseProgressScreen(
-                    caseId = caseId ?: "",
-                    onBack = {
-                        navController.popBackStack()
-                    },
-                )
+                //ProfileScreen
             }
         }
     }
