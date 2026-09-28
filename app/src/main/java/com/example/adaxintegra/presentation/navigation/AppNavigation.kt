@@ -19,7 +19,6 @@ import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
-import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 // provide values(screens) to BottomNavBar
@@ -33,21 +32,23 @@ fun AppNavigation(isInternal: Boolean = false) {
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(
-                currentRoute = if (
-                    isInternal && currentRoute == "collaboratorCases"
-                ) {
-                    "records"
-                } else {
-                    currentRoute
-                },
-                onNavigateToRoute = { route ->
-                    navController.navigate(route) {
-                        launchSingleTop = true
-                    }
-                },
-                isInternal = isInternal,
-            )
+            if (currentRoute != "login") {
+                BottomNavBar(
+                    currentRoute = if (
+                        isInternal && currentRoute == "collaboratorCases"
+                    ) {
+                        "records"
+                    } else {
+                        currentRoute
+                    },
+                    onNavigateToRoute = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    isInternal = isInternal,
+                )
+            }
         },
     ) { innerPadding ->
 
@@ -63,7 +64,8 @@ fun AppNavigation(isInternal: Boolean = false) {
                 LoginScreen(
                     viewModel = viewModel,
                     onNavigateToHome = { userRole ->
-                        val targetRoute = if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
+                        val targetRoute =
+                            if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
                         navController.navigate(targetRoute) {
                             popUpTo("login") { inclusive = true }
                         }
@@ -90,13 +92,8 @@ fun AppNavigation(isInternal: Boolean = false) {
                 )
             }
 
-            // V-04: external user's case history
             composable("cases") {
-                ExternalCasesScreen(
-                    onCaseClick = { caseId ->
-                        navController.navigate("case/$caseId")
-                    },
-                )
+                // Connect the external user's case history here.
             }
 
             composable("collaboratorCases") {
