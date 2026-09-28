@@ -21,13 +21,24 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigateToRoute = { route ->
-                    navController.navigate(route)
-                }
-            )
-        }
+            if (currentRoute != "login") {
+                BottomNavBar(
+                    currentRoute = if (
+                        isInternal && currentRoute == "collaboratorCases"
+                    ) {
+                        "records"
+                    } else {
+                        currentRoute
+                    },
+                    onNavigateToRoute = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    isInternal = isInternal,
+                )
+            }
+        },
     ) { innerPadding ->
 
         NavHost(
@@ -35,6 +46,20 @@ fun AppNavigation() {
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable("login") {
+                val viewModel: LoginViewModel = hiltViewModel()
+                LoginScreen(
+                    viewModel = viewModel,
+                    onNavigateToHome = { userRole ->
+                        val targetRoute =
+                            if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
+                        navController.navigate(targetRoute) {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             composable("home") {
                 Text("Home Screen")
             }
