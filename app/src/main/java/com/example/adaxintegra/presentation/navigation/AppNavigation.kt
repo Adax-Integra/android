@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.navigation
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -14,12 +15,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.BottomNavBar
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
+import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.views.screens.HomeScreen
+import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 //provide values(screens) to BottomNavBar
 @Composable
-fun AppNavigation() {
+fun AppNavigation(isInternal: Boolean = false) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -27,24 +33,67 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             BottomNavBar(
-                currentRoute = currentRoute,
+                currentRoute = if (
+                    isInternal && currentRoute == "collaboratorCases"
+                ) {
+                    "records"
+                } else {
+                    currentRoute
+                },
                 onNavigateToRoute = { route ->
-                    navController.navigate(route)
-                }
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                    }
+                },
+                isInternal = isInternal,
             )
         }
     ) { innerPadding ->
 
         NavHost(
             navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(innerPadding)
+            startDestination = "login",
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
+            composable("login") {
+                val viewModel: LoginViewModel = hiltViewModel()
+                LoginScreen(
+                    viewModel = viewModel,
+                    onNavigateToHome = { userRole ->
+                        val targetRoute = if (!userRole.isNullOrBlank()) "home/$userRole" else "home"
+                        navController.navigate(targetRoute) {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             composable("home") {
-                Text("Home Screen")
+                HomeScreen(role = "sin rol")
+            }
+
+            composable("home/{role}") { backStackEntry ->
+                val role = backStackEntry.arguments?.getString("role") ?: "sin rol"
+                HomeScreen(role = role)
+            }
+
+            composable("records") {
+                RecordsMenuScreen(
+                    onAllCasesClick = {
+                        navController.navigate("collaboratorCases") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
 
             composable("cases") {
+                // Connect the external user's case history here.
+            }
+
+            composable("collaboratorCases") {
                 val viewModel: CasesViewModel = hiltViewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -63,7 +112,18 @@ fun AppNavigation() {
             }
 
             composable("profile") {
-                //ProfileScreen
+                ProfileScreen()
+            }
+
+            composable("case/{caseId}") { backStackEntry ->
+                val caseId = backStackEntry.arguments?.getString("caseId")
+
+                CaseProgressScreen(
+                    caseId = caseId ?: "",
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
             }
         }
     }
