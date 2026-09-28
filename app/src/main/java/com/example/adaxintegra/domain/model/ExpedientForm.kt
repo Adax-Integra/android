@@ -10,9 +10,20 @@ data class ExpedientCatalogs(
 
 // Data compiled
 data class PersonalDataForm(
-    val fullName: String = "",
-    val municipality: String = "",
-    val locality: String = "",
-    val phoneNumber: String = "",
+    // Profile
+    val name: String = "",
+    val lastName: String = "",
+    val email: String = "",
+    val birthDate: String = "", // YYYY-MM-DD
+    val phone: String = "",
+    // Adress
+    val addressLine1: String = "",
+    val addressLine2: String = "",
+    val neighborhood: String = "",
+    val zipCode: String = "",
+    val country: String = "México",
+    val state: String = "",
+    val city: String = "",
+    // Identification file
     val proofUri: Uri? = null, // Local URI of the selected document/photo
 )

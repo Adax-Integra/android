@@ -32,22 +32,10 @@ constructor() : ViewModel() {
             delay(1000)
 
             // Mock data for testing
-            val mockCatalogs =
-                ExpedientCatalogs(
-                    municipalities =
-                    listOf(
-                        "Querétaro",
-                        "San Juan del Río",
-                        "Corregidora",
-                        "Jalpan de Serra",
-                    ),
-                    localities =
-                    listOf(
-                        "Centro",
-                        "Santa Rosa Jáuregui",
-                        "Felipe Carrillo Puerto",
-                    ),
-                )
+            val mockCatalogs = ExpedientCatalogs(
+                municipalities = listOf("Querétaro", "San Juan del Río", "Corregidora", "El Marqués"),
+                localities = listOf("Centro", "Santa Rosa Jáuregui", "Felipe Carrillo Puerto"),
+            )
             _uiState.update {
                 it.copy(catalogs = mockCatalogs, isLoadingCatalogs = false)
             }
@@ -59,12 +47,42 @@ constructor() : ViewModel() {
         _uiState.update { it.copy(personalData = updated, personalDataErrors = emptyMap()) }
     }
 
-    // Validation
+    // Validation of all fields for backend
     fun onSubmitClick() {
         val current = _uiState.value.personalData
         val errors = mutableMapOf<String, String>()
-        if (current.fullName.isBlank()) errors["fullName"] = "Este campo es obligatorio"
-        if (current.municipality.isBlank()) errors["municipality"] = "Selecciona un municipio"
+
+        // Profile validations
+        if (current.name.isBlank()) {
+            errors["name"] = "El nombre es obligatorio"
+        }
+        if (current.lastName.isBlank()) {
+            errors["lastName"] = "Los apellidos son obligatorios"
+        }
+
+        // Email pattern validation
+        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
+        if (current.email.isBlank()) {
+            errors["email"] = "El correo electrónico es obligatorio"
+        } else if (!current.email.matches(emailRegex)) {
+            errors["email"] = "Ingresa un correo electrónico válido"
+        }
+
+        // Opcional birthdate with format YYYY-MM-DD
+        val dateRegex = "^\\d{4}-\\d{2}-\\d{2}$".toRegex()
+        if (current.birthDate.isNotBlank() && !current.birthDate.matches(dateRegex)) {
+            errors["birthDate"] = "Formato inválido. Debe ser YYYY-MM-DD"
+        }
+
+        // Address validation
+        if (current.addressLine1.isBlank()) errors["addressLine1"] = "La calle y número son obligatorios"
+        if (current.neighborhood.isBlank()) errors["neighborhood"] = "La colonia es obligatoria"
+        if (current.zipCode.isBlank()) errors["zipCode"] = "El código postal es obligatorio"
+        if (current.country.isBlank()) errors["country"] = "El país es obligatorio"
+        if (current.state.isBlank()) errors["state"] = "El estado es obligatorio"
+        if (current.city.isBlank()) errors["city"] = "El municipio es obligatorio"
+
+        // Show errors if there exist, if not, show confirmation dialog
         if (errors.isNotEmpty()) {
             _uiState.update { it.copy(personalDataErrors = errors) }
         } else {

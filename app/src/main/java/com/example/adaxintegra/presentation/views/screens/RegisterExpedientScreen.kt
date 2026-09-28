@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +41,20 @@ import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.AutoCompleteOutlinedTextField
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
+
+// Data catálog of states for smart autocomplete
+private val MEXICAN_STATES = listOf(
+    "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+    "Chihuahua", "Ciudad de México", "Coahuila", "Colima", "Durango", "Guanajuato",
+    "Guerrero", "Hidalgo", "Jalisco", "Estado de México", "Michoacán", "Morelos",
+    "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo",
+    "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala",
+    "Veracruz", "Yucatán", "Zacatecas",
+)
+
+private val COUNTRIES = listOf("México", "Estados Unidos")
 
 @Suppress("ktlint:standard:function-naming")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +70,13 @@ fun RegisterExpedientScreen(
     // Validates success in register
     if (uiState.isSuccess) {
         onSuccess()
+    }
+
+    if (uiState.showConfirmationDialog) {
+        ConfirmationDialog(
+            onConfirm = viewModel::onConfirmSubmit,
+            onDismiss = viewModel::onDismissDialog,
+        )
     }
 
     Scaffold(
@@ -103,6 +124,7 @@ fun PersonalDataStepContent(
     val scrollState = rememberScrollState()
     // Design System spacing rules
     val spacing = Spacing()
+    val data = uiState.personalData
 
     // Files selector
     val filePickerLauncher =
@@ -123,29 +145,28 @@ fun PersonalDataStepContent(
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // Profile data
         Text(
             text = "Ingresa la información de la usuaria",
-            style = AppTextStyle.BodyMedium,
-            fontWeight = FontWeight.Normal,
+            style = AppTextStyle.TitleMedium,
+            fontWeight = FontWeight.Bold,
         )
 
         // Name field
         OutlinedTextField(
-            value = uiState.personalData.fullName,
-            onValueChange = { newValue ->
-                onDataChange(uiState.personalData.copy(fullName = newValue))
-            },
+            value = data.name,
+            onValueChange = { onDataChange(data.copy(name = it)) },
             label = {
                 Text(
-                    text = "Nombre Completo *",
+                    text = "Nombre(s) *",
                     style = AppTextStyle.BodySmall,
                     fontWeight = FontWeight.Normal,
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            isError = uiState.personalDataErrors.containsKey("fullName"),
+            isError = uiState.personalDataErrors.containsKey("name"),
             supportingText = {
-                uiState.personalDataErrors["fullName"]?.let { errorMsg ->
+                uiState.personalDataErrors["name"]?.let { errorMsg ->
                     Text(
                         text = errorMsg,
                         style = AppTextStyle.LabelSmall,
@@ -156,51 +177,116 @@ fun PersonalDataStepContent(
             },
         )
 
-        // Phone number field
+        // Last name field
         OutlinedTextField(
-            value = uiState.personalData.phoneNumber,
-            onValueChange = { newValue ->
-                onDataChange(uiState.personalData.copy(phoneNumber = newValue))
-            },
-            label = {
-                Text(
-                    text = "Teléfono de contacto",
-                    style = AppTextStyle.BodySmall,
-                    fontWeight = FontWeight.Normal,
-                )
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            value = data.lastName,
+            onValueChange = { onDataChange(data.copy(lastName = it)) },
+            label = { Text("Apellidos *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
             modifier = Modifier.fillMaxWidth(),
-        )
-
-        // Municipality field
-        OutlinedTextField(
-            value = uiState.personalData.municipality,
-            onValueChange = { newValue ->
-                onDataChange(uiState.personalData.copy(municipality = newValue))
-            },
-            label = {
-                Text(
-                    text = "Municipio *",
-                    style = AppTextStyle.BodySmall,
-                    fontWeight = FontWeight.Normal,
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = uiState.personalDataErrors.containsKey("municipality"),
-            supportingText = {
-                uiState.personalDataErrors["municipality"]?.let { errorMsg ->
-                    Text(
-                        text = errorMsg,
-                        style = AppTextStyle.LabelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Normal,
-                    )
-                }
+            isError = uiState.personalDataErrors.containsKey("lastName"),
+            supportingText = uiState.personalDataErrors["lastName"]?.let { error ->
+                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
             },
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // Email field
+        OutlinedTextField(
+            value = data.email,
+            onValueChange = { onDataChange(data.copy(email = it)) },
+            label = { Text("Correo Electrónico *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.personalDataErrors.containsKey("email"),
+            supportingText = uiState.personalDataErrors["email"]?.let { error ->
+                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            },
+        )
+
+        // Birthdate field
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
+            OutlinedTextField(
+                value = data.birthDate,
+                onValueChange = { onDataChange(data.copy(birthDate = it)) },
+                label = { Text("F. Nacimiento (YYYY-MM-DD)", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+                modifier = Modifier.weight(1f),
+            )
+
+            // Phone number field
+            OutlinedTextField(
+                value = data.phone,
+                onValueChange = { onDataChange(data.copy(phone = it)) },
+                label = { Text("Teléfono", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(modifier = Modifier.height(spacing.small))
+
+        // Location
+        Text(
+            text = "Dirección y Ubicación",
+            style = AppTextStyle.TitleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+
+        OutlinedTextField(
+            value = data.addressLine1,
+            onValueChange = { onDataChange(data.copy(addressLine1 = it)) },
+            label = { Text("Calle y número exterior *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.personalDataErrors.containsKey("addressLine1"),
+        )
+
+        OutlinedTextField(
+            value = data.addressLine2,
+            onValueChange = { onDataChange(data.copy(addressLine2 = it)) },
+            label = { Text("Num. Interior / Ref. (Opcional)", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
+            OutlinedTextField(
+                value = data.neighborhood,
+                onValueChange = { onDataChange(data.copy(neighborhood = it)) },
+                label = { Text("Colonia *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+                modifier = Modifier.weight(1f),
+                isError = uiState.personalDataErrors.containsKey("neighborhood"),
+            )
+            OutlinedTextField(
+                value = data.zipCode,
+                onValueChange = { onDataChange(data.copy(zipCode = it)) },
+                label = { Text("C.P. *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f),
+                isError = uiState.personalDataErrors.containsKey("zipCode"),
+            )
+        }
+
+        AutoCompleteOutlinedTextField(
+            value = data.country,
+            onValueChange = { onDataChange(data.copy(country = it)) },
+            label = "País *",
+            options = COUNTRIES,
+            isError = uiState.personalDataErrors.containsKey("country"),
+        )
+
+        AutoCompleteOutlinedTextField(
+            value = data.state,
+            onValueChange = { onDataChange(data.copy(state = it)) },
+            label = "Estado *",
+            options = MEXICAN_STATES,
+            isError = uiState.personalDataErrors.containsKey("state"),
+        )
+
+        OutlinedTextField(
+            value = data.city,
+            onValueChange = { onDataChange(data.copy(city = it)) },
+            label = { Text("Ciudad / Municipio *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.personalDataErrors.containsKey("city"),
+        )
+
+        Spacer(modifier = Modifier.height(spacing.small))
 
         // File selector
         OutlinedButton(
@@ -220,7 +306,7 @@ fun PersonalDataStepContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(spacing.medium))
 
         // Submit button
         Button(
