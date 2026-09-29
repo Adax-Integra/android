@@ -93,7 +93,21 @@ fun AppNavigation(isInternal: Boolean = false) {
             }
 
             composable("cases") {
-                // Connect the external user's case history here.
+                val viewModel: CasesViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                CasesScreen(
+                    uiState = uiState,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onSearchChange = viewModel::searchCases,
+                    onUrgencyChange = viewModel::filterCases,
+                    onClearFilters = viewModel::clearFilters,
+                    onRetry = viewModel::retry,
+                    onNextPage = viewModel::nextPage,
+                    onPreviousPage = viewModel::previousPage,
+                )
             }
 
             composable("collaboratorCases") {
