@@ -16,6 +16,7 @@ import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -130,6 +131,14 @@ fun AppNavigation(isInternal: Boolean = false) {
 
             composable("profile") {
                 ProfileScreen()
+            }
+
+            composable("privacyPolicy") {
+                PrivacyPolicyScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
             }
 
             composable("case/{caseId}") { backStackEntry ->
