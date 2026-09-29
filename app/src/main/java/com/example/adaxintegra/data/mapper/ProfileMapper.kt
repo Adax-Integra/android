@@ -4,7 +4,7 @@ import com.example.adaxintegra.data.remote.dto.ProfileDto
 
 //receives dto to convert into domain models
 //extension function
-fun ProfileDto.toDomain(): Profile = Profile(
+fun ProfileDto.toDomain(): ProfileView = ProfileView(
     userId = userId,
     name = name,
     lastName = lastName,
