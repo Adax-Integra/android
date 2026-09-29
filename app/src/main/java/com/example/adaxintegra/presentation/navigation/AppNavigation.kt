@@ -20,6 +20,7 @@ import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
@@ -79,7 +80,12 @@ fun AppNavigation(isInternal: Boolean = false) {
 
             composable("home/{role}") { backStackEntry ->
                 val role = backStackEntry.arguments?.getString("role") ?: "sin rol"
-                HomeScreen(role = role)
+                HomeScreen(
+                    role = role,
+                    onManageCollaboratorsClick = {
+                        navController.navigate("collaborators")
+                    },
+                )
             }
 
             composable("records") {
@@ -130,6 +136,15 @@ fun AppNavigation(isInternal: Boolean = false) {
 
             composable("profile") {
                 ProfileScreen()
+            }
+
+            // G-03: admin manages collaborator accounts
+            composable("collaborators") {
+                CollaboratorsScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
             }
 
             composable("case/{caseId}") { backStackEntry ->
