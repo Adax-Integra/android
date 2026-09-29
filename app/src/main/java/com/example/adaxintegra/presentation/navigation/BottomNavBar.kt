@@ -22,12 +22,12 @@ fun BottomNavBar(
     currentRoute: String?,
     onNavigateToRoute: (String) -> Unit,
     modifier: Modifier = Modifier,
-    isInternal: Boolean = false,
+    showRecords: Boolean = false,
 ) {
     val items =
         listOf(
             BottomNavBarItem.Inicio,
-            if (isInternal) {
+            if (showRecords) {
                 BottomNavBarItem.MisExpedientes
             } else {
                 BottomNavBarItem.MisCasos
@@ -115,6 +115,6 @@ fun BottomNavBarPreviewMisExpedientes() {
     BottomNavBar(
         currentRoute = BottomNavBarItem.MisExpedientes.route,
         onNavigateToRoute = {},
-        isInternal = true,
+        showRecords = true,
     )
 }

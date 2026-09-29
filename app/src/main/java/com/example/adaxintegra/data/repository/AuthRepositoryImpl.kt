@@ -65,6 +65,9 @@ class AuthRepositoryImpl @Inject constructor(
             // Makes the session available before reporting login success
             _session.value = userSession
             emit(Result.Success(userSession))
+        } catch (exception: CancellationException) {
+            // Preserves coroutine cancellation insted of reporting a login error
+            throw exception
         } catch (exception: Exception) {
             emit(Result.Error(exception))
         }

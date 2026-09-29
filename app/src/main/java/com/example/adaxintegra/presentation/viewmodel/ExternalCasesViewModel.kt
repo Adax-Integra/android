@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.Case
 import com.example.adaxintegra.domain.usecases.GetExternalUserCasesUseCase
+import com.example.adaxintegra.domain.usecases.ObserveSessionUseCase
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExternalCasesViewModel @Inject constructor(
     private val getExternalUserCasesUseCase: GetExternalUserCasesUseCase,
+    observeSessionUseCase: ObserveSessionUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ExternalCasesUiState())
     val uiState: StateFlow<ExternalCasesUiState> = _uiState.asStateFlow()
@@ -25,12 +27,25 @@ class ExternalCasesViewModel @Inject constructor(
     private var allCases: List<Case> = emptyList()
 
     init {
-        loadCases()
+        val session = observeSessionUseCase().value
+        val userId = session?.userId
+
+        // Loads the history only for the external
+        if (session?.role == "external" && !userId.isNullOrBlank()) {
+            loadCases(userId)
+        } else {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    error = "No hay una sesión externa válida.",
+                )
+            }
+        }
     }
 
-    private fun loadCases() {
+    private fun loadCases(userId: String) {
         viewModelScope.launch {
-            getExternalUserCasesUseCase(TEST_USER_ID).collect { result ->
+            getExternalUserCasesUseCase(userId).collect { result ->
                 _uiState.update { state ->
                     when (result) {
                         is Result.Loading -> {
@@ -68,11 +83,5 @@ class ExternalCasesViewModel @Inject constructor(
     private fun mensajeDeError(e: Throwable): String = when (e) {
         is java.io.IOException -> "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
         else -> "Ocurrió un error al cargar tus casos."
-    }
-
-    companion object {
-        // TODO: replace with the authenticated user's real userId once login is ready.
-        // Temporary: external test user from the database, used to test V-04 locally.
-        private const val TEST_USER_ID = "c4d665c3-56b7-4616-b322-69d3ffa261d4"
     }
 }
