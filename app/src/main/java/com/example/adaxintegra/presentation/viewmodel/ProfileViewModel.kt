@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.usecases.GetProfileByUserIdUseCase
 import com.example.adaxintegra.presentation.views.screens.profile.ProfileUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,14 +17,25 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileByUserIdUseCase: GetProfileByUserIdUseCase,
+    private val authRepository: AuthRepository, //get session to get userId
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    val uiState: StateFlow<ProfileUiState> =
-        _uiState.asStateFlow()
+    fun loadProfile() {
+        val userId = authRepository.session.value?.userId
 
-    fun loadProfile(userId: String) {
+        //if not logged in, no user id is available, so msg appears
+        if (userId == null) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    error = "No hay una sesión activa."
+                )
+            }
+            return
+        }
         viewModelScope.launch {
             getProfileByUserIdUseCase(userId).collect { result ->
                 _uiState.update { state ->
