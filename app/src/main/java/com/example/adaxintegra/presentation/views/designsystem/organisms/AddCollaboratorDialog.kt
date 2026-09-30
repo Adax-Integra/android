@@ -147,7 +147,7 @@ private fun AddCollaboratorForm(
             )
 
             FormField(
-                label = "TELÉFONO (OPCIONAL)",
+                label = "TELÉFONO",
                 value = phone,
                 onValueChange = onPhoneChange,
                 error = fieldErrors["phone"],

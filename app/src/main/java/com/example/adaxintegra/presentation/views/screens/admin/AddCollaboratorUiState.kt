@@ -10,15 +10,16 @@ data class AddCollaboratorUiState(
     val phone: String = "",
     // one message per field: "name", "lastName", "email", "password", "phone"
     val fieldErrors: Map<String, String> = emptyMap(),
-    val generalError : String? = null,
+    val generalError: String? = null,
     val isSaving: Boolean = false,
     val successMessage: String? = null,
 ) {
-    // Acceptance criteria: "Guardar" is enabled only when the required fields are filled
-    val canSave : Boolean
+    // Acceptance criteria: "Guardar" is enabled only when every field is filled
+    val canSave: Boolean
         get() = name.isNotBlank() &&
             lastName.isNotBlank() &&
             email.isNotBlank() &&
             password.isNotBlank() &&
+            phone.isNotBlank() &&
             !isSaving
 }

@@ -50,7 +50,7 @@ class AddCollaboratorViewModel @Inject constructor(
         _uiState.update { it.copy(password = value, fieldErrors = it.fieldErrors - "password", generalError = null) }
     }
 
-    // Only digits, maximum 10 (the +52 is added when saving)
+    // Only digits, maximum 10 (same rule as the backend)
     fun onPhoneChange(value: String) {
         val digits = value.filter { it.isDigit() }.take(PHONE_LENGTH)
         _uiState.update { it.copy(phone = digits, fieldErrors = it.fieldErrors - "phone", generalError = null) }
@@ -69,7 +69,7 @@ class AddCollaboratorViewModel @Inject constructor(
             lastName = state.lastName.trim(),
             email = state.email.trim().lowercase(),
             password = state.password,
-            phone = if (state.phone.isBlank()) null else "+52${state.phone}",
+            phone = state.phone,
         )
 
         viewModelScope.launch {
@@ -108,7 +108,7 @@ class AddCollaboratorViewModel @Inject constructor(
         if (state.password.length < MIN_PASSWORD_LENGTH) {
             errors["password"] = "La contraseña debe tener al menos 8 caracteres."
         }
-        if (state.phone.isNotBlank() && state.phone.length != PHONE_LENGTH) {
+        if (state.phone.length != PHONE_LENGTH) {
             errors["phone"] = "El teléfono debe tener 10 dígitos."
         }
 
@@ -135,7 +135,6 @@ class AddCollaboratorViewModel @Inject constructor(
     }
 
     companion object {
-
         private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
         private const val MIN_PASSWORD_LENGTH = 8
         private const val PHONE_LENGTH = 10
