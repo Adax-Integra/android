@@ -73,7 +73,7 @@ class AddCollaboratorViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            createCollaboratorUseCase(SESSION_TOKEN, collaborator).collect { result ->
+            createCollaboratorUseCase(collaborator).collect { result ->
                 _uiState.update { current ->
                     when (result) {
                         is Result.Loading -> current.copy(isSaving = true, generalError = null)
@@ -135,8 +135,6 @@ class AddCollaboratorViewModel @Inject constructor(
     }
 
     companion object {
-        // TODO: replace with the logged-in admin's token once the login session is stored
-        private const val SESSION_TOKEN = ""
 
         private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
         private const val MIN_PASSWORD_LENGTH = 8
