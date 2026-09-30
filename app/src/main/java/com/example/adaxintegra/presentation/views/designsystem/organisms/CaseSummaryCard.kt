@@ -17,15 +17,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.domain.model.Case
+import com.example.adaxintegra.domain.model.Violence
 import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.StatusRow
+import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.IconGrey
 import com.example.adaxintegra.ui.theme.White
+import java.util.Date
 
 // case card, same design and order as CaseCard in iOS
 @Suppress("ktlint:standard:function-naming")
@@ -46,27 +50,26 @@ fun CaseSummaryCard(
 
     Row(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .clip(RoundedCornerShape(12.dp))
-                .background(White)
-                .clickable { onClick() },
+        Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(12.dp))
+            .background(White)
+            .clickable { onClick() },
     ) {
         // color stripe by state
         Box(
             modifier =
-                Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .background(statusColor),
+            Modifier
+                .width(4.dp)
+                .fillMaxHeight()
+                .background(statusColor),
         )
 
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-
             Text(
                 text = "ID: ${caseItem.caseId.take(8).uppercase()}",
                 style = AppTextStyle.BodyLarge,
@@ -92,5 +95,29 @@ fun CaseSummaryCard(
                 updatedAt = DateFormatter.relative(caseItem.updatedAt),
             )
         }
+    }
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true)
+@Composable
+fun CaseSummaryCardPreview() {
+    AdaxIntegraTheme {
+        CaseSummaryCard(
+            caseItem = Case(
+                caseId = "0c773060-06f9-4506-a2e0-230e99f40550",
+                caseNumber = "CASO-2026-112",
+                state = "Querétaro",
+                caseSteps = null,
+                description = "Descripción de prueba",
+                helpWanted = "Asesoría legal",
+                hasLawyer = false,
+                violenceList = listOf(Violence(type = "Psicológica", severity = 6)),
+                helpList = null,
+                createdAt = Date(),
+                updatedAt = Date(126, 4, 29),
+            ),
+            onClick = {},
+        )
     }
 }
