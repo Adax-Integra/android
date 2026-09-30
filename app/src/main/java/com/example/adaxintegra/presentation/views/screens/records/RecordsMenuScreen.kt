@@ -44,6 +44,13 @@ fun RecordsMenuScreen(
             nextScreen = onAllCasesClick,
             icon = AppIcons.Folder,
         )
+
+        RecordMenuOptionCard(
+            title = "Todos los Expedientes",
+            description = "Consulta una lista con todos los expedientes",
+            nextScreen = onAllCasesClick, // TODO implement the next screen in the logic (V-05)
+            icon = AppIcons.UserAttributes,
+        )
     }
 }
 

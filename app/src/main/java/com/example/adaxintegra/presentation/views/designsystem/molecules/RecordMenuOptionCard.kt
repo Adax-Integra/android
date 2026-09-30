@@ -69,11 +69,23 @@ fun RecordMenuOptionCard(
 @Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
-fun RecordMenuOptionCardPreview() {
+fun RecordMenuOptionCardPreviewOpt1() {
     RecordMenuOptionCard(
         title = "Todos los Casos",
         description = "Consulta los casos por urgencia",
         nextScreen = {},
         icon = AppIcons.Folder,
+    )
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true)
+@Composable
+fun RecordMenuOptionCardPreviewOpt2() {
+    RecordMenuOptionCard(
+        title = "Todos los Expedientes",
+        description = "Consulta una lista con todos los expedientes",
+        nextScreen = {},
+        icon = AppIcons.UserAttributes,
     )
 }
