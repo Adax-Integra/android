@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -98,8 +99,9 @@ fun CasesScreen(
                         .height(56.dp),
                     placeholder = {
                         Text(
-                            text = "Buscar por nombre o caso",
+                            text = "Buscar...",
                             fontSize = 14.sp,
+                            maxLines = 1,
                         )
                     },
                     leadingIcon = {
@@ -217,7 +219,7 @@ fun CasesScreen(
                 }
             }
 
-            if (!uiState.isLoading && uiState.error == null && uiState.total > 0) {
+            if (!uiState.isLoading && uiState.error == null && uiState.total > uiState.limit) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -292,7 +294,7 @@ fun CasesScreen(
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, widthDp = 400, heightDp = 850)
+@Preview(showBackground = true, widthDp = 360, heightDp = 804)
 @Composable
 private fun CasesScreenPreview() {
     val mockCases = Case.getMockData()
