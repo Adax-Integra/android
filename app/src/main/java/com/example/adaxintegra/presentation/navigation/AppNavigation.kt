@@ -23,6 +23,7 @@ import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 
 // provide values(screens) to BottomNavBar
@@ -126,7 +127,28 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onUserCasesClick = { userId ->
+                            navController.navigate("recordFromUser/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("recordFromUser/{userId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val userId = entry.arguments?.getString("userId")
+                    if (!userId.isNullOrBlank()) {
+                        RecordFromUser(
+                            userId = userId,
+                            onBackClick = { navController.popBackStack() },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del usuario")
+                    }
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }

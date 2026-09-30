@@ -19,6 +19,7 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 @Composable
 fun RecordsMenuScreen(
     onAllCasesClick: () -> Unit,
+    onUserCasesClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -46,9 +47,11 @@ fun RecordsMenuScreen(
         )
 
         RecordMenuOptionCard(
-            title = "Todos los Expedientes",
-            description = "Consulta una lista con todos los expedientes",
-            nextScreen = onAllCasesClick, // TODO implement the next screen in the logic (V-05)
+            title = "Todos los expedientes",
+            description = "Consulta una lista de todos los expedientes",
+            // Temporary hardcoded UUID for testing
+            // Here should be the view from V-05
+            nextScreen = { onUserCasesClick("f5e392c4-2c3d-4c50-9e9f-3d4ac269f2c5") },
             icon = AppIcons.UserAttributes,
         )
     }
