@@ -14,21 +14,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
-//options for further details of profile information
+//top card that displays name and creation of account
 @Composable
-fun ProfileOption(
+fun ProfileHeaderCard (
     icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
+    name: String,
+    lastName: String,
+    createdAt: String
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+    modifier = Modifier
+    .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -47,14 +45,10 @@ fun ProfileOption(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = title)
-                Text(text = subtitle)
+                Text(text = name)
+                Text(text = lastName)
+                Text(text = createdAt)
             }
-
-            Icon(
-                imageVector = AppIcons.ChevronRight,
-                contentDescription = "Abrir"
-            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
@@ -44,6 +45,9 @@ object AppIcons {
 
     val Bell: ImageVector
         get() = Icons.Default.NotificationsNone
+
+    val Account: ImageVector
+        get() = Icons.Default.AccountCircle
 }
 
 

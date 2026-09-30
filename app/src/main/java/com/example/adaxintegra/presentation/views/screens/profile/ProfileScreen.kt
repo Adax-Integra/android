@@ -20,6 +20,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
 import com.example.adaxintegra.presentation.views.screens.profile.ProfileUiState
 
@@ -50,8 +51,9 @@ fun ProfileScreen(
 
         //header hard that includes the name of profile
         ProfileHeaderCard(
-            name = "${uiState.name} ${uiState.lastName}",
-            createdAt = uiState.createdAt
+            icon = AppIcons.Account,
+            name = "${profile.name} ${profile.lastName}",
+            createdAt = profile.createdAt
         )
 
         Spacer(
