@@ -21,7 +21,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 fun ProfileHeaderCard (
     icon: ImageVector,
     name: String,
-    lastName: String,
     createdAt: String
 ) {
     Card(
@@ -46,7 +45,6 @@ fun ProfileHeaderCard (
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = name)
-                Text(text = lastName)
                 Text(text = createdAt)
             }
         }
