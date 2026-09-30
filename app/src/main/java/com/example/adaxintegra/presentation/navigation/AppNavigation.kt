@@ -171,7 +171,9 @@ fun AppNavigation(
 
             composable("profile") {
                 if (hasValidSession) {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onLogout = viewModel::logout,
+                    )
                 }
             }
 
