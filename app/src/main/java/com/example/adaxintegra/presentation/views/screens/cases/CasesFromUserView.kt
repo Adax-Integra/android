@@ -10,16 +10,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.adaxintegra.domain.entities.Case
-import com.example.adaxintegra.presentation.viewmodel.CasesUiState
+import com.example.adaxintegra.presentation.viewmodel.CasesFromUserUiState
+import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RecordFromUser(
-    // viewModel: ExternalCasesViewModel = hiltViewModel(), // ViewModel not yet implemented
-    uiState: CasesUiState,
+    viewModel: ExternalCasesViewModel = hiltViewModel(),
+    uiState: CasesFromUserUiState,
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
 ) {
@@ -56,7 +58,7 @@ fun RecordFromUser(
 private fun RecordFromUserPreview() {
     val mockCases = Case.getMockData()
     RecordFromUser(
-        uiState = CasesUiState(
+        uiState = CasesFromUserUiState(
             cases = mockCases,
         ),
     )
