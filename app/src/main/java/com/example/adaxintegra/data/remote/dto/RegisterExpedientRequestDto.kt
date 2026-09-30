@@ -8,13 +8,11 @@ data class RegisterExpedientRequestDto(
 )
 
 data class ProfileDto(
-    @SerializedName("user_id") val userId: String? = null,
     @SerializedName("name") val name: String,
     @SerializedName("last_name") val lastName: String,
     @SerializedName("email") val email: String,
     @SerializedName("birth_date") val birthDate: String? = null,
     @SerializedName("phone") val phone: String? = null,
-    @SerializedName("created_at") val createdAt: String? = null,
 )
 
 data class AddressDto(
