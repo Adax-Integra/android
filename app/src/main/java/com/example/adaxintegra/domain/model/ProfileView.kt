@@ -1,7 +1,5 @@
 package com.example.adaxintegra.domain.model
 
-import java.util.Date
-
 data class ProfileView (
     val userId: String,
     val name: String,

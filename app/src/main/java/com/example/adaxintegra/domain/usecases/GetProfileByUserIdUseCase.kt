@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 //retrieve data and have message depending on case
-class GetProfileByUserId
+class GetProfileByUserIdUseCase
 @Inject
 constructor(
     private val profileRepository: ProfileRepository,
