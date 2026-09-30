@@ -13,8 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
 //options for further details of profile information
@@ -47,8 +49,10 @@ fun ProfileOption(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = title)
-                Text(text = subtitle)
+                Text(text = title,
+                    fontWeight = FontWeight.Bold)
+                Text(text = subtitle,
+                    style = AppTextStyle.LabelSmall)
             }
 
             Icon(

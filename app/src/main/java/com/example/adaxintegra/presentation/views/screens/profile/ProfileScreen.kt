@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,7 +51,10 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 24.dp)
             ) {
 
                 //header card that includes the name of profile
@@ -67,7 +71,8 @@ fun ProfileScreen(
                 //title before cards
                 Text(
                     text = "Información Personal",
-                    style = AppTextStyle.LabelMedium
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Bold
                 )
 
                 Spacer(
@@ -83,7 +88,7 @@ fun ProfileScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(8.dp)
+                    modifier = Modifier.height(12.dp)
                 )
 
                 ProfileOption(
@@ -94,7 +99,7 @@ fun ProfileScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(8.dp)
+                    modifier = Modifier.height(12.dp)
                 )
 
                 ProfileOption(

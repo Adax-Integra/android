@@ -171,7 +171,13 @@ fun AppNavigation(
 
             composable("profile") {
                 if (hasValidSession) {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onPersonalDataClick = {},
+                        onSecurityClick = {},
+                        onNotificationsClick = {},
+                        onLogoutClick = {},
+                        viewModel = hiltViewModel()
+                    )
                 }
             }
 
