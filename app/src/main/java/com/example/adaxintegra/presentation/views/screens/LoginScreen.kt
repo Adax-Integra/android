@@ -22,16 +22,9 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onNavigateToHome: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(uiState.isLoginSuccess) {
-        if (uiState.isLoginSuccess) {
-            onNavigateToHome(uiState.userRole)
-        }
-    }
 
     Column(
         modifier = modifier
