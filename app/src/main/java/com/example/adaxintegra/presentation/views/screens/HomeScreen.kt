@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 
 @Suppress("ktlint:standard:function-naming")
 // main home screen, reached through bottom nav bar option and upon signing in to app/ opening app
@@ -27,7 +26,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 fun HomeScreen(
     modifier: Modifier = Modifier,
     role: String = "sin rol",
-    onManageCollaboratorsClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -91,14 +89,6 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                     ),
                 ) {
-                    // G-03: temporary access until "Vista de administradora" exists
-                    AppButton(
-                        text = "Gestión de colaboradoras",
-                        onClick = onManageCollaboratorsClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                    )
                 }
             }
 

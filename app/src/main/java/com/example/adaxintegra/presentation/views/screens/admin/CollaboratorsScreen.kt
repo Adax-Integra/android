@@ -1,68 +1,62 @@
 package com.example.adaxintegra.presentation.views.screens.admin
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.AddCollaboratorViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AddCollaboratorDialog
-import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
-import com.example.adaxintegra.ui.theme.BackgroundGrey
-import com.example.adaxintegra.ui.theme.Purple
+import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
-// G-03: admin's collaborator management screen
+// G-03: admin's collaborator management screen, opened from the profile
 // TODO: add the collaborators list here (depends on "Vista de administradora")
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CollaboratorsScreen(
     onBack: () -> Unit,
-    viewModel : AddCollaboratorViewModel = hiltViewModel(),
+    viewModel: AddCollaboratorViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val spacing = Spacing()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundGrey)
-            .padding(horizontal = 16.dp),
+    // Same template as the other screens, so it follows the light/dark theme
+    ScreenTemplate(
+        title = "Gestión de Colaboradoras",
+        subtitle = "Administra las cuentas de colaboradoras",
+        onBack = onBack,
+        modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
-        AppHeader(
-            title = "Gestión de Colaboradoras",
-            subtitle = "Administra las cuentas de colaboradoras",
-            onBack = onBack,
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Acceptance criteria: the option to add a new collaborator appears
-        AppButton(
-            text = "Agregar colaboradora",
-            onClick = viewModel:: openDialog,
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        val successMessage = uiState.successMessage
-        if (successMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = successMessage,
-                style = AppTextStyle.BodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = Purple,
+        Column(
+            modifier = Modifier.padding(top = spacing.small),
+            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            // Acceptance criteria: the option to add a new collaborator appears
+            AppButton(
+                text = "Agregar colaboradora",
+                onClick = viewModel::openDialog,
+                modifier = Modifier.fillMaxWidth(),
             )
+
+            val successMessage = uiState.successMessage
+            if (successMessage != null) {
+                Text(
+                    text = successMessage,
+                    style = AppTextStyle.BodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 

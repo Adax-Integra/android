@@ -1,10 +1,10 @@
 package com.example.adaxintegra.presentation.views.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
@@ -16,16 +16,33 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 fun ProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    isAdmin: Boolean = false,
+    onManageCollaboratorsClick: () -> Unit = {},
 ) {
     ScreenTemplate(
         title = "Perfil",
         modifier = modifier.padding(24.dp),
     ) {
-        AppButton(
-            text = "Cerrar sesión",
-            onClick = onLogout,
-            variant = ButtonVariant.Outlined,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // G-03: only the admin can manage collaborator accounts
+            if (isAdmin) {
+                AppButton(
+                    text = "Gestión de colaboradoras",
+                    onClick = onManageCollaboratorsClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                )
+            }
+
+            AppButton(
+                text = "Cerrar sesión",
+                onClick = onLogout,
+                variant = ButtonVariant.Outlined,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+            )
+        }
     }
 }

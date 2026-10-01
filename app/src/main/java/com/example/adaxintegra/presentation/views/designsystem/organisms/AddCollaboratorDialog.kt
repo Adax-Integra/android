@@ -30,9 +30,8 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import com.example.adaxintegra.ui.theme.White
 
-// G-03: "Agregar Colaboradora" modal form
+// G-03: Agregar Colaboradora modal form
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AddCollaboratorDialog(
@@ -98,7 +97,10 @@ private fun AddCollaboratorForm(
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
     ) {
         Column(
             modifier = Modifier

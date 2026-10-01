@@ -80,8 +80,8 @@ fun AppNavigation(
                 val selectedRoute = when (currentRoute) {
                     "collaboratorCases" -> "records"
 
-                    // G-03: collaborators screen is opened from home
-                    "collaborators" -> "home"
+                    // G-03: collaborators screen is opened from profile
+                    "collaborators" -> "profile"
 
                     "case/{caseId}" -> {
                         if (isExternal) "cases" else "records"
@@ -119,14 +119,7 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    HomeScreen(
-                        role = role.orEmpty(),
-                        onManageCollaboratorsClick = {
-                            navController.navigate("collaborators") {
-                                launchSingleTop = true
-                            }
-                        },
-                    )
+                    HomeScreen(role = role.orEmpty())
                 }
             }
 
@@ -206,6 +199,12 @@ fun AppNavigation(
                 if (hasValidSession) {
                     ProfileScreen(
                         onLogout = viewModel::logout,
+                        isAdmin = isAdmin,
+                        onManageCollaboratorsClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
             }
