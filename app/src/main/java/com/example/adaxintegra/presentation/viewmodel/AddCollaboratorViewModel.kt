@@ -34,6 +34,11 @@ class AddCollaboratorViewModel @Inject constructor(
         _uiState.update { AddCollaboratorUiState() }
     }
 
+    // Closes the confirmation dialog ("Aceptar")
+    fun dismissSuccessMessage() {
+        _uiState.update { it.copy(successMessage = null) }
+    }
+
     // Each input is cut at its maximum length
     fun onNameChange(value: String) {
         val limited = value.take(MAX_NAME_LENGTH)
@@ -84,9 +89,10 @@ class AddCollaboratorViewModel @Inject constructor(
                     when (result) {
                         is Result.Loading -> current.copy(isSaving = true, generalError = null)
 
-                        // Closes the form and shows a confirmation
+                        // Closes the form and opens the confirmation dialog
                         is Result.Success -> AddCollaboratorUiState(
-                            successMessage = "Colaboradora ${result.data.name} agregada correctamente.",
+                            successMessage = "La colaboradora ${result.data.name} ${result.data.lastName} " +
+                                "fue registrada correctamente.",
                         )
 
                         is Result.Error -> errorState(current, result.exception)
