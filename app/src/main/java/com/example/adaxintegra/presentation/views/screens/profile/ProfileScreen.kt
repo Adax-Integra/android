@@ -24,6 +24,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHead
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
 
+
 @Suppress("ktlint:standard:function-naming")
 // profile screen, reached through bottom nav bar option
 @Composable
@@ -36,6 +37,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
 
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
@@ -56,7 +58,8 @@ fun ProfileScreen(
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 32.dp)
+                        top = 32.dp
+                    )
             ) {
 
                 AppHeader(
@@ -64,11 +67,15 @@ fun ProfileScreen(
                     onBack = onBack,
                 )
 
+                //format date by cutting down string
+                val formattedDate = profile.createdAt
+                    .substring(0, 7)
+
                 //header card that includes the name of profile
                 ProfileHeaderCard(
                     icon = AppIcons.Account,
                     name = "${profile.name} ${profile.lastName}",
-                    createdAt = profile.createdAt,
+                    createdAt = "Desde $formattedDate",
                 )
 
                 Spacer(
