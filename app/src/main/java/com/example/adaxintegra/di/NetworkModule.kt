@@ -2,6 +2,7 @@ package com.example.adaxintegra.di
 
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.api.CaseApi
+import com.example.adaxintegra.data.remote.api.ExpedientApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,4 +49,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi = retrofit.create(ExpedientApi::class.java)
 }
