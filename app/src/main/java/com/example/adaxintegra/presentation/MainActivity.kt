@@ -22,8 +22,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AdaxIntegraTheme {
+                val userToken = ""
                 RegisterExpedientScreen(
                     viewModel = registerExpedientViewModel,
+                    userToken = userToken,
                     onCancel = {
                         Toast.makeText(this, "Registro cancelado", Toast.LENGTH_SHORT).show()
                     },

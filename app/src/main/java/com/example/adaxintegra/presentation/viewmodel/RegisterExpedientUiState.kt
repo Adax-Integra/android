@@ -3,7 +3,7 @@ package com.example.adaxintegra.presentation.viewmodel
 import com.example.adaxintegra.domain.model.ExpedientCatalogs
 import com.example.adaxintegra.domain.model.PersonalDataForm
 
-data class ExpedientUiState(
+data class RegisterExpedientUiState(
     val isLoadingCatalogs: Boolean = false,
     val isSubmitting: Boolean = false,
     // Compiled data
