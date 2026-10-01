@@ -34,20 +34,26 @@ class AddCollaboratorViewModel @Inject constructor(
         _uiState.update { AddCollaboratorUiState() }
     }
 
+    // Each input is cut at its maximum length
     fun onNameChange(value: String) {
-        _uiState.update { it.copy(name = value, fieldErrors = it.fieldErrors - "name", generalError = null) }
+        val limited = value.take(MAX_NAME_LENGTH)
+        _uiState.update { it.copy(name = limited, fieldErrors = it.fieldErrors - "name", generalError = null) }
     }
 
     fun onLastNameChange(value: String) {
-        _uiState.update { it.copy(lastName = value, fieldErrors = it.fieldErrors - "lastName", generalError = null) }
+        val limited = value.take(MAX_LAST_NAME_LENGTH)
+        _uiState.update { it.copy(lastName = limited, fieldErrors = it.fieldErrors - "lastName", generalError = null) }
     }
 
+    // Emails never contain spaces, so they are removed while typing
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, fieldErrors = it.fieldErrors - "email", generalError = null) }
+        val limited = value.filter { !it.isWhitespace() }.take(MAX_EMAIL_LENGTH)
+        _uiState.update { it.copy(email = limited, fieldErrors = it.fieldErrors - "email", generalError = null) }
     }
 
     fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(password = value, fieldErrors = it.fieldErrors - "password", generalError = null) }
+        val limited = value.take(MAX_PASSWORD_LENGTH)
+        _uiState.update { it.copy(password = limited, fieldErrors = it.fieldErrors - "password", generalError = null) }
     }
 
     // Only digits, maximum 10 (same rule as the backend)
@@ -96,18 +102,30 @@ class AddCollaboratorViewModel @Inject constructor(
 
         if (state.name.isBlank()) {
             errors["name"] = "El nombre es obligatorio."
+        } else if (state.name.trim().length > MAX_NAME_LENGTH) {
+            errors["name"] = "El nombre debe tener máximo $MAX_NAME_LENGTH caracteres."
         }
+
         if (state.lastName.isBlank()) {
             errors["lastName"] = "Los apellidos son obligatorios."
+        } else if (state.lastName.trim().length > MAX_LAST_NAME_LENGTH) {
+            errors["lastName"] = "Los apellidos deben tener máximo $MAX_LAST_NAME_LENGTH caracteres."
         }
+
         if (state.email.isBlank()) {
             errors["email"] = "El correo es obligatorio."
+        } else if (state.email.length > MAX_EMAIL_LENGTH) {
+            errors["email"] = "El correo debe tener máximo $MAX_EMAIL_LENGTH caracteres."
         } else if (!EMAIL_REGEX.matches(state.email.trim())) {
             errors["email"] = "Ingresa un correo válido."
         }
+
         if (state.password.length < MIN_PASSWORD_LENGTH) {
-            errors["password"] = "La contraseña debe tener al menos 8 caracteres."
+            errors["password"] = "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres."
+        } else if (state.password.length > MAX_PASSWORD_LENGTH) {
+            errors["password"] = "La contraseña debe tener máximo $MAX_PASSWORD_LENGTH caracteres."
         }
+
         if (state.phone.length != PHONE_LENGTH) {
             errors["phone"] = "El teléfono debe tener 10 dígitos."
         }
@@ -137,6 +155,10 @@ class AddCollaboratorViewModel @Inject constructor(
     companion object {
         private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
         private const val MIN_PASSWORD_LENGTH = 8
+        private const val MAX_NAME_LENGTH = 50
+        private const val MAX_LAST_NAME_LENGTH = 50
+        private const val MAX_EMAIL_LENGTH = 128
+        private const val MAX_PASSWORD_LENGTH = 128
         private const val PHONE_LENGTH = 10
     }
 }
