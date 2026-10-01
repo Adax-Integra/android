@@ -20,6 +20,7 @@ import com.example.adaxintegra.presentation.viewmodel.ProfileViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
 
@@ -31,6 +32,7 @@ fun ProfileScreen(
     /*onSecurityClick: () -> Unit,
     onNotificationsClick: () -> Unit,*/
     onLogoutClick: () -> Unit,
+    onBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,6 +58,11 @@ fun ProfileScreen(
                         end = 16.dp,
                         top = 32.dp)
             ) {
+
+                AppHeader(
+                    title = "Perfil",
+                    onBack = onBack,
+                )
 
                 //header card that includes the name of profile
                 ProfileHeaderCard(

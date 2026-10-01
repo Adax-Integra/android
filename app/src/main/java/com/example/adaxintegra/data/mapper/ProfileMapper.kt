@@ -10,7 +10,7 @@ fun ProfileViewDto.toDomain(): ProfileView = ProfileView(
     name = name,
     lastName = lastName,
     email = email,
-    birthDate = birthDate,
-    phone = phone,
+    birthDate = birthDate ?: "",
+    phone = phone ?: "",
     createdAt = createdAt
 )

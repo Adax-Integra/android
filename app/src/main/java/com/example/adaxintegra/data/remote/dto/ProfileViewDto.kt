@@ -17,10 +17,10 @@ data class ProfileViewDto(
     val email: String,
 
     @SerializedName("birth_date")
-    val birthDate: String,
+    val birthDate: String?,
 
     @SerializedName("phone")
-    val phone: String,
+    val phone: String?,
 
     @SerializedName("created_at")
     val createdAt: String,

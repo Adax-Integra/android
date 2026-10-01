@@ -5,7 +5,7 @@ data class ProfileView (
     val name: String,
     val lastName: String,
     val email: String,
-    val birthDate: String,
-    val phone: String,
+    val birthDate: String?,
+    val phone: String?,
     val createdAt: String
 )
