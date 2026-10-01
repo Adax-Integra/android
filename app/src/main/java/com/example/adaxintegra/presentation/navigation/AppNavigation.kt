@@ -173,8 +173,8 @@ fun AppNavigation(
                 if (hasValidSession) {
                     ProfileScreen(
                         onPersonalDataClick = {},
-                        onSecurityClick = {},
-                        onNotificationsClick = {},
+                        /*onSecurityClick = {},
+                        onNotificationsClick = {},*/
                         onLogoutClick = {},
                         viewModel = hiltViewModel()
                     )

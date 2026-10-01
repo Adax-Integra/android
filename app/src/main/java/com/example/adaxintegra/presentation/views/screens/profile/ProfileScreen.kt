@@ -28,8 +28,8 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.Profile
 @Composable
 fun ProfileScreen(
     onPersonalDataClick: () -> Unit,
-    onSecurityClick: () -> Unit,
-    onNotificationsClick: () -> Unit,
+    /*onSecurityClick: () -> Unit,
+    onNotificationsClick: () -> Unit,*/
     onLogoutClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -54,7 +54,7 @@ fun ProfileScreen(
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 24.dp)
+                        top = 32.dp)
             ) {
 
                 //header card that includes the name of profile
@@ -88,10 +88,10 @@ fun ProfileScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(12.dp)
+                    modifier = Modifier.height(24.dp)
                 )
 
-                ProfileOption(
+                /*ProfileOption(
                     icon = AppIcons.Lock,
                     title = "Seguridad",
                     subtitle = "Cambio de contraseña",
@@ -99,7 +99,7 @@ fun ProfileScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(12.dp)
+                    modifier = Modifier.height(24.dp)
                 )
 
                 ProfileOption(
@@ -107,7 +107,7 @@ fun ProfileScreen(
                     title = "Notificaciones",
                     subtitle = "Preferencia de notificaciones",
                     onClick = onNotificationsClick
-                )
+                )*/
 
                 Spacer(
                     modifier = Modifier.weight(1f)
