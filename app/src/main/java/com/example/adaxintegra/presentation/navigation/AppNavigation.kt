@@ -19,6 +19,7 @@ import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -204,7 +205,7 @@ fun AppNavigation(
                         onPersonalDataClick = {},
                         /*onSecurityClick = {},
                         onNotificationsClick = {},*/
-                        onLogoutClick = {},
+                        onLogoutClick = viewModel::logout,
                         isAdmin = isAdmin,
                         onManageCollaboratorsClick = {
                             navController.navigate("collaborators") {
@@ -227,6 +228,17 @@ fun AppNavigation(
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
+            }
+
+            composable("privacyPolicy") {
+                PrivacyPolicyScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onContinue = {
+                        navController.popBackStack()
+                    },
+                )
             }
 
             composable("case/{caseId}") { entry ->

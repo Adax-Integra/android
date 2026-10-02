@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,11 +25,11 @@ import com.example.adaxintegra.presentation.viewmodel.ProfileViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
-
 
 @Suppress("ktlint:standard:function-naming")
 // profile screen, reached through bottom nav bar option
@@ -41,12 +46,15 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    var showLogoutConfirmation by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
     }
 
-    //must load all the info before displaying anything
+    // must load all the info before displaying anything
     if (uiState.isLoading) {
         CircularProgressIndicator()
     } else if (uiState.error != null) {
@@ -54,27 +62,25 @@ fun ProfileScreen(
     } else {
         val profile = uiState.profile
         if (profile != null) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 32.dp
-                    )
+                        top = 32.dp,
+                    ),
             ) {
-
                 AppHeader(
                     title = "Perfil",
                     onBack = onBack,
                 )
 
-                //format date by cutting down string
+                // format date by cutting down string
                 val formattedDate = profile.createdAt
                     .substring(0, 7)
 
-                //header card that includes the name of profile
+                // header card that includes the name of profile
                 ProfileHeaderCard(
                     icon = AppIcons.Account,
                     name = "${profile.name} ${profile.lastName}",
@@ -82,30 +88,30 @@ fun ProfileScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(20.dp)
+                    modifier = Modifier.height(20.dp),
                 )
 
-                //title before cards
+                // title before cards
                 Text(
                     text = "Información Personal",
                     style = AppTextStyle.LabelMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Spacer(
-                    modifier = Modifier.height(8.dp)
+                    modifier = Modifier.height(8.dp),
                 )
 
-                //three options for further details
+                // three options for further details
                 ProfileOption(
                     icon = AppIcons.Profile,
                     title = "Datos Personales",
                     subtitle = "Nombre, teléfono, correo",
-                    onClick = onPersonalDataClick
+                    onClick = onPersonalDataClick,
                 )
 
                 Spacer(
-                    modifier = Modifier.height(24.dp)
+                    modifier = Modifier.height(24.dp),
                 )
 
                 /*ProfileOption(
@@ -127,7 +133,7 @@ fun ProfileScreen(
                 )*/
 
                 Spacer(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
 
                 // G-03: only the admin can manage collaborator accounts
@@ -142,11 +148,43 @@ fun ProfileScreen(
                     )
                 }
 
-                Button(
-                    onClick = onLogoutClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Cerrar sesión")
+                AppButton(
+                    text = "Cerrar sesión",
+                    onClick = { showLogoutConfirmation = true },
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                if (showLogoutConfirmation) {
+                    AlertDialog(
+                        onDismissRequest = { showLogoutConfirmation = false },
+                        title = {
+                            Text(
+                                text = "Cerrar sesión",
+                                style = AppTextStyle.TitleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        },
+                        text = {
+                            Text("¿Quieres cerrar tu sesión")
+                        },
+                        confirmButton = {
+                            AppButton(
+                                text = "Cerrar sesión",
+                                onClick = {
+                                    showLogoutConfirmation = false
+                                    onLogoutClick()
+                                },
+                            )
+                        },
+                        dismissButton = {
+                            AppButton(
+                                text = "Cancelar",
+                                onClick = { showLogoutConfirmation = false },
+                                variant = ButtonVariant.Outlined,
+                            )
+                        },
+                    )
                 }
             }
         }
