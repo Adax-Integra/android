@@ -194,7 +194,13 @@ fun AppNavigation(
             composable("profile") {
                 if (hasValidSession) {
                     ProfileScreen(
-                        onLogout = viewModel::logout,
+                        onBack = {
+                            navController.popBackStack() },
+                        onPersonalDataClick = {},
+                        /*onSecurityClick = {},
+                        onNotificationsClick = {},*/
+                        onLogoutClick = {},
+                        viewModel = hiltViewModel(),
                     )
                 }
             }
