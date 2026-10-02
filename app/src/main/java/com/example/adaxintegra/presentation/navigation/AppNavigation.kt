@@ -198,13 +198,20 @@ fun AppNavigation(
             composable("profile") {
                 if (hasValidSession) {
                     ProfileScreen(
-                        onLogout = viewModel::logout,
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onPersonalDataClick = {},
+                        /*onSecurityClick = {},
+                        onNotificationsClick = {},*/
+                        onLogoutClick = {},
                         isAdmin = isAdmin,
                         onManageCollaboratorsClick = {
                             navController.navigate("collaborators") {
                                 launchSingleTop = true
                             }
                         },
+                        viewModel = hiltViewModel(),
                     )
                 }
             }
