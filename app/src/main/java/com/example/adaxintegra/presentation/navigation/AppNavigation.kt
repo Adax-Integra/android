@@ -195,11 +195,12 @@ fun AppNavigation(
                 if (hasValidSession) {
                     ProfileScreen(
                         onBack = {
-                            navController.popBackStack() },
+                            navController.popBackStack()
+                        },
                         onPersonalDataClick = {},
                         /*onSecurityClick = {},
                         onNotificationsClick = {},*/
-                        onLogoutClick = {},
+                        onLogoutClick = viewModel::logout,
                         viewModel = hiltViewModel(),
                     )
                 }
