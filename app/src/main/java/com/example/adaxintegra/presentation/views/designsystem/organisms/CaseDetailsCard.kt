@@ -20,7 +20,7 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.LawyerS
 @Composable
 fun CaseDetailCard(
     violenceType: String,
-    location: String,
+    location: String? = null,
     hasLawyer: Boolean,
 ) {
     Card(
@@ -42,11 +42,13 @@ fun CaseDetailCard(
                 iconColor = MaterialTheme.colorScheme.primary,
             )
 
-            CaseDetailRow(
-                icon = AppIcons.Location,
-                text = location,
-                iconColor = MaterialTheme.colorScheme.primary,
-            )
+            if (!location.isNullOrBlank()) {
+                CaseDetailRow(
+                    icon = AppIcons.Location,
+                    text = location,
+                    iconColor = MaterialTheme.colorScheme.primary,
+                )
+            }
 
             LawyerStatusRow(
                 hasLawyer = hasLawyer,
