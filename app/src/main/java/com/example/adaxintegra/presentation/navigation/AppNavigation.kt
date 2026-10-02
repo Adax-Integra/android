@@ -216,11 +216,9 @@ fun AppNavigation(
                             navController.popBackStack()
                         },
                         onPersonalDataClick = {},
-                        /*
-                        onSecurityClick = {},
-                        onNotificationsClick = {},
-                         */
-                        onLogoutClick = {},
+                        /*onSecurityClick = {},
+                        onNotificationsClick = {},*/
+                        onLogoutClick = viewModel::logout,
                         viewModel = hiltViewModel(),
                     )
                 }
@@ -247,6 +245,16 @@ fun AppNavigation(
             }
 
             // Existing external-user case progress flow
+            composable("privacyPolicy") {
+                PrivacyPolicyScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onContinue = {
+                        navController.popBackStack()
+                    },
+                )
+            }
             composable("case/{caseId}") { entry ->
                 if (hasValidSession) {
                     val caseId = entry.arguments?.getString("caseId")
