@@ -138,6 +138,9 @@ fun AppNavigation(isInternal: Boolean = false) {
                     onBack = {
                         navController.popBackStack()
                     },
+                    onContinue = {
+                        navController.popBackStack()
+                    },
                 )
             }
 
