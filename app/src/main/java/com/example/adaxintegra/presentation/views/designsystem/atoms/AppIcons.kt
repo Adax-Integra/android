@@ -7,6 +7,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -52,4 +54,10 @@ object AppIcons {
 
     val Account: ImageVector
         get() = Icons.Default.AccountCircle
+
+    val Info: ImageVector
+        get() = Icons.Default.Info
+
+    val Location: ImageVector
+        get() = Icons.Default.LocationOn
 }
