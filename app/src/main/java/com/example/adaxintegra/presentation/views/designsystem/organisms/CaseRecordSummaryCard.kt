@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.designsystem.organisms
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.CaseEditButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
@@ -23,34 +25,83 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 fun CaseRecordSummaryCard(
     userName: String,
     recordId: String,
+    createdAt: String,
+    updatedAt: String,
+    onEdit: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            AppIcon(
-                imageVector = AppIcons.Account,
-                contentDescription = null,
-                size = IconSize.LargeIcon,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppIcon(
+                    imageVector = AppIcons.Account,
+                    contentDescription = null,
+                    size = IconSize.LargeIcon,
+                )
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-            Column {
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = userName,
+                        style = AppTextStyle.TitleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    Text(
+                        text = "Expediente: $recordId",
+                        style = AppTextStyle.LabelSmall,
+                        fontWeight = FontWeight.Normal,
+                    )
+                }
+
+                CaseEditButton(
+                    onClick = onEdit,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
                 Text(
-                    text = userName,
-                    style = AppTextStyle.TitleMedium,
-                    fontWeight = FontWeight.Bold,
+                    text = "Última modificación",
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
                 )
 
                 Text(
-                    text = "Expediente: $recordId",
-                    style = AppTextStyle.LabelSmall,
+                    text = updatedAt,
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "Fecha de creación",
+                    style = AppTextStyle.BodySmall,
+                    fontWeight = FontWeight.Normal,
+                )
+
+                Text(
+                    text = createdAt,
+                    style = AppTextStyle.BodySmall,
                     fontWeight = FontWeight.Normal,
                 )
             }
