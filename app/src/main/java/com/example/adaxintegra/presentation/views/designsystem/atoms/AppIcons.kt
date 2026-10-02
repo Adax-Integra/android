@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.test.user_attributes
 
 // icons available to use
 object AppIcons {
@@ -37,6 +38,9 @@ object AppIcons {
     val Search: ImageVector
         get() = Icons.Default.Search
 
+    val UserAttributes: ImageVector
+        get() = user_attributes
+
     val Lock: ImageVector
         get() = Icons.Default.Lock
 
@@ -49,5 +53,3 @@ object AppIcons {
     val Account: ImageVector
         get() = Icons.Default.AccountCircle
 }
-
-
