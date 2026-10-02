@@ -1,5 +1,6 @@
 package com.example.adaxintegra.domain.common
 
+//states for API responses
 sealed class Result<out T> {
     object Loading : Result<Nothing>()
 
