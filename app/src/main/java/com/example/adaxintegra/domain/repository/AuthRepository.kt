@@ -17,4 +17,13 @@ interface AuthRepository {
 
     // Clears the session
     fun logout()
+
+    // register
+    fun register(
+        name: String,
+        lastname: String,
+        phone: String,
+        email: String,
+        password: String,
+    ): Flow<Result<UserSession>>
 }
