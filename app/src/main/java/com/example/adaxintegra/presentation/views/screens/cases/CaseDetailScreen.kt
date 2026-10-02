@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +23,7 @@ import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseEvidenceCard
@@ -48,15 +46,32 @@ fun CaseDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // reloads the case information whenever the selected case changes
+    // reloads the selected case whenever its identifier changes
     LaunchedEffect(caseId) {
         viewModel.loadCase(caseId)
     }
 
     val case = uiState.case
-    val status = CaseStatusUi.from(case?.state?.lowercase())
-    val statusText = status?.displayText ?: case?.state ?: "Sin estado"
-    val statusColor = status?.color ?: IconGrey
+
+    // normalizes the raw backend state before displaying it in V-11
+    val normalizedState = case?.state?.lowercase()
+    val status = CaseStatusUi.from(normalizedState)
+
+    // Open is handled locally to avoid modifying the shared CaseStatusUi model
+    val statusText =
+        when (normalizedState) {
+            "open" -> "Abierto"
+            else -> status?.displayText ?: case?.state ?: "Sin estado"
+        }
+
+    val statusColor =
+        when (normalizedState) {
+            "open" -> Color(0xFF34C759)
+            else -> status?.color ?: IconGrey
+        }
+
+    // controls V-11 actions according to the current backend state
+    val isCaseClosed = normalizedState == "closed"
 
     ScreenTemplate(
         title = "Detalle del caso",
@@ -81,15 +96,22 @@ fun CaseDetailScreen(
                 hasLawyer = case.hasLawyer ?: false,
                 description = case.description,
 
-                // evidence remains hidden until its backend source is integrated
+                // evidence stays hidden until its backend source is available
                 showEvidenceSection = false,
 
                 helpWanted = case.helpWanted,
-                userName = null,
-                recordId = null,
+
+                // record information returned by the V-11 backend detail response
+                userName = case.userName,
+                recordId = case.recordId,
+
+                isCaseClosed = isCaseClosed,
                 onBack = onBack,
                 onEdit = onEdit,
-                onCloseCase = onCloseCase,
+                onCloseCase = {
+                    viewModel.closeCase(caseId)
+                    onCloseCase()
+                },
             )
         }
     }
@@ -113,6 +135,7 @@ private fun CaseDetailContent(
     helpWanted: String?,
     userName: String?,
     recordId: String?,
+    isCaseClosed: Boolean,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onCloseCase: () -> Unit,
@@ -136,7 +159,7 @@ private fun CaseDetailContent(
             )
         }
 
-        // record information is displayed only when both values are available
+        // record information appears only when both backend values are available
         if (!userName.isNullOrBlank() && !recordId.isNullOrBlank()) {
             item {
                 CaseRecordSummaryCard(
@@ -158,7 +181,7 @@ private fun CaseDetailContent(
             )
         }
 
-        // hides the description when the backend does not provide one
+        // hides the description when no value is returned
         if (!description.isNullOrBlank()) {
             item {
                 CaseDescriptionCard(
@@ -167,14 +190,14 @@ private fun CaseDetailContent(
             }
         }
 
-        // evidence is prepared for V-11 but shown only when its data source is available
+        // evidence is prepared for V-11 but stays hidden until its source is integrated
         if (showEvidenceSection) {
             item {
                 CaseEvidenceCard()
             }
         }
 
-        // displays requested help only when information is available
+        // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
             item {
                 CaseHelpCard(
@@ -183,20 +206,24 @@ private fun CaseDetailContent(
             }
         }
 
-        // contains the actions defined for the V-11 case detail view
+        // actions defined by the V-11 case detail acceptance criteria
         item {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AppButton(
-                    text = "Cerrar caso",
-                    onClick = {
-                        showCloseDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                // close action is available only while the selected case remains open
+                if (!isCaseClosed) {
+                    AppButton(
+                        text = "Cerrar caso",
+                        onClick = {
+                            showCloseDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
 
+                // cancel always returns to the previous screen
                 AppButton(
                     text = "Cancelar",
                     onClick = onBack,
@@ -207,51 +234,32 @@ private fun CaseDetailContent(
         }
     }
 
-    // asks for confirmation before requesting the case closure
+    // displays the V-11 confirmation interface before requesting the closure
     if (showCloseDialog) {
-        AlertDialog(
-            onDismissRequest = {
+        CaseCloseDialog(
+            onConfirm = {
                 showCloseDialog = false
+
+                // backend closure will be connected through this callback
+                onCloseCase()
             },
-            title = {
-                Text("¿Deseas cerrar este caso?")
-            },
-            text = {
-                Text("El caso dejará de mostrarse como abierto.")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showCloseDialog = false
-                        onCloseCase()
-                    },
-                ) {
-                    Text("Sí, cerrar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showCloseDialog = false
-                    },
-                ) {
-                    Text("Cancelar")
-                }
+            onDismiss = {
+                showCloseDialog = false
             },
         )
     }
 }
 
-// mock values are used only to validate the V-11 layout without depending on the backend
+// mock values are used only to validate the open-case V-11 layout
 @Suppress("ktlint:standard:function-naming")
 @Preview(
-    name = "V-11 Case Detail",
+    name = "V-11 Open Case Detail",
     showBackground = true,
     showSystemUi = true,
     device = "spec:width=411dp,height=891dp,dpi=420",
 )
 @Composable
-private fun CaseDetailScreenPreview() {
+private fun OpenCaseDetailScreenPreview() {
     AdaxIntegraTheme {
         ScreenTemplate(
             title = "Detalle del caso",
@@ -270,13 +278,61 @@ private fun CaseDetailScreenPreview() {
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
 
-                // preview-only flag used to compare the V-11 layout with Figma
+                // preview-only value used to validate the Figma evidence section
                 showEvidenceSection = true,
 
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
                 recordId = "EXP-2024-1024",
+
+                // open cases expose the close-case action
+                isCaseClosed = false,
+
+                onBack = {},
+                onEdit = {},
+                onCloseCase = {},
+            )
+        }
+    }
+}
+
+// mock values are used to validate how V-11 responds to a closed case
+@Suppress("ktlint:standard:function-naming")
+@Preview(
+    name = "V-11 Closed Case Detail",
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp,dpi=420",
+)
+@Composable
+private fun ClosedCaseDetailScreenPreview() {
+    AdaxIntegraTheme {
+        ScreenTemplate(
+            title = "Detalle del caso",
+            subtitle = "Caso 2026-0847-C2",
+            onBack = {},
+        ) {
+            CaseDetailContent(
+                caseNumber = "Caso 2026-0847-C2",
+                statusText = "Cerrado",
+                statusColor = Color(0xFF8E8E93),
+                createdAt = "12/09/2026",
+                updatedAt = "30/09/2026",
+                violenceType = "Violencia psicológica",
+                location = "Querétaro",
+                hasLawyer = true,
+                description =
+                    "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
+                showEvidenceSection = true,
+                helpWanted =
+                    "Asesoría legal y acompañamiento psicológico",
+                userName = "María García López",
+                recordId = "EXP-2024-1024",
+
+                // closed cases must not expose the close-case action again
+                isCaseClosed = true,
+
                 onBack = {},
                 onEdit = {},
                 onCloseCase = {},
