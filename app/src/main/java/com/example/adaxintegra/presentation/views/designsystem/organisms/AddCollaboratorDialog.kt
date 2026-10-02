@@ -28,6 +28,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.CountryCodeSelector
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
@@ -40,6 +41,7 @@ fun AddCollaboratorDialog(
     email: String,
     password: String,
     phone: String,
+    countryCode: String,
     fieldErrors: Map<String, String>,
     generalError: String?,
     canSave: Boolean,
@@ -49,6 +51,7 @@ fun AddCollaboratorDialog(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
+    onCountryCodeChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -59,6 +62,7 @@ fun AddCollaboratorDialog(
             email = email,
             password = password,
             phone = phone,
+            countryCode = countryCode,
             fieldErrors = fieldErrors,
             generalError = generalError,
             canSave = canSave,
@@ -68,6 +72,7 @@ fun AddCollaboratorDialog(
             onEmailChange = onEmailChange,
             onPasswordChange = onPasswordChange,
             onPhoneChange = onPhoneChange,
+            onCountryCodeChange = onCountryCodeChange,
             onSave = onSave,
             onCancel = onCancel,
         )
@@ -83,6 +88,7 @@ private fun AddCollaboratorForm(
     email: String,
     password: String,
     phone: String,
+    countryCode: String,
     fieldErrors: Map<String, String>,
     generalError: String?,
     canSave: Boolean,
@@ -92,6 +98,7 @@ private fun AddCollaboratorForm(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
+    onCountryCodeChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -148,6 +155,7 @@ private fun AddCollaboratorForm(
                 visualTransformation = PasswordVisualTransformation(),
             )
 
+            // Country code selector inside the phone field
             FormField(
                 label = "TELÉFONO",
                 value = phone,
@@ -155,6 +163,12 @@ private fun AddCollaboratorForm(
                 error = fieldErrors["phone"],
                 placeholder = "10 dígitos",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                leadingIcon = {
+                    CountryCodeSelector(
+                        selectedCode = countryCode,
+                        onCodeSelected = onCountryCodeChange,
+                    )
+                },
             )
 
             if (generalError != null) {
@@ -202,12 +216,14 @@ private fun FormField(
     placeholder: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     LabeledTextField(
         label = label,
         value = value,
         onValueChange = onValueChange,
         placeholder = placeholder,
+        leadingIcon = leadingIcon,
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
     )
@@ -234,6 +250,7 @@ fun AddCollaboratorFormEmptyPreview() {
             email = "",
             password = "",
             phone = "",
+            countryCode = "+52",
             fieldErrors = emptyMap(),
             generalError = null,
             canSave = false,
@@ -243,6 +260,7 @@ fun AddCollaboratorFormEmptyPreview() {
             onEmailChange = {},
             onPasswordChange = {},
             onPhoneChange = {},
+            onCountryCodeChange = {},
             onSave = {},
             onCancel = {},
         )
@@ -261,6 +279,7 @@ fun AddCollaboratorFormErrorsPreview() {
             email = "ana@correo",
             password = "123",
             phone = "44212",
+            countryCode = "+1",
             fieldErrors = mapOf(
                 "email" to "Ingresa un correo válido.",
                 "password" to "La contraseña debe tener al menos 8 caracteres.",
@@ -274,6 +293,7 @@ fun AddCollaboratorFormErrorsPreview() {
             onEmailChange = {},
             onPasswordChange = {},
             onPhoneChange = {},
+            onCountryCodeChange = {},
             onSave = {},
             onCancel = {},
         )

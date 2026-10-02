@@ -55,6 +55,7 @@ fun CollaboratorsScreen(
             email = uiState.email,
             password = uiState.password,
             phone = uiState.phone,
+            countryCode = uiState.countryCode,
             fieldErrors = uiState.fieldErrors,
             generalError = uiState.generalError,
             canSave = uiState.canSave,
@@ -64,6 +65,7 @@ fun CollaboratorsScreen(
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onPhoneChange = viewModel::onPhoneChange,
+            onCountryCodeChange = viewModel::onCountryCodeChange,
             onSave = viewModel::save,
             onCancel = viewModel::cancel,
         )

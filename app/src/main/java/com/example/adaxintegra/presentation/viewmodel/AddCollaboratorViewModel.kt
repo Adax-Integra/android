@@ -67,6 +67,11 @@ class AddCollaboratorViewModel @Inject constructor(
         _uiState.update { it.copy(phone = digits, fieldErrors = it.fieldErrors - "phone", generalError = null) }
     }
 
+    // Country code chosen in the selector
+    fun onCountryCodeChange(code: String) {
+        _uiState.update { it.copy(countryCode = code, fieldErrors = it.fieldErrors - "phone", generalError = null) }
+    }
+
     fun save() {
         val state = _uiState.value
         val errors = validate(state)
@@ -80,7 +85,7 @@ class AddCollaboratorViewModel @Inject constructor(
             lastName = state.lastName.trim(),
             email = state.email.trim().lowercase(),
             password = state.password,
-            phone = "$COUNTRY_CODE${state.phone}",
+            phone = "${state.countryCode}${state.phone}",
         )
 
         viewModelScope.launch {
@@ -166,6 +171,5 @@ class AddCollaboratorViewModel @Inject constructor(
         private const val MAX_EMAIL_LENGTH = 128
         private const val MAX_PASSWORD_LENGTH = 128
         private const val PHONE_LENGTH = 10
-        private const val COUNTRY_CODE = "+52"
     }
 }

@@ -8,6 +8,8 @@ data class AddCollaboratorUiState(
     val email: String = "",
     val password: String = "",
     val phone: String = "",
+    // Phone country code selected in the form (Mexico by default)
+    val countryCode: String = "+52",
     // one message per field: "name", "lastName", "email", "password", "phone"
     val fieldErrors: Map<String, String> = emptyMap(),
     val generalError: String? = null,
