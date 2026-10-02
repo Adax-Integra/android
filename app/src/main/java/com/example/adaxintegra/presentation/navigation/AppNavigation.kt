@@ -206,6 +206,16 @@ fun AppNavigation(
                 }
             }
 
+            composable("privacyPolicy") {
+                PrivacyPolicyScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onContinue = {
+                        navController.popBackStack()
+                    },
+                )
+            }
             composable("case/{caseId}") { entry ->
                 if (hasValidSession) {
                     val caseId = entry.arguments?.getString("caseId")

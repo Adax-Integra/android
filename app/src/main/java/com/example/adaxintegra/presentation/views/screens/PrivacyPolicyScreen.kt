@@ -17,16 +17,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
@@ -46,12 +54,15 @@ data class PrivacyPolicyItem(
 fun PrivacyPolicyScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onContinue: () -> Unit = {},
 ) {
+    var accepted by remember { mutableStateOf(false) }
+
     val items = listOf(
         PrivacyPolicyItem(
             number = 1,
             title = "¿Qué datos recopilamos?",
-            description = "El aviso especifica nombre,edad/fecha de nacimiento,teléfono,correo,domicilio,INE y comprobante de domicilio.",
+            description = "El aviso especifica nombre, edad/fecha de nacimiento, teléfono, correo, domicilio, INE y comprobante de domicilio.",
         ),
         PrivacyPolicyItem(
             number = 2,
@@ -103,6 +114,7 @@ fun PrivacyPolicyScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Privacy Policy items card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -126,6 +138,76 @@ fun PrivacyPolicyScreen(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Checkbox Card as shown in design
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = accepted,
+                    onCheckedChange = { accepted = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Purple,
+                        uncheckedColor = IconGrey,
+                    ),
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = "He leído y acepto el Aviso de privacidad",
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+
+                    Text(
+                        text = "Al seleccionar esta casilla acepto el tratamiento de mis datos personales conforme al aviso.",
+                        style = AppTextStyle.BodySmall,
+                        color = IconGrey,
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Action Buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            AppButton(
+                text = "Continuar",
+                onClick = onContinue,
+                variant = ButtonVariant.Primary,
+                enabled = accepted,
+                modifier = Modifier.weight(1f),
+            )
+
+            AppButton(
+                text = "¿No deseas continuar?",
+                onClick = onBack,
+                variant = ButtonVariant.Outlined,
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -180,6 +262,6 @@ fun PrivacyPolicyRow(
 @Composable
 private fun PrivacyPolicyScreenPreview() {
     AdaxIntegraTheme(dynamicColor = false) {
-        PrivacyPolicyScreen(onBack = {})
+        PrivacyPolicyScreen(onBack = {}, onContinue = {})
     }
 }
