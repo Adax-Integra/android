@@ -132,12 +132,11 @@ fun AppNavigation(
 
             //forgot password screen
             composable("forgotPassword") {
-                //val forgotPasswordViewModel: ForgotPasswordViewModel = hiltViewModel()
 
                 ForgotPasswordScreen(
                     onBack = {
                         navController.popBackStack() },
-                    //viewModel = forgotPasswordViewModel,
+                    viewModel = hiltViewModel(),
                     //onSendEmailClick = {}
                 )
             }

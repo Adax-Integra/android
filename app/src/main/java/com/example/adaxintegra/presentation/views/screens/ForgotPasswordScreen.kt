@@ -24,19 +24,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.presentation.viewmodel.ForgotPasswordViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ForgotPasswordScreen(
-    //viewModel: ForgotPasswordViewModel,
+    viewModel: ForgotPasswordViewModel = hiltViewModel(),
     //emailValue: String,
     //onEmailChange: (String) -> Unit,
     //onSendEmailClick: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    //val uiState by viewModel.uiState.collectAsState()
-    var email by remember { mutableStateOf("") }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -58,9 +63,10 @@ fun ForgotPasswordScreen(
 
             LabeledTextField(
                 label = "Correo electrónico",
-                value = email,
-                onValueChange = { email = it },
+                value = uiState.email,
+                onValueChange = viewModel::onEmailChange,
                 placeholder = "tu@correo.com",
+                errorMessage = uiState.emailError,
                 leadingIcon = {
                     AppIcon(
                         imageVector = Icons.Default.MailOutline,
@@ -75,11 +81,20 @@ fun ForgotPasswordScreen(
 
             AppButton(
                 text = "Enviar correo",
-                onClick = { },
+                onClick = viewModel::onSendEmailClick,
                 modifier = Modifier.fillMaxWidth(),
-                //enabled = uiState.isEmailValid && !uiState.isLoading,
-                //isLoading = uiState.isLoading,
+                isLoading = uiState.isLoading,
             )
+
+            uiState.successMessage?.let { message ->
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodySmall,
+                    color = Color(0xFF2E7D32),
+                )
+            }
         }
     }
 }

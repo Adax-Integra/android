@@ -39,7 +39,7 @@ class AuthRepositoryImpl @Inject constructor(
 
             val data = response.data
 
-            // Return null if there is not a rol
+            // Return null if there is not a role
             val role = data.roles?.singleOrNull()
 
             // Rejects missing or unsupported roles before creating a session

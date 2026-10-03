@@ -9,7 +9,7 @@ interface AuthRepository {
     // Exposes session changes. A null value means no user is signed in.
     val session: StateFlow<UserSession?>
 
-    // Emits state while singing in
+    // Emits state while signing in
     fun login(
         email: String,
         password: String,
