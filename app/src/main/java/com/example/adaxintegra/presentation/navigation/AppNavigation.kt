@@ -17,8 +17,10 @@ import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -59,7 +61,8 @@ fun AppNavigation(
 
                 !hasValidSession &&
                     currentRoute != null &&
-                    currentRoute != "login" -> "login"
+                    currentRoute != "login" &&
+                    currentRoute != "forgotPassword" -> "login"
 
                 else -> null
             }
@@ -120,8 +123,26 @@ fun AppNavigation(
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
 
-                LoginScreen(viewModel = loginViewModel)
+                LoginScreen(
+                    viewModel = loginViewModel,
+                    onForgotPasswordClick = {
+                        navController.navigate("forgotPassword")},
+                    )
             }
+
+            //forgot password screen
+            composable("forgotPassword") {
+                //val forgotPasswordViewModel: ForgotPasswordViewModel = hiltViewModel()
+
+                ForgotPasswordScreen(
+                    onBack = {
+                        navController.popBackStack() },
+                    //viewModel = forgotPasswordViewModel,
+                    //onSendEmailClick = {}
+                )
+            }
+
+            //enter new password screen
 
             composable("home") {
                 if (hasValidSession) {

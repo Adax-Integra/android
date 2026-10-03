@@ -22,6 +22,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    onForgotPasswordClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -46,7 +47,7 @@ fun LoginScreen(
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
             onRegisterClick = { /* register action*/ },
-            onForgotPasswordClick = { /* recover password */ },
+            onForgotPasswordClick = onForgotPasswordClick,
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
         )
