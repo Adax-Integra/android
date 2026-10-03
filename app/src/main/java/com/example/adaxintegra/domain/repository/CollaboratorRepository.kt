@@ -5,5 +5,5 @@ import com.example.adaxintegra.domain.model.NewCollaborator
 
 interface CollaboratorRepository {
     // G-03: returns the created collaborator or throws the error
-    suspend fun createCollaborator(token : String, collaborator: NewCollaborator): Collaborator
+    suspend fun createCollaborator(collaborator: NewCollaborator): Collaborator
 }

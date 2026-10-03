@@ -40,6 +40,8 @@ fun ProfileScreen(
     onNotificationsClick: () -> Unit,*/
     onLogoutClick: () -> Unit,
     onBack: () -> Unit,
+    isAdmin: Boolean = false,
+    onManageCollaboratorsClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -133,6 +135,18 @@ fun ProfileScreen(
                 Spacer(
                     modifier = Modifier.weight(1f),
                 )
+
+                // G-03: only the admin can manage collaborator accounts
+                // (temporary access until the admin section is finished)
+                if (isAdmin) {
+                    AppButton(
+                        text = "Gestión de colaboradoras",
+                        onClick = onManageCollaboratorsClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                    )
+                }
 
                 AppButton(
                     text = "Cerrar sesión",

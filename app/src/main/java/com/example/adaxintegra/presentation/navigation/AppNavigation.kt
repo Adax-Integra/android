@@ -19,7 +19,9 @@ import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -85,12 +87,15 @@ fun AppNavigation(
                     when (currentRoute) {
                         "collaboratorCases" -> "records"
 
-                        // V-11 belongs to the internal/admin records flow
-                        "caseDetail/{caseId}" -> "records"
+                        // G-03: collaborators screen is opened from profile
+                        "collaborators" -> "profile"
 
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
                         }
+
+                        // V-11 belongs to the internal/admin records flow
+                        "caseDetail/{caseId}" -> "records"
 
                         else -> currentRoute
                     }
@@ -113,9 +118,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "login",
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
+            Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
@@ -219,11 +224,27 @@ fun AppNavigation(
                         /*onSecurityClick = {},
                         onNotificationsClick = {},*/
                         onLogoutClick = viewModel::logout,
+                        isAdmin = isAdmin,
+                        onManageCollaboratorsClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
                         viewModel = hiltViewModel(),
                     )
                 }
             }
 
+            // G-03: admin manages collaborator accounts
+            composable("collaborators") {
+                if (hasValidSession && isAdmin) {
+                    CollaboratorsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                }
+            }
             // V-11: internal/admin case detail screen
             composable("caseDetail/{caseId}") { entry ->
                 if (hasValidSession && canViewAllCases) {
@@ -255,6 +276,7 @@ fun AppNavigation(
                     },
                 )
             }
+
             composable("case/{caseId}") { entry ->
                 if (hasValidSession) {
                     val caseId = entry.arguments?.getString("caseId")

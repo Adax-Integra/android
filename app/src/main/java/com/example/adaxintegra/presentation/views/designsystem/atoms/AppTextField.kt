@@ -50,6 +50,8 @@ fun AppTextField(
             unfocusedContainerColor = Color.White,
             focusedBorderColor = Color.LightGray,
             unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
         ),
     )
 }
