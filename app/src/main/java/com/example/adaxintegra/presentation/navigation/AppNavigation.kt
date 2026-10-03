@@ -22,6 +22,7 @@ import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
+import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
@@ -44,22 +45,26 @@ fun AppNavigation(
     val isAdmin = (role == "admin")
 
     val canViewAllCases = isInternal || isAdmin
-    val hasValidSession = !session?.userId.isNullOrBlank() && (isExternal || canViewAllCases)
+    val hasValidSession =
+        !session?.userId.isNullOrBlank() &&
+            (isExternal || canViewAllCases)
 
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    // CLears the previous navigation history when entering or leaving login
+    // Clears the previous navigation history when entering or leaving login
     LaunchedEffect(hasValidSession, currentRoute) {
-        val destination = when {
-            hasValidSession && currentRoute == "login" -> "home"
+        val destination =
+            when {
+                hasValidSession && currentRoute == "login" -> "home"
 
-            !hasValidSession &&
-                currentRoute != null && currentRoute != "login" -> "login"
+                !hasValidSession &&
+                    currentRoute != null &&
+                    currentRoute != "login" -> "login"
 
-            else -> null
-        }
+                else -> null
+            }
 
         if (destination != null) {
             navController.navigate(destination) {
@@ -78,18 +83,22 @@ fun AppNavigation(
                 currentRoute != null &&
                 currentRoute != "login"
             ) {
-                val selectedRoute = when (currentRoute) {
-                    "collaboratorCases" -> "records"
+                val selectedRoute =
+                    when (currentRoute) {
+                        "collaboratorCases" -> "records"
 
-                    // G-03: collaborators screen is opened from profile
-                    "collaborators" -> "profile"
+                        // G-03: collaborators screen is opened from profile
+                        "collaborators" -> "profile"
 
-                    "case/{caseId}" -> {
-                        if (isExternal) "cases" else "records"
+                        "case/{caseId}" -> {
+                            if (isExternal) "cases" else "records"
+                        }
+
+                        // V-11 belongs to the internal/admin records flow
+                        "caseDetail/{caseId}" -> "records"
+
+                        else -> currentRoute
                     }
-
-                    else -> currentRoute
-                }
 
                 BottomNavBar(
                     currentRoute = selectedRoute,
@@ -108,7 +117,8 @@ fun AppNavigation(
         NavHost(
             navController = navController,
             startDestination = "login",
-            modifier = Modifier
+            modifier =
+            Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
         ) {
@@ -120,7 +130,7 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    HomeScreen(role = role.orEmpty())
+                    HomeScreen(role = role)
                 }
             }
 
@@ -146,10 +156,18 @@ fun AppNavigation(
             composable("recordFromUser/{userId}") { entry ->
                 if (hasValidSession && canViewAllCases) {
                     val userId = entry.arguments?.getString("userId")
+
                     if (!userId.isNullOrBlank()) {
                         RecordFromUser(
                             userId = userId,
-                            onBackClick = { navController.popBackStack() },
+                            onBackClick = {
+                                navController.popBackStack()
+                            },
+                            onCaseClick = { caseId ->
+                                navController.navigate("caseDetail/$caseId") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         Text("No se encontró el identificador del usuario")
@@ -174,7 +192,7 @@ fun AppNavigation(
             }
 
             composable("collaboratorCases") {
-                // Checks permision before creating the listing ViewModel
+                // Checks permission before creating the listing ViewModel
                 if (hasValidSession && canViewAllCases) {
                     val casesViewModel: CasesViewModel = hiltViewModel()
                     val uiState by casesViewModel.uiState.collectAsStateWithLifecycle()
@@ -225,11 +243,29 @@ fun AppNavigation(
                             navController.popBackStack()
                         },
                     )
+                }
+            }
+            // V-11: internal/admin case detail screen
+            composable("caseDetail/{caseId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val caseId = entry.arguments?.getString("caseId")
+
+                    if (!caseId.isNullOrBlank()) {
+                        CaseDetailScreen(
+                            caseId = caseId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del caso")
+                    }
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
 
+            // Existing external-user case progress flow
             composable("privacyPolicy") {
                 PrivacyPolicyScreen(
                     onBack = {
@@ -246,7 +282,7 @@ fun AppNavigation(
                     val caseId = entry.arguments?.getString("caseId")
 
                     if (!caseId.isNullOrBlank()) {
-                        // THe backend must also verify access to this case.
+                        // The backend must also verify access to this case.
                         CaseProgressScreen(
                             caseId = caseId,
                             onBack = {
