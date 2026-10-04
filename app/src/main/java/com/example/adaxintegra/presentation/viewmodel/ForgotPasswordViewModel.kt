@@ -2,19 +2,19 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.usecases.SendRecoveryEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ForgotPasswordViewModel
-@Inject constructor() :
+@Inject constructor(
+    private val sendRecoveryEmailUseCase: SendRecoveryEmailUseCase,
+) :
     ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
@@ -54,13 +54,13 @@ class ForgotPasswordViewModel
             return
         }
 
-        //temporary success message.
+        //when email is correctly input, button shows loading state
         _uiState.update {
             it.copy(
                 email = email,
                 emailError = null,
-                successMessage =
-                    "Se ha enviado un correo para recuperar tu contraseña.",
+                successMessage = null,
+                isLoading = true,
             )
         }
     }
