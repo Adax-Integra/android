@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.adaxintegra"
+        applicationId = "com.adaxintegra"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
