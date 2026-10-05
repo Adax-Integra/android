@@ -2,11 +2,14 @@ package com.example.adaxintegra.data.mapper
 
 import com.example.adaxintegra.data.remote.dto.CaseDto
 import com.example.adaxintegra.data.remote.dto.CaseStepDto
+import com.example.adaxintegra.data.remote.dto.CreateCaseRequestDto
+import com.example.adaxintegra.data.remote.dto.CreatedCaseDto
 import com.example.adaxintegra.data.remote.dto.UserCaseItemDto
 import com.example.adaxintegra.domain.model.Case
 import com.example.adaxintegra.domain.model.CaseProgressStep
 import com.example.adaxintegra.domain.model.Helps
 import com.example.adaxintegra.domain.model.Violence
+import com.example.adaxintegra.domain.model.NewCase
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -39,6 +42,28 @@ fun UserCaseItemDto.toDomain(): Case = Case(
     violenceList = violenceTypes?.map { Violence(type = it, severity = 0) } ?: emptyList(),
     createdAt = parseIsoDate(createdAt),
     updatedAt = parseIsoDate(updatedAt),
+    helpList = helps?.map { Helps(description = it) } ?: emptyList(),
+)
+
+//R-02: form data -> request body
+fun NewCase.toRequestDto(): CreateCaseRequestDto = CreateCaseRequestDto(
+    writtenDescription = writtenDescription,
+    writtenHelpsWanted = writtenHelpsWanted,
+    hasExternalSupport = hasExternalSupport,
+)
+
+//R-02: case just created -> same domain model the listing uses (V-04)
+fun CreatedCaseDto.toDomain(): Case = Case(
+    caseId = caseId ?: "",
+    caseNumber = null,
+    state = state,
+    caseSteps = emptyList(),
+    description = writtenDescription,
+    helpWanted = writtenHelpsWanted,
+    hasLawyer = hasLawyer,
+    violenceList = emptyList(),
+    createdAt = parseIsoDate(createdAt),
+    updatedAt = parseIsoDate(createdAt),
     helpList = helps?.map { Helps(description = it) } ?: emptyList(),
 )
 
