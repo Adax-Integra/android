@@ -16,11 +16,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -62,7 +64,8 @@ fun AppNavigation(
 
                 !hasValidSession &&
                     currentRoute != null &&
-                    currentRoute != "login" -> "login"
+                    currentRoute != "login" &&
+                    currentRoute != "register" -> "login"
 
                 else -> null
             }
@@ -82,7 +85,8 @@ fun AppNavigation(
             if (
                 hasValidSession &&
                 currentRoute != null &&
-                currentRoute != "login"
+                currentRoute != "login" &&
+                currentRoute != "register"
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -129,7 +133,31 @@ fun AppNavigation(
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
 
-                LoginScreen(viewModel = loginViewModel)
+                // G-01 & G-02, Login and register screen
+                LoginScreen(
+                    viewModel = loginViewModel,
+                    onRegisterClick = {
+                        navController.navigate("register") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
+            composable("register") {
+                val registerViewModel: RegisterViewModel = hiltViewModel()
+
+                RegisterScreen(
+                    viewModel = registerViewModel,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onRegisterSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
             }
 
             composable("home") {

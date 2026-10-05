@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,6 +21,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -45,7 +45,7 @@ fun LoginScreen(
             passwordValue = uiState.password,
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
-            onRegisterClick = { /* register action*/ },
+            onRegisterClick = onRegisterClick,
             onForgotPasswordClick = { /* recover password */ },
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,

@@ -4,17 +4,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mail
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
-import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.ui.theme.LightPurple
 import com.example.adaxintegra.ui.theme.Purple
@@ -28,14 +25,9 @@ fun LoginHeader(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AppIcon(
-            imageVector = Icons.Default.Mail,
-            contentDescription = "Logo",
-            size = IconSize.LargeIcon,
-            tint = Purple,
-        )
+        AdaxLogo(size = 90.dp)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "Bienvenida a",

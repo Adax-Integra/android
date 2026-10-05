@@ -1,7 +1,5 @@
 package com.example.adaxintegra.presentation.viewmodel
 
-import com.example.adaxintegra.domain.common.Result
-
 // uistate that holds the form's values
 data class RegisterUiState(
     val name: String = "",
@@ -13,6 +11,7 @@ data class RegisterUiState(
     val confirmPassword: String = "",
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
+    val showConfirmationDialog: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val isRegisterSuccess: Boolean = false,

@@ -88,11 +88,20 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
         try {
-            val response = api.register(RegisterRequestDto(name, lastname, phone, email, password))
+            val response = api.register(
+                RegisterRequestDto(
+                    name = name,
+                    lastName = lastname,
+                    phone = phone,
+                    email = email,
+                    password = password,
+                    confirmPassword = password,
+                ),
+            )
             val session = UserSession(
                 token = response.data?.token ?: "",
                 userId = response.data?.userId,
-                role = response.data?.roles?.firstOrNull(),
+                role = response.data?.roles?.firstOrNull() ?: "external",
             )
             emit(Result.Success(session))
         } catch (e: Exception) {

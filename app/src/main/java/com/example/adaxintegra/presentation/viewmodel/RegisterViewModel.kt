@@ -57,11 +57,21 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
     }
 
-    // Main registration handler with form validation and UseCase execution
+    // Opens confirmation dialog after client validations pass
     fun register() {
         val state = _uiState.value
 
         // Input validations before sending request
+        if (state.name.isBlank()) {
+            _uiState.update { it.copy(error = "El nombre es obligatorio") }
+            return
+        }
+
+        if (state.lastname.isBlank()) {
+            _uiState.update { it.copy(error = "Los apellidos son obligatorios") }
+            return
+        }
+
         if (state.phone.isBlank()) {
             _uiState.update { it.copy(error = "El teléfono celular es obligatorio") }
             return
@@ -82,13 +92,25 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        // Execute registration UseCase via coroutine flow
+        // Show confirmation dialog before executing API call
+        _uiState.update { it.copy(showConfirmationDialog = true, error = null) }
+    }
+
+    fun onDismissDialog() {
+        _uiState.update { it.copy(showConfirmationDialog = false) }
+    }
+
+    // Confirms and executes registration UseCase via coroutine flow
+    fun onConfirmRegister() {
+        val state = _uiState.value
+        _uiState.update { it.copy(showConfirmationDialog = false) }
+
         viewModelScope.launch {
             registerUseCase(
                 name = state.name,
                 lastname = state.lastname,
-                phone = "${state.countryCode}${state.phone}",
-                email = state.email,
+                phone = state.phone.trim(),
+                email = state.email.trim(),
                 password = state.password,
             ).collect { result ->
                 _uiState.update { current ->

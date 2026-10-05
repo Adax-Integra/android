@@ -1,8 +1,5 @@
 package com.example.adaxintegra.presentation.views.designsystem.organisms
 
-import android.opengl.Visibility
-import androidx.annotation.VisibleForTesting
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,13 +9,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,7 +23,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.viewmodel.RegisterUiState
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
@@ -37,11 +32,14 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import java.util.Locale
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RegisterForm(
+    nameValue: String,
+    onNameChange: (String) -> Unit,
+    lastnameValue: String,
+    onLastnameChange: (String) -> Unit,
     countryCode: String,
     phoneValue: String,
     onPhoneChange: (String) -> Unit,
@@ -61,11 +59,46 @@ fun RegisterForm(
     errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        LabeledTextField(
+            label = "Nombre(s)",
+            value = nameValue,
+            onValueChange = onNameChange,
+            placeholder = "Tu nombre",
+            leadingIcon = {
+                AppIcon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    size = IconSize.RegularIcon,
+                    tint = Color.Gray,
+                )
+            },
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LabeledTextField(
+            label = "Apellidos",
+            value = lastnameValue,
+            onValueChange = onLastnameChange,
+            placeholder = "Tus apellidos",
+            leadingIcon = {
+                AppIcon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    size = IconSize.RegularIcon,
+                    tint = Color.Gray,
+                )
+            },
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         PhoneField(
             countryCode = countryCode,
             phoneValue = phoneValue,
             onPhoneChange = onPhoneChange,
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         LabeledTextField(
@@ -173,7 +206,6 @@ fun RegisterForm(
             variant = ButtonVariant.Primary,
             isLoading = isLoading,
             modifier = Modifier.fillMaxWidth(),
-
         )
     }
 }
@@ -184,6 +216,10 @@ fun RegisterForm(
 private fun RegisterFormPreview() {
     AdaxIntegraTheme {
         RegisterForm(
+            nameValue = "Montserrat",
+            onNameChange = {},
+            lastnameValue = "Ramírez",
+            onLastnameChange = {},
             countryCode = "+52",
             phoneValue = "4421234567",
             onPhoneChange = {},
