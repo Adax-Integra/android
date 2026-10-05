@@ -34,9 +34,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 @Composable
 fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = hiltViewModel(),
-    //emailValue: String,
-    //onEmailChange: (String) -> Unit,
-    //onSendEmailClick: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -87,6 +84,16 @@ fun ForgotPasswordScreen(
             )
 
             uiState.successMessage?.let { message ->
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodySmall,
+                    color = Color(0xFF2E7D32),
+                )
+            }
+
+            uiState.errorMessage?.let { message ->
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(

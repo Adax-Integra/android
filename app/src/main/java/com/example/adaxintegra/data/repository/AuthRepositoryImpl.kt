@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.remote.api.AuthApi
+import com.example.adaxintegra.data.remote.dto.ForgotPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
@@ -70,6 +71,24 @@ class AuthRepositoryImpl @Inject constructor(
             throw exception
         } catch (exception: Exception) {
             emit(Result.Error(exception))
+        }
+    }
+
+    override suspend fun forgotPassword(
+        email: String,
+    ): Result<Unit> {
+        return try {
+            val response = api.forgotPassword(ForgotPasswordRequestDto(email))
+
+            if (!response.success) {
+                throw IllegalStateException("No se pudo enviar el correo")
+            }
+
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
         }
     }
 
