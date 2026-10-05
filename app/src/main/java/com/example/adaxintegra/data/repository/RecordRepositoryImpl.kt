@@ -5,7 +5,7 @@ import com.example.adaxintegra.data.remote.api.RecordApi
 import com.example.adaxintegra.domain.entities.RecordPage
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.RecordRepository
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 class RecordRepositoryImpl @Inject constructor(
     private val api: RecordApi,
@@ -21,7 +21,7 @@ class RecordRepositoryImpl @Inject constructor(
                 "Inicia sesión para consultar los expedientes.",
             )
         }
-        return "Barer $token"
+        return "Bearer $token"
     }
 
     override suspend fun getRecords(
