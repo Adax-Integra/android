@@ -2,16 +2,19 @@ package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseSummaryCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CasesListHeader
@@ -23,9 +26,15 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 fun ExternalCasesScreen(
     viewModel: ExternalCasesViewModel = hiltViewModel(),
     onCaseClick: (String) -> Unit = {},
+    onCreateCaseClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
+
+    //Loaded every time the screen appears, so the case created in R-02 shows up
+    LaunchedEffect(Unit) {
+        viewModel.loadCases()
+    }
 
     ScreenTemplate(
         title = "Casos",
@@ -37,6 +46,13 @@ fun ExternalCasesScreen(
             modifier = Modifier.padding(top = spacing.small),
             verticalArrangement = Arrangement.spacedBy(spacing.medium),
         ) {
+            //R-02: entry point to the "Registrar el caso" screen
+            AppButton(
+                text = "Registrar un caso",
+                onClick = onCreateCaseClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             CasesListHeader(
                 searchQuery = uiState.searchQuery,
                 onSearchQueryChange = viewModel::onSearchQueryChange,
