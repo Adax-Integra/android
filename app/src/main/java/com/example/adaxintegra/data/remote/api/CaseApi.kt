@@ -5,6 +5,7 @@ import com.example.adaxintegra.data.remote.dto.CaseListResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseResponseDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseResponseDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseRequestDto
+import com.example.adaxintegra.data.remote.dto.CreateCaseResponseDto
 import com.example.adaxintegra.data.remote.dto.UserCasesResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -64,5 +65,5 @@ interface CaseApi {
         @Path("userId") userId: String,
         @Header("Authorization") authorization: String,
         @Body request: CreateCaseRequestDto,
-    ): CreateCaseRequestDto
+    ): CreateCaseResponseDto
 }

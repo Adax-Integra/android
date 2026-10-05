@@ -86,7 +86,7 @@ fun LabeledDropdownField(
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDimissRequest = { expanded = false },
+                onDismissRequest = { expanded = false },
             ){
                 options.forEach { option ->
                     DropdownMenuItem(
