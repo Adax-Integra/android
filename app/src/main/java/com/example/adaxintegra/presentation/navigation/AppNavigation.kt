@@ -25,6 +25,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScr
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
@@ -96,6 +97,9 @@ fun AppNavigation(
 
                         // V-11 belongs to the internal/admin records flow
                         "caseDetail/{caseId}" -> "records"
+
+                        // R-02 is opened from the external user's case list
+                        "createCase" -> "cases"
 
                         else -> currentRoute
                     }
@@ -184,6 +188,27 @@ fun AppNavigation(
                             navController.navigate("case/$caseId") {
                                 launchSingleTop = true
                             }
+                        },
+                        onCreateCaseClick = {
+                            navController.navigate("createCase") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // R-02: the external user registers a new case
+            composable("createCase") {
+                if (hasValidSession && isExternal) {
+                    CreateCaseScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onCaseCreated = {
+                            navController.popBackStack()
                         },
                     )
                 } else {
