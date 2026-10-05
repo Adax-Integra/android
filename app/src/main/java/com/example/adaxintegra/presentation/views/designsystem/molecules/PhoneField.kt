@@ -37,15 +37,15 @@ fun PhoneField(
     onPhoneChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: String = "Teléfono celular",
-    // keyboardactions adjusts the screen with the keyboard
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (errorMessage != null) Color.Red else Color.Gray,
             fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -86,7 +86,17 @@ fun PhoneField(
                 placeholder = "4421234567",
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
+                isError = errorMessage != null,
                 modifier = Modifier.weight(1f),
+            )
+        }
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = errorMessage,
+                style = AppTextStyle.BodySmall,
+                color = Color.Red,
+                fontWeight = FontWeight.Normal,
             )
         }
     }

@@ -24,10 +24,10 @@ fun AppTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    // keyboardactions adjusts the screen with the keyboard
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
     minLines: Int = 1,
+    isError: Boolean = false,
 ) {
     OutlinedTextField(
         value = value,
@@ -46,10 +46,10 @@ fun AppTextField(
         trailingIcon = trailingIcon,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
-        // keyboardactions adjusts the screen with the keyboard
         keyboardActions = keyboardActions,
         singleLine = singleLine,
         minLines = minLines,
+        isError = isError,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -59,6 +59,8 @@ fun AppTextField(
             unfocusedBorderColor = Color.LightGray,
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
+            errorBorderColor = Color.Red,
+            errorContainerColor = Color.White,
         ),
     )
 }

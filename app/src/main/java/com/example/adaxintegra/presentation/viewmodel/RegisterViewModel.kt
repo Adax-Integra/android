@@ -13,7 +13,7 @@ import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-// ViewModel to manage user registration screen logic
+// ViewModel to manage user registration screen logic with per-field validations
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
@@ -23,29 +23,29 @@ class RegisterViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
 
-    // Form field updates
+    // Form field updates clearing field-specific errors upon typing
     fun onNameChanged(name: String) {
-        _uiState.update { it.copy(name = name, error = null) }
+        _uiState.update { it.copy(name = name, nameError = null, error = null) }
     }
 
     fun onLastnameChanged(lastname: String) {
-        _uiState.update { it.copy(lastname = lastname, error = null) }
+        _uiState.update { it.copy(lastname = lastname, lastnameError = null, error = null) }
     }
 
     fun onPhoneChanged(phone: String) {
-        _uiState.update { it.copy(phone = phone, error = null) }
+        _uiState.update { it.copy(phone = phone, phoneError = null, error = null) }
     }
 
     fun onEmailChanged(email: String) {
-        _uiState.update { it.copy(email = email, error = null) }
+        _uiState.update { it.copy(email = email, emailError = null, error = null) }
     }
 
     fun onPasswordChanged(password: String) {
-        _uiState.update { it.copy(password = password, error = null) }
+        _uiState.update { it.copy(password = password, passwordError = null, confirmPasswordError = null, error = null) }
     }
 
     fun onConfirmPasswordChanged(confirmPassword: String) {
-        _uiState.update { it.copy(confirmPassword = confirmPassword, error = null) }
+        _uiState.update { it.copy(confirmPassword = confirmPassword, confirmPasswordError = null, error = null) }
     }
 
     // Toggle password visibility in the UI text fields
@@ -57,43 +57,90 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
     }
 
-    // Opens confirmation dialog after client validations pass
+    // Opens confirmation dialog only if all per-field validations pass
     fun register() {
         val state = _uiState.value
 
-        // Input validations before sending request
+        var hasError = false
+        var nameErr: String? = null
+        var lastnameErr: String? = null
+        var phoneErr: String? = null
+        var emailErr: String? = null
+        var passwordErr: String? = null
+        var confirmPasswordErr: String? = null
+
+        // Per-field validations
         if (state.name.isBlank()) {
-            _uiState.update { it.copy(error = "El nombre es obligatorio") }
-            return
+            nameErr = "El nombre es obligatorio"
+            hasError = true
         }
 
         if (state.lastname.isBlank()) {
-            _uiState.update { it.copy(error = "Los apellidos son obligatorios") }
-            return
+            lastnameErr = "Los apellidos son obligatorios"
+            hasError = true
         }
 
         if (state.phone.isBlank()) {
-            _uiState.update { it.copy(error = "El teléfono celular es obligatorio") }
-            return
+            phoneErr = "El teléfono celular es obligatorio"
+            hasError = true
+        } else if (state.phone.trim().length < 10) {
+            phoneErr = "El teléfono debe ser de 10 dígitos"
+            hasError = true
         }
 
+        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
         if (state.email.isBlank()) {
-            _uiState.update { it.copy(error = "El correo electrónico es obligatorio") }
+            emailErr = "El correo electrónico es obligatorio"
+            hasError = true
+        } else if (!state.email.trim().matches(emailRegex)) {
+            emailErr = "Ingresa un correo electrónico válido"
+            hasError = true
+        }
+
+        if (state.password.isBlank()) {
+            passwordErr = "La contraseña es obligatoria"
+            hasError = true
+        } else if (state.password.length < 8) {
+            passwordErr = "La contraseña debe tener al menos 8 caracteres"
+            hasError = true
+        }
+
+        if (state.confirmPassword.isBlank()) {
+            confirmPasswordErr = "Confirma tu contraseña"
+            hasError = true
+        } else if (state.password != state.confirmPassword) {
+            confirmPasswordErr = "Las contraseñas no coinciden"
+            hasError = true
+        }
+
+        // If any field validation fails, update errors and do NOT show confirmation dialog
+        if (hasError) {
+            _uiState.update {
+                it.copy(
+                    nameError = nameErr,
+                    lastnameError = lastnameErr,
+                    phoneError = phoneErr,
+                    emailError = emailErr,
+                    passwordError = passwordErr,
+                    confirmPasswordError = confirmPasswordErr,
+                )
+            }
             return
         }
 
-        if (state.password.length < 8) {
-            _uiState.update { it.copy(error = "La contraseña debe tener al menos 8 caracteres") }
-            return
+        // All validations passed, show confirmation dialog
+        _uiState.update {
+            it.copy(
+                showConfirmationDialog = true,
+                nameError = null,
+                lastnameError = null,
+                phoneError = null,
+                emailError = null,
+                passwordError = null,
+                confirmPasswordError = null,
+                error = null,
+            )
         }
-
-        if (state.password != state.confirmPassword) {
-            _uiState.update { it.copy(error = "Las contraseñas no coinciden") }
-            return
-        }
-
-        // Show confirmation dialog before executing API call
-        _uiState.update { it.copy(showConfirmationDialog = true, error = null) }
     }
 
     fun onDismissDialog() {
@@ -107,8 +154,8 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             registerUseCase(
-                name = state.name,
-                lastname = state.lastname,
+                name = state.name.trim(),
+                lastname = state.lastname.trim(),
                 phone = state.phone.trim(),
                 email = state.email.trim(),
                 password = state.password,

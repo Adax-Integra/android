@@ -60,6 +60,12 @@ fun RegisterForm(
     onRegisterClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
+    nameError: String? = null,
+    lastnameError: String? = null,
+    phoneError: String? = null,
+    emailError: String? = null,
+    passwordError: String? = null,
+    confirmPasswordError: String? = null,
     errorMessage: String? = null,
 ) {
     // This property allows the user to select the next field automatically when enter is pressed
@@ -81,6 +87,7 @@ fun RegisterForm(
             },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            errorMessage = nameError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -100,6 +107,7 @@ fun RegisterForm(
             },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            errorMessage = lastnameError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -110,6 +118,7 @@ fun RegisterForm(
             onPhoneChange = onPhoneChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            errorMessage = phoneError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -129,6 +138,7 @@ fun RegisterForm(
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            errorMessage = emailError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -159,6 +169,7 @@ fun RegisterForm(
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            errorMessage = passwordError,
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -205,6 +216,7 @@ fun RegisterForm(
                     onRegisterClick()
                 },
             ),
+            errorMessage = confirmPasswordError,
         )
 
         Spacer(modifier = Modifier.height(28.dp))

@@ -28,14 +28,14 @@ fun LabeledTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    // keyboardactions adjusts the screen with the keyboard
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (errorMessage != null) Color.Red else Color.Gray,
             fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -48,6 +48,16 @@ fun LabeledTextField(
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            isError = errorMessage != null,
         )
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = errorMessage,
+                style = AppTextStyle.BodySmall,
+                color = Color.Red,
+                fontWeight = FontWeight.Normal,
+            )
+        }
     }
 }
