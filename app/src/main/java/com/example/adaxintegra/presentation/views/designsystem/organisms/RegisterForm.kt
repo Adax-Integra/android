@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -15,8 +16,11 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -58,6 +62,9 @@ fun RegisterForm(
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
 ) {
+    // This property allows the user to select the next field automatically when enter is pressed
+    val focusManager = LocalFocusManager.current
+
     Column(modifier = modifier.fillMaxWidth()) {
         LabeledTextField(
             label = "Nombre(s)",
@@ -72,6 +79,8 @@ fun RegisterForm(
                     tint = Color.Gray,
                 )
             },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -89,6 +98,8 @@ fun RegisterForm(
                     tint = Color.Gray,
                 )
             },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -97,6 +108,8 @@ fun RegisterForm(
             countryCode = countryCode,
             phoneValue = phoneValue,
             onPhoneChange = onPhoneChange,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -114,7 +127,8 @@ fun RegisterForm(
                     tint = Color.Gray,
                 )
             },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -143,7 +157,8 @@ fun RegisterForm(
                 }
             },
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -182,7 +197,14 @@ fun RegisterForm(
                 }
             },
             visualTransformation = if (isConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            keyboardActions =
+            KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                    onRegisterClick()
+                },
+            ),
         )
 
         Spacer(modifier = Modifier.height(28.dp))

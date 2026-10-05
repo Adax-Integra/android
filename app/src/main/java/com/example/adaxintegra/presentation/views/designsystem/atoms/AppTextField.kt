@@ -2,6 +2,7 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -23,6 +24,8 @@ fun AppTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    // keyboardactions adjusts the screen with the keyboard
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
     minLines: Int = 1,
 ) {
@@ -43,6 +46,8 @@ fun AppTextField(
         trailingIcon = trailingIcon,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
+        // keyboardactions adjusts the screen with the keyboard
+        keyboardActions = keyboardActions,
         singleLine = singleLine,
         minLines = minLines,
         modifier = modifier.fillMaxWidth(),

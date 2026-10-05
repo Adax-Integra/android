@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.designsystem.molecules
 
-import android.R.attr.label
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -37,8 +37,11 @@ fun PhoneField(
     onPhoneChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: String = "Teléfono celular",
+    // keyboardactions adjusts the screen with the keyboard
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
-    Column(modifier = modifier.fillMaxWidth()){
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
@@ -74,13 +77,15 @@ fun PhoneField(
                     )
                 }
             }
+
             Spacer(modifier = Modifier.width(12.dp))
 
             AppTextField(
                 value = phoneValue,
                 onValueChange = onPhoneChange,
                 placeholder = "4421234567",
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -100,4 +105,3 @@ private fun PhoneFieldPreview() {
         )
     }
 }
-
