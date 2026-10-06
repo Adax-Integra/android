@@ -44,7 +44,15 @@ class ActivityLogViewModel @Inject constructor(
             getActivityLogUseCase(1, state.fromDate, state.toDate).collect { result ->
                 _uiState.update { current ->
                     when (result) {
-                        is Result.Loading -> current.copy(isLoading = true, error = null)
+                        // V-06 fix: starts from zero, so entries of the previous filter are not
+                        // shown and a cancelled "load more" does not block the next pages
+                        is Result.Loading -> current.copy(
+                            entries = emptyList(),
+                            hasNextPage = false,
+                            isLoading = true,
+                            isLoadingMore = false,
+                            error = null,
+                        )
 
                         is Result.Success -> {
                             currentPage = result.data.page
