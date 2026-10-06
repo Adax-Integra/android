@@ -20,6 +20,11 @@ interface AuthRepository {
         email: String
     ): Result<Unit>
 
+    suspend fun resetPassword(
+        token: String,
+        newPassword: String
+    ): Result<Unit>
+
     // Clears the session
     fun logout()
 }

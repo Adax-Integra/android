@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
@@ -28,7 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.adaxintegra.presentation.viewmodel.ForgotPasswordViewModel
+import com.example.adaxintegra.presentation.viewmodel.ResetPasswordViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
@@ -39,17 +38,14 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHead
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun ResetPasswordScreen(/*
+fun ResetPasswordScreen(
     viewModel: ResetPasswordViewModel = hiltViewModel(),
-    onResetPasswordClick: () -> Unit,
     token: String,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier,*/
+    modifier: Modifier = Modifier,
 ) {
 
-   /* val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var passwordVisible by remember { mutableStateOf(value = false) }
     var confirmPasswordVisible by remember { mutableStateOf(value = false) }
@@ -74,8 +70,8 @@ fun ResetPasswordScreen(/*
 
             LabeledTextField(
                 label = "Nueva contraseña",
-                value = password,
-                onValueChange = onPasswordChange,
+                value = uiState.password,
+                onValueChange = viewModel::onPasswordChange,
                 leadingIcon = {
                     AppIcon(
                         imageVector = Icons.Default.Lock,
@@ -119,8 +115,8 @@ fun ResetPasswordScreen(/*
 
             LabeledTextField(
                 label = "Confirmar contraseña",
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                value = uiState.confirmPassword,
+                onValueChange = viewModel::onConfirmPasswordChange,
                 leadingIcon = {
                     AppIcon(
                         imageVector = Icons.Default.Lock,
@@ -147,8 +143,10 @@ fun ResetPasswordScreen(/*
             Spacer(modifier = Modifier.height(24.dp))
 
             AppButton(
-                text = "Cabiar contraseña",
-                onClick = viewModel::onResetPasswordClick,
+                text = "Cambiar contraseña",
+                onClick = {
+                    viewModel.onResetPasswordClick(token)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 isLoading = uiState.isLoading,
             )
@@ -162,7 +160,17 @@ fun ResetPasswordScreen(/*
                     color = Color(0xFF2E7D32),
                 )
             }
+
+            uiState.errorMessage?.let { message ->
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodySmall,
+                    color = Color.Red,
+                )
+            }
         }
-    }*/
+    }
 }
 

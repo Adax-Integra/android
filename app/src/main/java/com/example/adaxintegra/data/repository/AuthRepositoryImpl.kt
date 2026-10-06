@@ -3,6 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.dto.ForgotPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
+import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
@@ -82,6 +83,25 @@ class AuthRepositoryImpl @Inject constructor(
 
             if (!response.success) {
                 throw IllegalStateException("No se pudo enviar el correo")
+            }
+
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
+        }
+    }
+
+    override suspend fun resetPassword(
+        token: String,
+        newPassword: String,
+    ): Result<Unit> {
+        return try {
+            val response = api.resetPassword(ResetPasswordRequestDto(token, newPassword))
+
+            if (!response.success) {
+                throw IllegalStateException("No se pudo actualizar la contraseña.")
             }
 
             Result.Success(Unit)

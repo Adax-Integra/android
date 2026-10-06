@@ -4,6 +4,9 @@ import com.example.adaxintegra.data.remote.dto.ForgotPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.ForgotPasswordResponseDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginResponseDto
+import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
+import com.example.adaxintegra.data.remote.dto.ResetPasswordResponseDto
+
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -18,8 +21,8 @@ interface AuthApi {
         @Body request: ForgotPasswordRequestDto,
     ): ForgotPasswordResponseDto
 
-    /*@POST("api/password-recovery/reset-password")
+    @POST("api/password-recovery/reset-password")
     suspend fun resetPassword(
         @Body request: ResetPasswordRequestDto,
-    ): ResetPasswordResponseDto*/
+    ): ResetPasswordResponseDto
 }
