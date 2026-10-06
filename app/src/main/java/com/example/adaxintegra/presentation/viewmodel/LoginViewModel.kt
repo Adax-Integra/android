@@ -47,7 +47,7 @@ class LoginViewModel @Inject constructor(
                                 is HttpException -> when (e.code()) {
                                     401 -> "Credenciales incorrectas"
                                     404 -> "Endpoint no encontrado (404)"
-                                    else -> "Error del servidor (${e.code()})"
+                                    else -> "Ingresa tus datos"
                                 }
                                 is IOException -> "Error de conexión: ${e.localizedMessage}"
                                 else -> e.localizedMessage ?: "Error desconocido"
