@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.adaxintegra.presentation.navigation.AppNavigation
-import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,11 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AdaxIntegraTheme {
-                AdminScreen(
-                    onManageUsersClick = {},
-                    onManageExpedientsClick = {},
-                    onAuditLogClick = {},
-                )
+                AppNavigation()
             }
         }
     }
