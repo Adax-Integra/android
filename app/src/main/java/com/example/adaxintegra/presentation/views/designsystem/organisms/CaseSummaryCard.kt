@@ -105,7 +105,7 @@ fun CaseSummaryCardPreview() {
     AdaxIntegraTheme {
         CaseSummaryCard(
             caseItem = Case(
-                caseId = "0c773060-06f9-4506-a2e0-230e99f40550",
+                caseId = "6a6s5a65-fa65s5a-ADda5d", // ID de un caso, generado aleatoriamente
                 caseNumber = "CASO-2026-112",
                 state = "Querétaro",
                 caseSteps = null,
