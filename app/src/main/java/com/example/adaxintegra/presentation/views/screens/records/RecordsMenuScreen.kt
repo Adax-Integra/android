@@ -51,6 +51,7 @@ fun RecordsMenuScreen(
             description = "Consulta una lista de todos los expedientes",
             // Temporary hardcoded UUID for testing
             // Here should be the view from V-05
+            // This is a real UserId but will change once V-05 is implemented
             nextScreen = { onUserCasesClick("f5e392c4-2c3d-4c50-9e9f-3d4ac269f2c5") },
             icon = AppIcons.UserAttributes,
         )
