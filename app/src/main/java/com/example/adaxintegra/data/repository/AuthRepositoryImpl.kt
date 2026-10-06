@@ -2,6 +2,7 @@ package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
+import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
@@ -76,5 +77,35 @@ class AuthRepositoryImpl @Inject constructor(
     override fun logout() {
         // Clears local state
         _session.value = null
+    }
+
+    override fun register(
+        name: String,
+        lastname: String,
+        phone: String,
+        email: String,
+        password: String,
+    ): Flow<Result<UserSession>> = flow {
+        emit(Result.Loading)
+        try {
+            val response = api.register(
+                RegisterRequestDto(
+                    name = name,
+                    lastName = lastname,
+                    phone = phone,
+                    email = email,
+                    password = password,
+                    confirmPassword = password,
+                ),
+            )
+            val session = UserSession(
+                token = response.data?.token ?: "",
+                userId = response.data?.userId,
+                role = response.data?.roles?.firstOrNull() ?: "external",
+            )
+            emit(Result.Success(session))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 }
