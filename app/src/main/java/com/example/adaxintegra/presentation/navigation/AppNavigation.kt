@@ -22,6 +22,7 @@ import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -136,12 +137,25 @@ fun AppNavigation(
                 ForgotPasswordScreen(
                     onBack = {
                         navController.popBackStack() },
-                    viewModel = hiltViewModel(),
-                    //onSendEmailClick = {}
+                    viewModel = hiltViewModel()
                 )
             }
 
-            //enter new password screen
+            //reset password screen
+            composable("resetPassword/{token}") { entry ->
+                val token = entry.arguments?.getString("token")
+
+                if (!token.isNullOrBlank()) {
+                    ResetPasswordScreen(
+                        token = token,
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No se encontró el token de recuperación.")
+                }
+            }
 
             composable("home") {
                 if (hasValidSession) {
