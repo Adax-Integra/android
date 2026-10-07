@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
@@ -33,6 +34,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
@@ -92,7 +94,11 @@ fun AppNavigation(
             ) {
                 val selectedRoute =
                     when (currentRoute) {
-                        "collaboratorCases" -> "records"
+                        // Keep the records tab selected throughout this flow.
+                        "collaboratorCases",
+                        "allRecords",
+                        "recordFromUser/{userId}",
+                            -> "records"
 
                         // G-03: collaborators screen is opened from profile
                         "collaborators" -> "profile"
@@ -180,7 +186,36 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
-                        onUserCasesClick = { userId ->
+                        onAllRecordsClick = {
+                            navController.navigate("allRecords") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("allRecords") {
+                // Check access before creating the ViewModel and loading records.
+                if (hasValidSession && canViewAllCases) {
+                    val recordsViewModel: RecordsViewModel = hiltViewModel()
+                    val recordsUiState by recordsViewModel.uiState.collectAsStateWithLifecycle()
+
+                    RecordsScreen(
+                        uiState = recordsUiState,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onSearchChange = recordsViewModel::searchRecords,
+                        onApplyFilters = recordsViewModel::applyFilters,
+                        onClearFilters = recordsViewModel::clearFilters,
+                        onRetry = recordsViewModel::retry,
+                        onNextPage = recordsViewModel::nextPage,
+                        onPreviousPage = recordsViewModel::previousPage,
+                        onRecordClick = { userId ->
+                            // V-10 loads the cases belonging to the selected owner.
                             navController.navigate("recordFromUser/$userId") {
                                 launchSingleTop = true
                             }
