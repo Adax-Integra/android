@@ -5,20 +5,24 @@ import com.example.adaxintegra.domain.model.UserSession
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Interface defining authentication contracts for Supabase Auth and remote API services.
+ * Covers user registration, login, session observation, email verification OTP, and logout.
+ */
 interface AuthRepository {
-    // Exposes session changes. A null value means no user is signed in.
+    // Exposes current user session changes. A null value indicates no active user session.
     val session: StateFlow<UserSession?>
 
-    // Emits state while singing in
+    // // G-09-Register: Executes user login and validates email confirmation status
     fun login(
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Clears the session
+    // Clears local and active user session state
     fun logout()
 
-    // register
+    // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
     fun register(
         name: String,
         lastname: String,
@@ -27,6 +31,12 @@ interface AuthRepository {
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Resend verification email
+    // // G-09-VerifyOTP: Resends the 6-digit confirmation email OTP code to the specified email
     fun resendVerificationEmail(email: String): Flow<Result<Unit>>
+
+    // // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user against Supabase Auth
+    fun verifyEmailCode(
+        email: String,
+        code: String,
+    ): Flow<Result<UserSession>>
 }

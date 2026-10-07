@@ -52,25 +52,32 @@ class LoginViewModel @Inject constructor(
                         )
 
                         is Result.Error -> {
-                            val isUnconfirmed = result.exception.message == "email_not_confirmed"
-                            val errorMessage = if (isUnconfirmed) {
-                                "Debes confirmar tu correo electrónico antes de iniciar sesión."
-                            } else {
-                                when (val e = result.exception) {
-                                    is HttpException -> when (e.code()) {
-                                        401 -> "Credenciales incorrectas"
-                                        404 -> "Endpoint no encontrado (404)"
-                                        else -> "Ingresa tus datos"
-                                    }
+                            val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
+                            val isUnconfirmed = rawMsg.contains("email_not_confirmed", ignoreCase = true) ||
+                                rawMsg.contains("Email not confirmed", ignoreCase = true) ||
+                                rawMsg == "email_not_confirmed"
 
-                                    is IOException -> "Error de conexión: ${e.localizedMessage}"
-                                    else -> e.localizedMessage ?: "Error desconocido"
+                            val isInvalidCredentials = rawMsg.contains("invalid login credentials", ignoreCase = true) ||
+                                rawMsg.contains("invalid_credentials", ignoreCase = true)
+
+                            val errorMessage = when {
+                                isUnconfirmed -> "Debes confirmar tu correo electrónico antes de iniciar sesión."
+                                isInvalidCredentials -> "Correo o contraseña incorrectos"
+                                result.exception is HttpException -> when (result.exception.code()) {
+                                    400 -> "Credenciales incorrectas"
+                                    401 -> "Credenciales incorrectas"
+                                    404 -> "Endpoint no encontrado (404)"
+                                    else -> "Error en la solicitud (${result.exception.code()})"
                                 }
+
+                                result.exception is IOException -> "Error de conexión a internet"
+                                else -> rawMsg.ifBlank { "Error desconocido al iniciar sesión" }
                             }
+
                             state.copy(
                                 isLoading = false,
                                 error = errorMessage,
-                                isEmailNotConfirmed = isUnconfirmed,
+                                isEmailNotConfirmed = isUnconfirmed || isInvalidCredentials,
                             )
                         }
                     }

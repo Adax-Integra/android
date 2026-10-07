@@ -29,8 +29,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: ""
-        val supabaseKey = localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
+        val supabaseUrl = (localProperties.getProperty("SUPABASE_URL") ?: "").trim()
+        val supabaseKey = (localProperties.getProperty("SUPABASE_ANON_KEY") ?: "").trim()
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseKey\"")
     }

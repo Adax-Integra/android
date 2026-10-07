@@ -1,12 +1,19 @@
 <resources>
     <string name="app_name">AdaxIntegra</string>
+    <string name="verify_account_title">Verifica tu cuenta</string>
+    <string name="verify_account_subtitle">Enviamos un código de 6 dígitos a tu correo. Ingrésalo para completar tu registro. Si no lo ves, revisa tu carpeta de spam.</string>
+    <string name="code_sent_to">CÓDIGO ENVIADO A</string>
+    <string name="verify_button">Verificar</string>
+    <string name="did_not_receive_code">¿No recibiste el código?</string>
+    <string name="resend_code_in">Reenviar código en 0:%1$02d</string>
+    <string name="resend_attempt">Intento %1$d de %2$d</string>
     <string name="pending_verification_title">Revisa tu correo</string>
-    <string name="pending_verification_subtitle">Hemos enviado un enlace de confirmación a:</string>
-    <string name="pending_verification_instruction">Haz clic en el enlace del correo para activar tu cuenta antes de iniciar sesión.</string>
+    <string name="pending_verification_subtitle">Hemos enviado un código de confirmación a:</string>
+    <string name="pending_verification_instruction">Ingresa el código de 6 dígitos para activar tu cuenta antes de iniciar sesión.</string>
     <string name="resend_email">Reenviar correo</string>
     <string name="resend_email_cooldown">Reenviar en %1$ds</string>
-    <string name="resend_email_success">Correo de verificación reenviado exitosamente.</string>
-    <string name="resend_email_error">Ocurrió un error al reenviar el correo.</string>
+    <string name="resend_email_success">Código de 6 dígitos reenviado exitosamente.</string>
+    <string name="resend_email_error">Ocurrió un error al reenviar el código.</string>
     <string name="back_to_login">Volver al inicio de sesión</string>
     <string name="email_not_confirmed_error">Debes confirmar tu correo electrónico antes de iniciar sesión.</string>
 </resources>

@@ -171,16 +171,22 @@ class RegisterViewModel @Inject constructor(
                         )
 
                         is Result.Error -> {
-                            val errorMessage = when (val e = result.exception) {
-                                is HttpException -> when (e.code()) {
+                            val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
+                            val errorMessage = when {
+                                rawMsg.contains("User already registered", ignoreCase = true) ||
+                                    rawMsg.contains("user_already_exists", ignoreCase = true) -> "El correo electrónico ya está registrado"
+
+                                rawMsg.contains("Password should be at least", ignoreCase = true) -> "La contraseña debe tener al menos 8 caracteres"
+
+                                result.exception is HttpException -> when (result.exception.code()) {
                                     400 -> "Datos de registro inválidos"
                                     409 -> "El correo o teléfono ya está registrado"
-                                    else -> "Error del servidor (${e.code()})"
+                                    else -> "Error del servidor (${result.exception.code()})"
                                 }
 
-                                is IOException -> "Error de conexión a internet"
+                                result.exception is IOException -> "Error de conexión a internet"
 
-                                else -> e.localizedMessage ?: "Error al registrar la cuenta"
+                                else -> rawMsg.ifBlank { "Error al registrar la cuenta" }
                             }
                             current.copy(isLoading = false, error = errorMessage)
                         }

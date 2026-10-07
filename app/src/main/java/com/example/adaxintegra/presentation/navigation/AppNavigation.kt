@@ -184,6 +184,11 @@ fun AppNavigation(
                             popUpTo("login") { inclusive = true }
                         }
                     },
+                    onVerificationSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
                 )
             }
 
