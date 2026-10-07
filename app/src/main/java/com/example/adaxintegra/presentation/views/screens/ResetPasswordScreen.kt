@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
+import kotlinx.coroutines.delay
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -43,6 +45,7 @@ fun ResetPasswordScreen(
     token: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onResetPasswordSuccess: () -> Unit,
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -159,6 +162,14 @@ fun ResetPasswordScreen(
                     style = AppTextStyle.BodySmall,
                     color = Color(0xFF2E7D32),
                 )
+            }
+
+            //redirect to login after success message appears
+            LaunchedEffect(uiState.successMessage) {
+                if (uiState.successMessage != null) {
+                    delay(2000)
+                    onResetPasswordSuccess()
+                }
             }
 
             uiState.errorMessage?.let { message ->

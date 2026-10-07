@@ -167,6 +167,13 @@ fun AppNavigation(
                         onBack = {
                             navController.popBackStack()
                         },
+                        onResetPasswordSuccess = {
+                            navController.navigate("login") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            }
+                        }
                     )
                 } else {
                     Text("No se encontró el token de recuperación.")
