@@ -31,6 +31,8 @@ fun Text(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     fontWeight: FontWeight = FontWeight.Normal,
+    // Shows all lines unless a limit is provided.
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     val textStyle: TextStyle =
         when (style) {
@@ -51,5 +53,6 @@ fun Text(
         textAlign = textAlign,
         overflow = overflow,
         fontWeight = fontWeight,
+        maxLines = maxLines,
     )
 }

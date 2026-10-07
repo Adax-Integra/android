@@ -32,4 +32,10 @@ sealed class BottomNavBarItem(
         title = "Mis expedientes",
         icon = AppIcons.Folder,
     )
+
+    data object Administrar : BottomNavBarItem(
+        route = "admin",
+        title = "Administrar",
+        icon = AppIcons.Admin,
+    )
 }

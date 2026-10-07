@@ -34,26 +34,42 @@ class AddCollaboratorViewModel @Inject constructor(
         _uiState.update { AddCollaboratorUiState() }
     }
 
+    // Closes the confirmation dialog ("Aceptar")
+    fun dismissSuccessMessage() {
+        _uiState.update { it.copy(successMessage = null) }
+    }
+
+    // Each input is cut at its maximum length
     fun onNameChange(value: String) {
-        _uiState.update { it.copy(name = value, fieldErrors = it.fieldErrors - "name", generalError = null) }
+        val limited = value.take(MAX_NAME_LENGTH)
+        _uiState.update { it.copy(name = limited, fieldErrors = it.fieldErrors - "name", generalError = null) }
     }
 
     fun onLastNameChange(value: String) {
-        _uiState.update { it.copy(lastName = value, fieldErrors = it.fieldErrors - "lastName", generalError = null) }
+        val limited = value.take(MAX_LAST_NAME_LENGTH)
+        _uiState.update { it.copy(lastName = limited, fieldErrors = it.fieldErrors - "lastName", generalError = null) }
     }
 
+    // Emails never contain spaces, so they are removed while typing
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, fieldErrors = it.fieldErrors - "email", generalError = null) }
+        val limited = value.filter { !it.isWhitespace() }.take(MAX_EMAIL_LENGTH)
+        _uiState.update { it.copy(email = limited, fieldErrors = it.fieldErrors - "email", generalError = null) }
     }
 
     fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(password = value, fieldErrors = it.fieldErrors - "password", generalError = null) }
+        val limited = value.take(MAX_PASSWORD_LENGTH)
+        _uiState.update { it.copy(password = limited, fieldErrors = it.fieldErrors - "password", generalError = null) }
     }
 
-    // Only digits, maximum 10 (the +52 is added when saving)
+    // Only digits, maximum 10 (same rule as the backend)
     fun onPhoneChange(value: String) {
         val digits = value.filter { it.isDigit() }.take(PHONE_LENGTH)
         _uiState.update { it.copy(phone = digits, fieldErrors = it.fieldErrors - "phone", generalError = null) }
+    }
+
+    // Country code chosen in the selector
+    fun onCountryCodeChange(code: String) {
+        _uiState.update { it.copy(countryCode = code, fieldErrors = it.fieldErrors - "phone", generalError = null) }
     }
 
     fun save() {
@@ -69,18 +85,19 @@ class AddCollaboratorViewModel @Inject constructor(
             lastName = state.lastName.trim(),
             email = state.email.trim().lowercase(),
             password = state.password,
-            phone = if (state.phone.isBlank()) null else "+52${state.phone}",
+            phone = "${state.countryCode}${state.phone}",
         )
 
         viewModelScope.launch {
-            createCollaboratorUseCase(SESSION_TOKEN, collaborator).collect { result ->
+            createCollaboratorUseCase(collaborator).collect { result ->
                 _uiState.update { current ->
                     when (result) {
                         is Result.Loading -> current.copy(isSaving = true, generalError = null)
 
-                        // Closes the form and shows a confirmation
+                        // Closes the form and opens the confirmation dialog
                         is Result.Success -> AddCollaboratorUiState(
-                            successMessage = "Colaboradora ${result.data.name} agregada correctamente.",
+                            successMessage = "La colaboradora ${result.data.name} ${result.data.lastName} " +
+                                "fue registrada correctamente.",
                         )
 
                         is Result.Error -> errorState(current, result.exception)
@@ -96,19 +113,31 @@ class AddCollaboratorViewModel @Inject constructor(
 
         if (state.name.isBlank()) {
             errors["name"] = "El nombre es obligatorio."
+        } else if (state.name.trim().length > MAX_NAME_LENGTH) {
+            errors["name"] = "El nombre debe tener máximo $MAX_NAME_LENGTH caracteres."
         }
+
         if (state.lastName.isBlank()) {
             errors["lastName"] = "Los apellidos son obligatorios."
+        } else if (state.lastName.trim().length > MAX_LAST_NAME_LENGTH) {
+            errors["lastName"] = "Los apellidos deben tener máximo $MAX_LAST_NAME_LENGTH caracteres."
         }
+
         if (state.email.isBlank()) {
             errors["email"] = "El correo es obligatorio."
+        } else if (state.email.length > MAX_EMAIL_LENGTH) {
+            errors["email"] = "El correo debe tener máximo $MAX_EMAIL_LENGTH caracteres."
         } else if (!EMAIL_REGEX.matches(state.email.trim())) {
             errors["email"] = "Ingresa un correo válido."
         }
+
         if (state.password.length < MIN_PASSWORD_LENGTH) {
-            errors["password"] = "La contraseña debe tener al menos 8 caracteres."
+            errors["password"] = "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres."
+        } else if (state.password.length > MAX_PASSWORD_LENGTH) {
+            errors["password"] = "La contraseña debe tener máximo $MAX_PASSWORD_LENGTH caracteres."
         }
-        if (state.phone.isNotBlank() && state.phone.length != PHONE_LENGTH) {
+
+        if (state.phone.length != PHONE_LENGTH) {
             errors["phone"] = "El teléfono debe tener 10 dígitos."
         }
 
@@ -135,11 +164,12 @@ class AddCollaboratorViewModel @Inject constructor(
     }
 
     companion object {
-        // TODO: replace with the logged-in admin's token once the login session is stored
-        private const val SESSION_TOKEN = ""
-
         private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
         private const val MIN_PASSWORD_LENGTH = 8
+        private const val MAX_NAME_LENGTH = 50
+        private const val MAX_LAST_NAME_LENGTH = 50
+        private const val MAX_EMAIL_LENGTH = 128
+        private const val MAX_PASSWORD_LENGTH = 128
         private const val PHONE_LENGTH = 10
     }
 }

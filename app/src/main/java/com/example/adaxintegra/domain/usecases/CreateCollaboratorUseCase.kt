@@ -12,10 +12,10 @@ import javax.inject.Inject
 class CreateCollaboratorUseCase @Inject constructor(
     private val repository: CollaboratorRepository,
 ) {
-    operator fun invoke(token: String, collaborator: NewCollaborator): Flow<Result<Collaborator>> = flow {
+    operator fun invoke(collaborator: NewCollaborator): Flow<Result<Collaborator>> = flow {
         try {
             emit(Result.Loading)
-            val created = repository.createCollaborator(token, collaborator)
+            val created = repository.createCollaborator(collaborator)
             emit(Result.Success(created))
         } catch (e: Exception) {
             emit(Result.Error(e))

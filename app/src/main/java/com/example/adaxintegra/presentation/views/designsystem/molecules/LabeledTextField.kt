@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,13 +28,14 @@ fun LabeledTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (errorMessage != null) Color.Red else Color.Gray,
             fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -45,6 +47,8 @@ fun LabeledTextField(
             trailingIcon = trailingIcon,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            isError = errorMessage != null,
         )
         if (errorMessage != null) {
             Spacer(modifier = Modifier.height(4.dp))
@@ -52,7 +56,8 @@ fun LabeledTextField(
                 text = errorMessage,
                 style = AppTextStyle.BodySmall,
                 color = Color.Red,
-                )
+                fontWeight = FontWeight.Normal,
+            )
         }
     }
 }
