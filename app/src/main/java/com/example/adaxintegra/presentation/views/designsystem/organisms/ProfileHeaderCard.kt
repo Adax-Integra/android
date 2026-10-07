@@ -96,9 +96,11 @@ fun ProfileHeaderCard(
 
 private fun calculateInitials(fullName: String): String {
     val parts = fullName.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
-    val first = parts[0].firstOrNull()?.uppercaseChar() ?: ""
-    val second = parts[1].firstOrNull()?.uppercaseChar() ?: ""
-    return "$first$second"
+    if (parts.isEmpty()) return "U"
+    if (parts.size == 1) return parts[0].take(2).uppercase()
+    val first = parts[0].firstOrNull()?.uppercaseChar() ?: 'U'
+    val second = parts[1].firstOrNull()?.uppercaseChar() ?: ' '
+    return "$first$second".trim().ifEmpty { "U" }
 }
 
 @Suppress("ktlint:standard:function-naming")
