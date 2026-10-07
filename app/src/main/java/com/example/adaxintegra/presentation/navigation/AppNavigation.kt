@@ -29,12 +29,13 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import android.net.Uri
 
-// provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
+    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
@@ -51,6 +52,21 @@ fun AppNavigation(
             (isExternal || canViewAllCases)
 
     val navController = rememberNavController()
+
+    //extracting token from the recovery link
+    LaunchedEffect(deepLinkUri) {
+        val token = deepLinkUri?.getQueryParameter("token")
+
+        if (
+            deepLinkUri?.path == "/reset-password" &&
+            !token.isNullOrBlank()
+        ) {
+            navController.navigate("resetPassword/$token") {
+                launchSingleTop = true
+            }
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 

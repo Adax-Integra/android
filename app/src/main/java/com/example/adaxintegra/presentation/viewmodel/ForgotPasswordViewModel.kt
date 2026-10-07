@@ -77,7 +77,7 @@ class ForgotPasswordViewModel
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(
-                            isLoading = true,
+                            isLoading = false,
                             successMessage = "Correo ha sido enviado.",
                             errorMessage = null,
                         )

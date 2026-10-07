@@ -13,9 +13,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val deepLinkUri = intent?.data
+
         setContent {
             AdaxIntegraTheme {
-                AppNavigation()
+                AppNavigation(
+                    deepLinkUri = deepLinkUri
+                )
             }
         }
     }
