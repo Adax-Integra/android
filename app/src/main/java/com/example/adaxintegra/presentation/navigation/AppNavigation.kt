@@ -16,11 +16,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
@@ -68,7 +70,8 @@ fun AppNavigation(
                 !hasValidSession &&
                     currentRoute != null &&
                     currentRoute != "login" &&
-                    currentRoute != "register" -> "login"
+                    currentRoute != "register" &&
+                    !currentRoute.startsWith("pendingVerification") -> "login"
 
                 else -> null
             }
@@ -89,7 +92,8 @@ fun AppNavigation(
                 hasValidSession &&
                 currentRoute != null &&
                 currentRoute != "login" &&
-                currentRoute != "register"
+                currentRoute != "register" &&
+                !currentRoute.startsWith("pendingVerification")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -160,8 +164,23 @@ fun AppNavigation(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onRegisterSuccess = {
-                        navController.navigate("home") {
+                    onRegisterSuccess = { email ->
+                        navController.navigate("pendingVerification/$email") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            composable("pendingVerification/{email}") { backStackEntry ->
+                val email = backStackEntry.arguments?.getString("email") ?: ""
+                val pendingVerificationViewModel: PendingVerificationViewModel = hiltViewModel()
+
+                PendingVerificationScreen(
+                    email = email,
+                    viewModel = pendingVerificationViewModel,
+                    onBackToLogin = {
+                        navController.navigate("login") {
                             popUpTo("login") { inclusive = true }
                         }
                     },

@@ -39,7 +39,7 @@ import com.example.adaxintegra.ui.theme.Purple
 fun RegisterScreen(
     viewModel: RegisterViewModel,
     onBackClick: () -> Unit,
-    onRegisterSuccess: (String?) -> Unit,
+    onRegisterSuccess: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -68,7 +68,7 @@ fun RegisterScreen(
 fun RegisterScreen(
     uiState: RegisterUiState,
     onBackClick: () -> Unit,
-    onRegisterSuccess: (String?) -> Unit,
+    onRegisterSuccess: (String) -> Unit,
     onNameChange: (String) -> Unit,
     onLastnameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
@@ -84,7 +84,7 @@ fun RegisterScreen(
 ) {
     LaunchedEffect(uiState.isRegisterSuccess) {
         if (uiState.isRegisterSuccess) {
-            onRegisterSuccess(uiState.userRole)
+            onRegisterSuccess(uiState.email)
         }
     }
 

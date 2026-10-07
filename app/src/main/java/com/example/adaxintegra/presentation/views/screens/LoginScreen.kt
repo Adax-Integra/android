@@ -54,6 +54,10 @@ fun LoginScreen(
             onForgotPasswordClick = { /* recover password */ },
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
+            isEmailNotConfirmed = uiState.isEmailNotConfirmed,
+            onResendEmailClick = { viewModel.resendVerificationEmail() },
+            isResendingEmail = uiState.isResendingEmail,
+            resendSuccessMessage = uiState.resendSuccessMessage,
         )
 
         Spacer(modifier = Modifier.height(32.dp))

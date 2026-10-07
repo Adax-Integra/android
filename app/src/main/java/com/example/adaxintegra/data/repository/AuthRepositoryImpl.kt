@@ -6,11 +6,16 @@ import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.OtpType
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,11 +23,12 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val api: AuthApi,
+    private val supabase: SupabaseClient,
 ) : AuthRepository {
     // Keeps the session in memory until logout or termination process
     private val _session = MutableStateFlow<UserSession?>(null)
 
-    // Other componnents can observe the session without modifying it directly
+    // Other components can observe the session without modifying it directly
     override val session = _session.asStateFlow()
 
     override fun login(
@@ -32,6 +38,20 @@ class AuthRepositoryImpl @Inject constructor(
         emit(Result.Loading)
 
         try {
+            // Check email confirmation via Supabase if direct auth is used
+            try {
+                supabase.auth.signInWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("email_not_confirmed", ignoreCase = true) == true ||
+                    e.message?.contains("Email not confirmed", ignoreCase = true) == true
+                ) {
+                    throw IllegalStateException("email_not_confirmed")
+                }
+            }
+
             val response = api.login(LoginRequestDto(email, password))
 
             if (!response.success) {
@@ -40,7 +60,7 @@ class AuthRepositoryImpl @Inject constructor(
 
             val data = response.data
 
-            // Return null if there is not a rol
+            // Return null if there is not a role
             val role = data.roles?.singleOrNull()
 
             // Rejects missing or unsupported roles before creating a session
@@ -67,8 +87,17 @@ class AuthRepositoryImpl @Inject constructor(
             _session.value = userSession
             emit(Result.Success(userSession))
         } catch (exception: CancellationException) {
-            // Preserves coroutine cancellation insted of reporting a login error
+            // Preserves coroutine cancellation instead of reporting a login error
             throw exception
+        } catch (exception: HttpException) {
+            val errorBody = exception.response()?.errorBody()?.string() ?: ""
+            if (errorBody.contains("email_not_confirmed", ignoreCase = true) ||
+                errorBody.contains("Email not confirmed", ignoreCase = true)
+            ) {
+                emit(Result.Error(IllegalStateException("email_not_confirmed")))
+            } else {
+                emit(Result.Error(exception))
+            }
         } catch (exception: Exception) {
             emit(Result.Error(exception))
         }
@@ -88,6 +117,16 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
         try {
+            // Attempt registration in Supabase Auth
+            try {
+                supabase.auth.signUpWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
+            } catch (_: Exception) {
+                // Backend or Supabase handling
+            }
+
             val response = api.register(
                 RegisterRequestDto(
                     name = name,
@@ -104,6 +143,16 @@ class AuthRepositoryImpl @Inject constructor(
                 role = response.data?.roles?.firstOrNull() ?: "external",
             )
             emit(Result.Success(session))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
+    }
+
+    override fun resendVerificationEmail(email: String): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try {
+            supabase.auth.resendEmail(OtpType.Email.SIGNUP, email)
+            emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
         }

@@ -53,6 +53,10 @@ fun LoginForm(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
+    isEmailNotConfirmed: Boolean = false,
+    onResendEmailClick: () -> Unit = {},
+    isResendingEmail: Boolean = false,
+    resendSuccessMessage: String? = null,
 ) {
     var passwordVisible by remember { mutableStateOf(value = false) }
 
@@ -152,6 +156,29 @@ fun LoginForm(
                 text = it,
                 style = AppTextStyle.BodyMedium,
                 color = Color.Red,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        if (isEmailNotConfirmed) {
+            Spacer(modifier = Modifier.height(16.dp))
+            AppButton(
+                text = "Reenviar correo de verificación",
+                onClick = onResendEmailClick,
+                variant = ButtonVariant.Outlined,
+                isLoading = isResendingEmail,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        resendSuccessMessage?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                style = AppTextStyle.BodyMedium,
+                color = Color(0xFF2E7D32),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.fillMaxWidth(),

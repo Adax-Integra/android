@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.LoginUseCase
+import com.example.adaxintegra.domain.usecases.ResendVerificationEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,17 +18,18 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
+    private val resendVerificationEmailUseCase: ResendVerificationEmailUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
     fun onEmailChanger(email: String) {
-        _uiState.update { it.copy(email = email) }
+        _uiState.update { it.copy(email = email, isEmailNotConfirmed = false, error = null) }
     }
 
     fun onPasswordChanged(password: String) {
-        _uiState.update { it.copy(password = password) }
+        _uiState.update { it.copy(password = password, isEmailNotConfirmed = false, error = null) }
     }
 
     fun login() {
@@ -35,25 +37,66 @@ class LoginViewModel @Inject constructor(
             loginUseCase(_uiState.value.email, _uiState.value.password).collect { result ->
                 _uiState.update { state ->
                     when (result) {
-                        is Result.Loading -> state.copy(isLoading = true, error = null)
+                        is Result.Loading -> state.copy(
+                            isLoading = true,
+                            error = null,
+                            isEmailNotConfirmed = false,
+                            resendSuccessMessage = null,
+                        )
+
                         is Result.Success -> state.copy(
                             isLoading = false,
                             isLoginSuccess = true,
                             userId = result.data.userId,
                             userRole = result.data.role,
                         )
+
                         is Result.Error -> {
-                            val errorMessage = when (val e = result.exception) {
-                                is HttpException -> when (e.code()) {
-                                    401 -> "Credenciales incorrectas"
-                                    404 -> "Endpoint no encontrado (404)"
-                                    else -> "Ingresa tus datos"
+                            val isUnconfirmed = result.exception.message == "email_not_confirmed"
+                            val errorMessage = if (isUnconfirmed) {
+                                "Debes confirmar tu correo electrónico antes de iniciar sesión."
+                            } else {
+                                when (val e = result.exception) {
+                                    is HttpException -> when (e.code()) {
+                                        401 -> "Credenciales incorrectas"
+                                        404 -> "Endpoint no encontrado (404)"
+                                        else -> "Ingresa tus datos"
+                                    }
+
+                                    is IOException -> "Error de conexión: ${e.localizedMessage}"
+                                    else -> e.localizedMessage ?: "Error desconocido"
                                 }
-                                is IOException -> "Error de conexión: ${e.localizedMessage}"
-                                else -> e.localizedMessage ?: "Error desconocido"
                             }
-                            state.copy(isLoading = false, error = errorMessage)
+                            state.copy(
+                                isLoading = false,
+                                error = errorMessage,
+                                isEmailNotConfirmed = isUnconfirmed,
+                            )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    fun resendVerificationEmail() {
+        val targetEmail = _uiState.value.email
+        if (targetEmail.isBlank()) return
+
+        viewModelScope.launch {
+            resendVerificationEmailUseCase(targetEmail).collect { result ->
+                _uiState.update { state ->
+                    when (result) {
+                        is Result.Loading -> state.copy(isResendingEmail = true)
+                        is Result.Success -> state.copy(
+                            isResendingEmail = false,
+                            resendSuccessMessage = "Correo de verificación reenviado exitosamente.",
+                        )
+
+                        is Result.Error -> state.copy(
+                            isResendingEmail = false,
+                            error = "Error al reenviar el correo. Inténtalo de nuevo.",
+                        )
                     }
                 }
             }

@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">AdaxIntegra</string>
+    <string name="pending_verification_title">Revisa tu correo</string>
+    <string name="pending_verification_subtitle">Hemos enviado un enlace de confirmación a:</string>
+    <string name="pending_verification_instruction">Haz clic en el enlace del correo para activar tu cuenta antes de iniciar sesión.</string>
+    <string name="resend_email">Reenviar correo</string>
+    <string name="resend_email_cooldown">Reenviar en %1$ds</string>
+    <string name="resend_email_success">Correo de verificación reenviado exitosamente.</string>
+    <string name="resend_email_error">Ocurrió un error al reenviar el correo.</string>
+    <string name="back_to_login">Volver al inicio de sesión</string>
+    <string name="email_not_confirmed_error">Debes confirmar tu correo electrónico antes de iniciar sesión.</string>
 </resources>

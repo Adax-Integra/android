@@ -26,4 +26,7 @@ interface AuthRepository {
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
+
+    // Resend verification email
+    fun resendVerificationEmail(email: String): Flow<Result<Unit>>
 }
