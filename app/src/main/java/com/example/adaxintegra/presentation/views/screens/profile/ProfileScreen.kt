@@ -76,15 +76,9 @@ fun ProfileScreen(
                     onBack = onBack,
                 )
 
-                // format date by cutting down string
-                val formattedDate = profile.createdAt
-                    .substring(0, 7)
-
                 // header card that includes the name of profile
                 ProfileHeaderCard(
-                    icon = AppIcons.Account,
                     name = "${profile.name} ${profile.lastName}",
-                    createdAt = "Desde $formattedDate",
                 )
 
                 Spacer(
