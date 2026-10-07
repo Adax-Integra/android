@@ -52,6 +52,13 @@ fun RecordsMenuScreen(
             nextScreen = onAllRecordsClick,
             icon = AppIcons.UserAttributes,
         )
+
+        RecordMenuOptionCard(
+            title = "Reportes",
+            description = "Consulta los reportes de casos",
+            nextScreen = onAllRecordsClick, // TODO the report select range screen
+            icon = AppIcons.Reports,
+        )
     }
 }
 

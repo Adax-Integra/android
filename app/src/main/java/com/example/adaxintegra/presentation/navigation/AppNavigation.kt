@@ -23,6 +23,7 @@ import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -133,9 +134,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "login",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
