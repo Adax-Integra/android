@@ -22,6 +22,7 @@ import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -117,6 +118,7 @@ fun AppNavigation(
                         }
                     },
                     showRecords = canViewAllCases,
+                    isAdmin = isAdmin,
                 )
             }
         },
@@ -345,6 +347,28 @@ fun AppNavigation(
                     } else {
                         Text("No se encontró el identificador del caso")
                     }
+                }
+            }
+
+            composable("admin") {
+                if (hasValidSession && isAdmin) {
+                    AdminScreen(
+                        onManageUsersClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onManageExpedientsClick = {
+                            navController.navigate("records") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onAuditLogClick = {
+                            // Pantalla de bitácora
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
         }
