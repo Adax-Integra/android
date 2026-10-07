@@ -6,6 +6,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
@@ -19,19 +20,20 @@ import com.example.adaxintegra.ui.theme.White
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    placeholderText: String = "Buscar por nombre o caso...",
 ) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text(text = "Buscar por nombre o caso...", fontWeight = FontWeight.Normal) },
+        placeholder = { Text(text = placeholderText, fontWeight = FontWeight.Normal) },
         leadingIcon = { AppIcon(imageVector = AppIcons.Search, contentDescription = null) },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors =
-            OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = White,
-                unfocusedContainerColor = White,
-            ),
+        OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = White,
+            unfocusedContainerColor = White,
+        ),
         modifier = Modifier.fillMaxWidth(),
     )
 }

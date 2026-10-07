@@ -17,7 +17,6 @@ class GetRecordsUseCase @Inject constructor(
         search: String = "",
         hasOpenCases: Boolean? = null,
         status: String? = null,
-        Success: Result.Companion.(RecordPage) -> Result<RecordPage>,
     ): Flow<Result<RecordPage>> = flow {
         emit(Result.Loading)
 

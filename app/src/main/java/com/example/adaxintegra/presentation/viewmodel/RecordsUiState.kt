@@ -1,5 +1,7 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import com.example.adaxintegra.domain.entities.Record
+
 // HOlds the listing data, applied filters, and current request state
 data class RecordsUiState(
     val records: List<Record> = emptyList(),
