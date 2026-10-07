@@ -82,8 +82,7 @@ class ActivityLogViewModel @Inject constructor(
             getActivityLogUseCase(currentPage + 1, state.fromDate, state.toDate).collect { result ->
                 _uiState.update { current ->
                     when (result) {
-                        is Result.Loading -> current.copy(isLoadingMore = true)
-
+                        is Result.Loading -> current.copy(isLoadingMore = true, error = null)
                         is Result.Success -> {
                             currentPage = result.data.page
                             current.copy(
@@ -107,7 +106,6 @@ class ActivityLogViewModel @Inject constructor(
         _uiState.update { it.copy(searchQuery = query) }
     }
 
-    // Acceptance criteria: search by date and time with the "Filtrar" button
     fun applyDateFilter(from: Date?, to: Date?) {
         _uiState.update { it.copy(fromDate = from, toDate = to) }
         loadFirstPage()

@@ -24,6 +24,7 @@ import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -96,6 +97,9 @@ fun AppNavigation(
                         // G-03: collaborators screen is opened from profile
                         "collaborators" -> "profile"
 
+                        // V-06: activity log is opened from the admin section
+                        "activityLog" -> "admin"
+
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
                         }
@@ -128,9 +132,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "login",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
@@ -363,8 +367,24 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        // V-06: opens the activity log
                         onAuditLogClick = {
-                            // Pantalla de bitácora
+                            navController.navigate("activityLog") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // V-06: admin consults the activity log
+            composable("activityLog") {
+                if (hasValidSession && isAdmin) {
+                    ActivityLogScreen(
+                        onBack = {
+                            navController.popBackStack()
                         },
                     )
                 } else {
