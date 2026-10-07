@@ -19,20 +19,21 @@ import javax.inject.Inject
 @HiltViewModel
 class ExternalCasesViewModel @Inject constructor(
     private val getExternalUserCasesUseCase: GetExternalUserCasesUseCase,
-    observeSessionUseCase: ObserveSessionUseCase,
+    private val observeSessionUseCase: ObserveSessionUseCase,
+
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ExternalCasesUiState())
     val uiState: StateFlow<ExternalCasesUiState> = _uiState.asStateFlow()
 
     private var allCases: List<Case> = emptyList()
 
-    init {
+    fun loadCases() {
         val session = observeSessionUseCase().value
         val userId = session?.userId
 
         // Loads the history only for the external
         if (session?.role == "external" && !userId.isNullOrBlank()) {
-            loadCases(userId)
+            loadCasesFor(userId)
         } else {
             _uiState.update {
                 it.copy(
@@ -43,7 +44,7 @@ class ExternalCasesViewModel @Inject constructor(
         }
     }
 
-    private fun loadCases(userId: String) {
+    private fun loadCasesFor(userId: String) {
         viewModelScope.launch {
             getExternalUserCasesUseCase(userId).collect { result ->
                 _uiState.update { state ->

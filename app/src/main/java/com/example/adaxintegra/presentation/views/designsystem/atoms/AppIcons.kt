@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
 
@@ -64,4 +65,7 @@ object AppIcons {
 
     val Clock: ImageVector
         get() = Icons.Default.Schedule
+
+    val Admin: ImageVector
+        get() = Icons.Default.Shield
 }

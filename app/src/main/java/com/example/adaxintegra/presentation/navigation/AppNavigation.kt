@@ -17,15 +17,18 @@ import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
+import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
+import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
@@ -63,7 +66,8 @@ fun AppNavigation(
 
                 !hasValidSession &&
                     currentRoute != null &&
-                    currentRoute != "login" -> "login"
+                    currentRoute != "login" &&
+                    currentRoute != "register" -> "login"
 
                 else -> null
             }
@@ -83,7 +87,8 @@ fun AppNavigation(
             if (
                 hasValidSession &&
                 currentRoute != null &&
-                currentRoute != "login"
+                currentRoute != "login" &&
+                currentRoute != "register"
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -103,6 +108,9 @@ fun AppNavigation(
                         // V-11 belongs to the internal/admin records flow
                         "caseDetail/{caseId}" -> "records"
 
+                        // R-02 is opened from the external user's case list
+                        "createCase" -> "cases"
+
                         else -> currentRoute
                     }
 
@@ -115,6 +123,7 @@ fun AppNavigation(
                         }
                     },
                     showRecords = canViewAllCases,
+                    isAdmin = isAdmin,
                 )
             }
         },
@@ -131,7 +140,31 @@ fun AppNavigation(
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
 
-                LoginScreen(viewModel = loginViewModel)
+                // G-01 & G-02, Login and register screen
+                LoginScreen(
+                    viewModel = loginViewModel,
+                    onRegisterClick = {
+                        navController.navigate("register") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
+            composable("register") {
+                val registerViewModel: RegisterViewModel = hiltViewModel()
+
+                RegisterScreen(
+                    viewModel = registerViewModel,
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onRegisterSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
             }
 
             composable("home") {
@@ -219,6 +252,27 @@ fun AppNavigation(
                             navController.navigate("case/$caseId") {
                                 launchSingleTop = true
                             }
+                        },
+                        onCreateCaseClick = {
+                            navController.navigate("createCase") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // R-02: the external user registers a new case
+            composable("createCase") {
+                if (hasValidSession && isExternal) {
+                    CreateCaseScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onCaseCreated = {
+                            navController.popBackStack()
                         },
                     )
                 } else {
@@ -327,6 +381,28 @@ fun AppNavigation(
                     } else {
                         Text("No se encontró el identificador del caso")
                     }
+                }
+            }
+
+            composable("admin") {
+                if (hasValidSession && isAdmin) {
+                    AdminScreen(
+                        onManageUsersClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onManageExpedientsClick = {
+                            navController.navigate("records") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onAuditLogClick = {
+                            // Pantalla de bitácora
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
         }

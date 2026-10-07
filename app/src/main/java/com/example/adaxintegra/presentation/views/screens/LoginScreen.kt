@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -30,10 +33,12 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF3F3F3))
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState())
+            .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         LoginHeader()
 
@@ -45,10 +50,12 @@ fun LoginScreen(
             passwordValue = uiState.password,
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
-            onRegisterClick = { /* register action*/ },
+            onRegisterClick = onRegisterClick,
             onForgotPasswordClick = { /* recover password */ },
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
