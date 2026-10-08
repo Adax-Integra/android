@@ -18,6 +18,7 @@ import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
+import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
@@ -27,6 +28,7 @@ import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -270,6 +272,12 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onRegisterRecordClick = {
+                            navController.navigate("registerExpedient") {
+                                launchSingleTop = true
+                            }
+                        }
+
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -453,6 +461,24 @@ fun AppNavigation(
                         onAuditLogClick = {
                             // Pantalla de bitácora
                         },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("registerExpedient") {
+                if (hasValidSession && canViewAllCases) {
+                    val registerViewModel: RegisterExpedientViewModel = hiltViewModel()
+                    RegisterExpedientScreen(
+                        viewModel = registerViewModel,
+                        userToken = session?.token ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
+                        onCancel = {
+                            navController.popBackStack()
+                        },
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")

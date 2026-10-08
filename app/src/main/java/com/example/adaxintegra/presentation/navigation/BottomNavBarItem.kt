@@ -29,7 +29,7 @@ sealed class BottomNavBarItem(
 
     data object MisExpedientes : BottomNavBarItem(
         route = "records",
-        title = "Mis expedientes",
+        title = "Expedientes",
         icon = AppIcons.Folder,
     )
 
