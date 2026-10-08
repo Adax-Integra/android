@@ -22,6 +22,7 @@ import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -273,8 +274,11 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onPersonalDataClick = {},
-                    /*onSecurityClick = {},
-                    onNotificationsClick = {},*/
+                    onSecurityClick = {
+                        navController.navigate("changePassword") {
+                            launchSingleTop = true
+                        }
+                    },
                     onLogoutClick = viewModel::logout,
                     isAdmin = isAdmin,
                     onManageCollaboratorsClick = {
@@ -283,6 +287,14 @@ fun AppNavigation(
                         }
                     },
                     viewModel = hiltViewModel(),
+                )
+            }
+
+            composable("changePassword") {
+                ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
                 )
             }
 
