@@ -14,7 +14,9 @@ import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-// login's screen brain...
+/**
+ * // G-09-VerifyOTP: ViewModel managing login validation and routing unconfirmed email accounts to 6-digit OTP verification.
+ */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
@@ -86,7 +88,8 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun resendVerificationEmail() {
+    // // G-09-VerifyOTP: Requests a fresh OTP verification email and triggers direct navigation to OTP screen
+    fun resendVerificationEmail(onNavigateToVerify: (String) -> Unit = {}) {
         val targetEmail = _uiState.value.email
         if (targetEmail.isBlank()) return
 
@@ -95,14 +98,17 @@ class LoginViewModel @Inject constructor(
                 _uiState.update { state ->
                     when (result) {
                         is Result.Loading -> state.copy(isResendingEmail = true)
-                        is Result.Success -> state.copy(
-                            isResendingEmail = false,
-                            resendSuccessMessage = "Correo de verificación reenviado exitosamente.",
-                        )
+                        is Result.Success -> {
+                            onNavigateToVerify(targetEmail)
+                            state.copy(
+                                isResendingEmail = false,
+                                resendSuccessMessage = "Código de 6 dígitos enviado.",
+                            )
+                        }
 
                         is Result.Error -> state.copy(
                             isResendingEmail = false,
-                            error = "Error al reenviar el correo. Inténtalo de nuevo.",
+                            error = "Error al solicitar el código. Inténtalo de nuevo.",
                         )
                     }
                 }

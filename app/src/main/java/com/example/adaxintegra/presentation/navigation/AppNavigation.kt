@@ -158,6 +158,12 @@ fun AppNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onVerifyUnconfirmedAccount = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 

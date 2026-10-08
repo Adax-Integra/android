@@ -20,12 +20,16 @@ import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LoginHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginForm
 
+/**
+ * // G-09-VerifyOTP: Login Screen with unconfirmed account verification redirect handling.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onVerifyUnconfirmedAccount: (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -55,7 +59,11 @@ fun LoginScreen(
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
             isEmailNotConfirmed = uiState.isEmailNotConfirmed,
-            onResendEmailClick = { viewModel.resendVerificationEmail() },
+            onResendEmailClick = {
+                viewModel.resendVerificationEmail { email ->
+                    onVerifyUnconfirmedAccount(email)
+                }
+            },
             isResendingEmail = uiState.isResendingEmail,
             resendSuccessMessage = uiState.resendSuccessMessage,
         )

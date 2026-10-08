@@ -40,6 +40,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.ui.theme.LightPurple
 
+/**
+ * // G-09-VerifyOTP: Login Form organism supporting email, password, login/register triggers,
+ * and seamless redirect to OTP code verification for unconfirmed accounts.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginForm(
@@ -162,10 +166,11 @@ fun LoginForm(
             )
         }
 
+        // // G-09-VerifyOTP: Prominent action button redirecting unconfirmed accounts directly to 6-digit OTP verification screen
         if (isEmailNotConfirmed) {
             Spacer(modifier = Modifier.height(16.dp))
             AppButton(
-                text = "Reenviar correo de verificación",
+                text = "Verificar mi cuenta con código",
                 onClick = onResendEmailClick,
                 variant = ButtonVariant.Outlined,
                 isLoading = isResendingEmail,
