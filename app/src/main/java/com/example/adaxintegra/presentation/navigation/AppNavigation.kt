@@ -99,8 +99,8 @@ fun AppNavigation(
                         "recordFromUser/{userId}",
                             -> "records"
 
-                        // G-03: collaborators screen is opened from profile
-                        "collaborators" -> "profile"
+                        // G-03: collaborators screen is opened from the admin section (NV-02)
+                        "collaborators" -> "admin"
 
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
@@ -134,9 +134,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "login",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
