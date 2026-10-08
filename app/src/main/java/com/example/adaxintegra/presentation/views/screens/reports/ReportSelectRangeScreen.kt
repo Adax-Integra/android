@@ -36,7 +36,7 @@ fun ReportSelectRange(
 
     ScreenTemplate(
         title = "Reportes",
-        subtitle = "Obten el reporte de los casos",
+        subtitle = "Obtén el reporte de los casos",
         error = uiState.error,
         isLoading = uiState.isLoading,
         onBack = onBackClick,
@@ -44,7 +44,7 @@ fun ReportSelectRange(
         Column() {
 
             Text(
-                text = "Selecciona un rango predeterminado o selecciona uno más específico",
+                text = "Usa un rango de fechas o selecciona la fecha de inicio y de fin",
                 style = AppTextStyle.BodyMedium,
             )
 
