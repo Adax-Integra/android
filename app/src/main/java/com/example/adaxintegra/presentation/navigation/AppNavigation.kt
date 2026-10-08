@@ -16,16 +16,21 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
+import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
+import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -37,6 +42,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -86,8 +93,11 @@ fun AppNavigation(
                 !hasValidSession &&
                     currentRoute != null &&
                     currentRoute != "login" &&
+                    currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
-                    currentRoute != "register" -> "login"
+                    currentRoute != "verificationSuccess" &&
+                    !currentRoute.startsWith("pendingVerification") -> "login"
+
 
                 else -> null
             }
@@ -108,7 +118,9 @@ fun AppNavigation(
                 hasValidSession &&
                 currentRoute != null &&
                 currentRoute != "login" &&
-                currentRoute != "register"
+                currentRoute != "register" &&
+                currentRoute != "verificationSuccess" &&
+                !currentRoute.startsWith("pendingVerification")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -118,8 +130,8 @@ fun AppNavigation(
                         "recordFromUser/{userId}",
                             -> "records"
 
-                        // G-03: collaborators screen is opened from profile
-                        "collaborators" -> "profile"
+                        // G-03: collaborators screen is opened from the admin section (NV-02)
+                        "collaborators" -> "admin"
 
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
@@ -153,9 +165,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "login",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
@@ -165,6 +177,12 @@ fun AppNavigation(
                     viewModel = loginViewModel,
                     onRegisterClick = {
                         navController.navigate("register") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onVerifyUnconfirmedAccount = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
                             launchSingleTop = true
                         }
                     },
@@ -217,8 +235,47 @@ fun AppNavigation(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onRegisterSuccess = {
-                        navController.navigate("home") {
+                    onRegisterSuccess = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
+                            popUpTo("register") { inclusive = false }
+                        }
+                    },
+                )
+            }
+
+            composable("pendingVerification/{email}") { backStackEntry ->
+                val rawEmail = backStackEntry.arguments?.getString("email") ?: ""
+                val email = try {
+                    URLDecoder.decode(rawEmail, "UTF-8")
+                } catch (_: Exception) {
+                    rawEmail
+                }
+                val pendingVerificationViewModel: PendingVerificationViewModel = hiltViewModel()
+
+                PendingVerificationScreen(
+                    email = email,
+                    viewModel = pendingVerificationViewModel,
+                    onBackToLogin = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onEditRegisterData = {
+                        navController.popBackStack("register", inclusive = false)
+                    },
+                    onVerificationSuccess = {
+                        navController.navigate("verificationSuccess") {
+                            popUpTo("login") { inclusive = false }
+                        }
+                    },
+                )
+            }
+
+            composable("verificationSuccess") {
+                VerificationSuccessScreen(
+                    onContinueClick = {
+                        navController.navigate("login") {
                             popUpTo("login") { inclusive = true }
                         }
                     },
@@ -273,6 +330,12 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onRegisterRecordClick = {
+                            navController.navigate("registerExpedient") {
+                                launchSingleTop = true
+                            }
+                        }
+
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -362,24 +425,22 @@ fun AppNavigation(
             }
 
             composable("profile") {
-                if (hasValidSession) {
-                    ProfileScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onPersonalDataClick = {},
-                        /*onSecurityClick = {},
-                        onNotificationsClick = {},*/
-                        onLogoutClick = viewModel::logout,
-                        isAdmin = isAdmin,
-                        onManageCollaboratorsClick = {
-                            navController.navigate("collaborators") {
-                                launchSingleTop = true
-                            }
-                        },
-                        viewModel = hiltViewModel(),
-                    )
-                }
+                ProfileScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onPersonalDataClick = {},
+                    /*onSecurityClick = {},
+                    onNotificationsClick = {},*/
+                    onLogoutClick = viewModel::logout,
+                    isAdmin = isAdmin,
+                    onManageCollaboratorsClick = {
+                        navController.navigate("collaborators") {
+                            launchSingleTop = true
+                        }
+                    },
+                    viewModel = hiltViewModel(),
+                )
             }
 
             // G-03: admin manages collaborator accounts
@@ -458,6 +519,24 @@ fun AppNavigation(
                         onAuditLogClick = {
                             // Pantalla de bitácora
                         },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("registerExpedient") {
+                if (hasValidSession && canViewAllCases) {
+                    val registerViewModel: RegisterExpedientViewModel = hiltViewModel()
+                    RegisterExpedientScreen(
+                        viewModel = registerViewModel,
+                        userToken = session?.token ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
+                        onCancel = {
+                            navController.popBackStack()
+                        },
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
