@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.remote.api.AuthApi
+import com.example.adaxintegra.data.remote.dto.ChangePasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.domain.common.Result
@@ -106,6 +107,64 @@ class AuthRepositoryImpl @Inject constructor(
             emit(Result.Success(session))
         } catch (e: Exception) {
             emit(Result.Error(e))
+        }
+    }
+
+    override fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmPassword: String,
+    ): Flow<Result<String>> = flow {
+        emit(Result.Loading)
+        try {
+            val token = _session.value?.token
+            if (token.isNullOrBlank()) {
+                throw IllegalStateException("Inicia sesión para cambiar la contraseña.")
+            }
+
+            val response = api.changePassword(
+                authorization = "Bearer $token",
+                request = ChangePasswordRequestDto(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword,
+                    confirmPassword = confirmPassword,
+                ),
+            )
+
+            if (!response.success) {
+                val errorMsg = translateErrorMessage(response.error)
+                throw IllegalStateException(errorMsg)
+            }
+
+            // Always display Spanish message
+            val message = "Contraseña actualizada exitosamente."
+            emit(Result.Success(message))
+        } catch (e: Exception) {
+            val translated = when (e) {
+                is java.io.IOException -> "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+                is IllegalStateException -> translateErrorMessage(e.message)
+                else -> translateErrorMessage(e.message)
+            }
+            emit(Result.Error(Exception(translated)))
+        }
+    }
+
+    private fun translateErrorMessage(rawError: String?): String {
+        if (rawError.isNullOrBlank()) return "Ocurrió un error al cambiar la contraseña."
+        val lower = rawError.lowercase()
+        return when {
+            "current password" in lower || "incorrect" in lower ->
+                "La contraseña actual es incorrecta."
+            "unauthorized" in lower || "token" in lower || "401" in lower ->
+                "Tu sesión ha caducado. Vuelve a iniciar sesión."
+            "same" in lower || "different" in lower ->
+                "La nueva contraseña debe ser diferente a la actual."
+            "match" in lower ->
+                "Las contraseñas no coinciden."
+            "network" in lower || "connect" in lower ->
+                "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+            else ->
+                "No se pudo cambiar la contraseña. Revisa que tu contraseña actual sea correcta."
         }
     }
 }

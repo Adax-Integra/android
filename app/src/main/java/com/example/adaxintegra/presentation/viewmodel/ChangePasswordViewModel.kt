@@ -2,11 +2,11 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordUiState
 import com.example.adaxintegra.presentation.views.screens.profile.PasswordRules
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +55,7 @@ class ChangePasswordViewModel @Inject constructor(
         _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
     }
 
-    fun submitChangePassword(onSuccess: () -> Unit) {
+    fun submitChangePassword(onSuccess: (String) -> Unit) {
         val state = _uiState.value
         if (!state.rules.isValid || state.currentPassword.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Por favor verifica los requisitos de la contraseña.") }
@@ -65,10 +65,26 @@ class ChangePasswordViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         viewModelScope.launch {
-            // Simula el procesamiento del cambio de contraseña
-            delay(800)
-            _uiState.update { it.copy(isLoading = false) }
-            onSuccess()
+            authRepository.changePassword(
+                currentPassword = state.currentPassword,
+                newPassword = state.newPassword,
+                confirmPassword = state.confirmPassword,
+            ).collect { result ->
+                _uiState.update { currentState ->
+                    when (result) {
+                        is Result.Loading -> currentState.copy(isLoading = true, errorMessage = null)
+                        is Result.Success -> {
+                            onSuccess(result.data)
+                            currentState.copy(isLoading = false, errorMessage = null)
+                        }
+
+                        is Result.Error -> currentState.copy(
+                            isLoading = false,
+                            errorMessage = result.exception.message ?: "Ocurrió un error al cambiar la contraseña.",
+                        )
+                    }
+                }
+            }
         }
     }
 

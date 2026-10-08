@@ -62,6 +62,7 @@ fun ChangePasswordScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showSuccessDialog by rememberSaveable { mutableStateOf(false) }
+    var successMessage by rememberSaveable { mutableStateOf("Tu contraseña ha sido actualizada exitosamente.") }
 
     ChangePasswordContent(
         uiState = uiState,
@@ -74,7 +75,10 @@ fun ChangePasswordScreen(
         onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
         onSubmit = {
             viewModel.submitChangePassword(
-                onSuccess = { showSuccessDialog = true },
+                onSuccess = { _ ->
+                    successMessage = "Tu contraseña ha sido actualizada exitosamente."
+                    showSuccessDialog = true
+                },
             )
         },
     )
@@ -94,7 +98,7 @@ fun ChangePasswordScreen(
             },
             text = {
                 Text(
-                    text = "Tu contraseña ha sido actualizada exitosamente.",
+                    text = successMessage,
                     style = AppTextStyle.BodyMedium,
                 )
             },
