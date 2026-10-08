@@ -26,11 +26,4 @@ interface AuthRepository {
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
-
-    // change password
-    fun changePassword(
-        currentPassword: String,
-        newPassword: String,
-        confirmPassword: String,
-    ): Flow<Result<String>>
 }
