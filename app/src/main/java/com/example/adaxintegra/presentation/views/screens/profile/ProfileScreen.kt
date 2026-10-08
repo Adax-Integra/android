@@ -149,18 +149,6 @@ fun ProfileScreen(
                     modifier = Modifier.weight(1f),
                 )
 
-                // G-03: only the admin can manage collaborator accounts
-                // (temporary access until the admin section is finished)
-                if (isAdmin) {
-                    AppButton(
-                        text = "Gestión de colaboradoras",
-                        onClick = onManageCollaboratorsClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                    )
-                }
-
                 AppButton(
                     text = "Cerrar sesión",
                     onClick = { showLogoutConfirmation = true },

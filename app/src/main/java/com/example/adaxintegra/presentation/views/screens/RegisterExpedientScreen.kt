@@ -19,13 +19,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,7 +58,8 @@ private val MEXICAN_STATES = listOf(
     "Veracruz", "Yucatán", "Zacatecas",
 )
 
-private val COUNTRIES = listOf("México", "Estados Unidos")
+private val COUNTRIES = listOf("México", "Otro")
+private val PHONE_PREFIXES = listOf("+52", "+1", "+34", "+57", "+54", "+56", "+51", "+502", "+503", "+504")
 
 @Suppress("ktlint:standard:function-naming")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,21 +199,54 @@ fun PersonalDataStepContent(
         )
 
         // Birthdate field
-        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
-            OutlinedTextField(
-                value = data.birthDate,
-                onValueChange = { onDataChange(data.copy(birthDate = it)) },
-                label = { Text("F. Nacimiento (YYYY-MM-DD)", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
-                modifier = Modifier.weight(1f),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            var prefixExpanded by remember { mutableStateOf(false) }
 
-            // Phone number field
+            @OptIn(ExperimentalMaterial3Api::class)
+            ExposedDropdownMenuBox(
+                expanded = prefixExpanded,
+                onExpandedChange = { prefixExpanded = !prefixExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = data.phonePrefix,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Lada", style = AppTextStyle.BodySmall) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = prefixExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = prefixExpanded,
+                    onDismissRequest = { prefixExpanded = false }
+                ) {
+                    PHONE_PREFIXES.forEach { prefix ->
+                        DropdownMenuItem(
+                            text = { Text(prefix) },
+                            onClick = {
+                                onDataChange(data.copy(phonePrefix = prefix))
+                                prefixExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             OutlinedTextField(
                 value = data.phone,
                 onValueChange = { onDataChange(data.copy(phone = it)) },
-                label = { Text("Teléfono", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+                label = { Text("Teléfono (10 dígitos)", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(2.2f),
+                isError = uiState.personalDataErrors.containsKey("phone"),
+                supportingText = {
+                    uiState.personalDataErrors["phone"]?.let { errorMsg ->
+                        Text(text = errorMsg, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
         }
         Spacer(modifier = Modifier.height(spacing.small))
@@ -259,12 +299,15 @@ fun PersonalDataStepContent(
             isError = uiState.personalDataErrors.containsKey("country"),
         )
 
+        val isStateEnabled = data.country != "Otro"
+
         AutoCompleteOutlinedTextField(
-            value = data.state,
-            onValueChange = { onDataChange(data.copy(state = it)) },
-            label = "Estado *",
-            options = MEXICAN_STATES,
+            value = if (isStateEnabled) data.state else "No aplica (Otro país)",
+            onValueChange = { if (isStateEnabled) onDataChange(data.copy(state = it)) },
+            label = if (isStateEnabled) "Estado *" else "Estado (No requerido)",
+            options = if (isStateEnabled) MEXICAN_STATES else emptyList(),
             isError = uiState.personalDataErrors.containsKey("state"),
+            enabled = isStateEnabled
         )
 
         OutlinedTextField(

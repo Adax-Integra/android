@@ -13,7 +13,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
 
@@ -60,4 +62,10 @@ object AppIcons {
 
     val Location: ImageVector
         get() = Icons.Default.LocationOn
+
+    val Clock: ImageVector
+        get() = Icons.Default.Schedule
+
+    val Admin: ImageVector
+        get() = Icons.Default.Shield
 }
