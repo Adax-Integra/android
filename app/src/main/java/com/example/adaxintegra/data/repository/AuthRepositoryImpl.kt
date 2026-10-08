@@ -3,7 +3,6 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
-import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
