@@ -21,12 +21,14 @@ import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
@@ -38,15 +40,16 @@ import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
 
-// provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
+    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
@@ -63,6 +66,20 @@ fun AppNavigation(
             (isExternal || canViewAllCases)
 
     val navController = rememberNavController()
+
+    //handle Supabase password recovery deep link
+    LaunchedEffect(deepLinkUri) {
+        if (
+            deepLinkUri?.scheme == "adax" &&
+            deepLinkUri.host == "auth" &&
+            deepLinkUri.path == "/callback"
+        ) {
+            navController.navigate("resetPassword") {
+                launchSingleTop = true
+            }
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -76,8 +93,11 @@ fun AppNavigation(
                     currentRoute != null &&
                     currentRoute != "login" &&
                     currentRoute != "register" &&
+                    currentRoute != "forgotPassword" &&
+                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
                     !currentRoute.startsWith("pendingVerification") -> "login"
+
 
                 else -> null
             }
@@ -166,8 +186,40 @@ fun AppNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onForgotPasswordClick = {
+                        navController.navigate("forgotPassword") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
+
+            //forgot password screen
+            composable("forgotPassword") {
+
+                ForgotPasswordScreen(
+                    onBack = {
+                        navController.popBackStack() },
+                    viewModel = hiltViewModel()
+                )
+            }
+
+            //reset password screen
+            composable("resetPassword") { entry ->
+
+                    ResetPasswordScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onResetPasswordSuccess = {
+                            navController.navigate("login") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    )
+                }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
