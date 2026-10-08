@@ -34,6 +34,7 @@ fun AutoCompleteOutlinedTextField(
     options: List<String>,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
+    enabled: Boolean = true,
     errorMessage: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
