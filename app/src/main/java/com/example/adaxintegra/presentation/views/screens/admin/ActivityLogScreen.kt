@@ -40,14 +40,21 @@ import com.example.adaxintegra.ui.theme.IconGrey
 import com.example.adaxintegra.ui.theme.Purple
 import java.util.Date
 
-// Text of the active filter
-private fun filterText(from: Date?, to: Date?): String =
-    "Filtro: ${DateFormatter.day(from)}, de ${DateFormatter.time(from)} a ${DateFormatter.time(to)}"
+// Text of the active filter, ex. "Filtro: del 01/10/2026 al 08/10/2026"
+private fun filterText(from: Date?, to: Date?): String {
+    val fromText = DateFormatter.day(from)
+    val toText = DateFormatter.day(to)
+    return if (fromText == toText) {
+        "Filtro: $fromText"
+    } else {
+        "Filtro: del $fromText al $toText"
+    }
+}
 
 // Message when there is nothing to show
 private fun emptyText(searchQuery: String, hasDateFilter: Boolean): String = when {
     searchQuery.isNotBlank() -> "No hay movimientos que coincidan con tu búsqueda."
-    hasDateFilter -> "No hay movimientos en esa fecha y horario."
+    hasDateFilter -> "No hay movimientos en ese rango de fechas."
     else -> "No hay movimientos registrados."
 }
 
@@ -93,7 +100,7 @@ fun ActivityLogScreen(
                     variant = ButtonVariant.Outlined,
                 )
             }
-            // Active date and time filter, with the option to remove it
+            // Active date filter, with the option to remove it
             if (uiState.hasDateFilter) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

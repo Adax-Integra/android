@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -16,12 +15,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,7 +38,7 @@ import java.util.Date
 import java.util.TimeZone
 
 // The DatePicker works with the day at midnight in UTC; these helpers
-// convert between that value and the local date and time of the phone
+// convert between that value and the local date of the phone
 private fun buildLocalDate(dayMillis: Long, hour: Int, minute: Int, second: Int): Date {
     val utcDay = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
     utcDay.timeInMillis = dayMillis
@@ -74,27 +70,15 @@ private fun toPickerMillis(date: Date): Long {
     return utcDay.timeInMillis
 }
 
-private fun hourOf(date: Date?, defaultHour: Int): Int {
-    if (date == null) return defaultHour
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-    return calendar.get(Calendar.HOUR_OF_DAY)
+// Text of a date field, ex. "08/10/2026"
+private fun dayText(dayMillis: Long?): String {
+    if (dayMillis == null) return "Seleccionar"
+    return DateFormatter.day(buildLocalDate(dayMillis, 0, 0, 0))
 }
 
-private fun minuteOf(date: Date?, defaultMinute: Int): Int {
-    if (date == null) return defaultMinute
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-    return calendar.get(Calendar.MINUTE)
-}
-
-// ex. 9 -> "09"
-private fun twoDigits(value: Int): String = if (value < 10) "0$value" else "$value"
-
-// V-06: "Filtrar" dialog. Acceptance criteria: search by date and time.
-// The admin chooses one day and a range of hours (from / to)
+// V-06: "Filtrar" dialog. The admin chooses a range of dates (from / to).
+// Whole days are included: "Desde" starts at 00:00 and "Hasta" ends at 23:59
 @Suppress("ktlint:standard:function-naming")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityLogFilterDialog(
     initialFrom: Date?,
@@ -103,26 +87,19 @@ fun ActivityLogFilterDialog(
     onClear: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var dayMillis by remember { mutableStateOf<Long?>(initialFrom?.let { toPickerMillis(it) }) }
-    var fromHour by remember { mutableIntStateOf(hourOf(initialFrom, 0)) }
-    var fromMinute by remember { mutableIntStateOf(minuteOf(initialFrom, 0)) }
-    var toHour by remember { mutableIntStateOf(hourOf(initialTo, 23)) }
-    var toMinute by remember { mutableIntStateOf(minuteOf(initialTo, 59)) }
+    var fromDayMillis by remember { mutableStateOf<Long?>(initialFrom?.let { toPickerMillis(it) }) }
+    var toDayMillis by remember { mutableStateOf<Long?>(initialTo?.let { toPickerMillis(it) }) }
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showFromTime by remember { mutableStateOf(false) }
-    var showToTime by remember { mutableStateOf(false) }
+    var showFromPicker by remember { mutableStateOf(false) }
+    var showToPicker by remember { mutableStateOf(false) }
 
-    // "Hasta" must be later than "Desde", so the backend never receives an invalid range
-    val isRangeValid = toHour * 60 + toMinute > fromHour * 60 + fromMinute
-    val canApply = dayMillis != null && isRangeValid
+    val fromDay = fromDayMillis
+    val toDay = toDayMillis
 
-    val selectedDay = dayMillis
-    val dayText = if (selectedDay != null) {
-        DateFormatter.day(buildLocalDate(selectedDay, 0, 0, 0))
-    } else {
-        "Seleccionar fecha"
-    }
+    // "Hasta" can be the same day as "Desde", but not an earlier one,
+    // so the backend never receives an invalid range
+    val isRangeValid = fromDay == null || toDay == null || toDay >= fromDay
+    val canApply = fromDay != null && toDay != null && isRangeValid
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -137,37 +114,31 @@ fun ActivityLogFilterDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text = "Filtrar por fecha y hora",
+                    text = "Filtrar por fechas",
                     style = AppTextStyle.TitleMedium,
                     fontWeight = FontWeight.Bold,
                 )
 
                 HorizontalDivider()
 
-                FilterField(
-                    label = "FECHA",
-                    value = dayText,
-                    onClick = { showDatePicker = true },
-                )
-
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FilterField(
                         label = "DESDE",
-                        value = "${twoDigits(fromHour)}:${twoDigits(fromMinute)}",
-                        onClick = { showFromTime = true },
+                        value = dayText(fromDay),
+                        onClick = { showFromPicker = true },
                         modifier = Modifier.weight(1f),
                     )
                     FilterField(
                         label = "HASTA",
-                        value = "${twoDigits(toHour)}:${twoDigits(toMinute)}",
-                        onClick = { showToTime = true },
+                        value = dayText(toDay),
+                        onClick = { showToPicker = true },
                         modifier = Modifier.weight(1f),
                     )
                 }
 
                 if (!isRangeValid) {
                     Text(
-                        text = "La hora final debe ser posterior a la inicial.",
+                        text = "La fecha final debe ser igual o posterior a la inicial.",
                         style = AppTextStyle.LabelSmall,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -180,11 +151,10 @@ fun ActivityLogFilterDialog(
                     AppButton(
                         text = "Aplicar",
                         onClick = {
-                            val day = dayMillis
-                            if (day != null) {
+                            if (fromDay != null && toDay != null) {
                                 onApply(
-                                    buildLocalDate(day, fromHour, fromMinute, 0),
-                                    buildLocalDate(day, toHour, toMinute, 59),
+                                    buildLocalDate(fromDay, 0, 0, 0),
+                                    buildLocalDate(toDay, 23, 59, 59),
                                 )
                             }
                         },
@@ -212,56 +182,25 @@ fun ActivityLogFilterDialog(
         }
     }
 
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = dayMillis)
-
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        dayMillis = datePickerState.selectedDateMillis
-                        showDatePicker = false
-                    },
-                ) {
-                    Text(text = "Aceptar", color = Purple, fontWeight = FontWeight.Bold)
-                }
+    if (showFromPicker) {
+        DateDialog(
+            initialDayMillis = fromDayMillis,
+            onConfirm = { selected ->
+                fromDayMillis = selected
+                showFromPicker = false
             },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(text = "Cancelar", color = Purple)
-                }
-            },
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    if (showFromTime) {
-        TimeDialog(
-            title = "Desde",
-            initialHour = fromHour,
-            initialMinute = fromMinute,
-            onConfirm = { hour, minute ->
-                fromHour = hour
-                fromMinute = minute
-                showFromTime = false
-            },
-            onDismiss = { showFromTime = false },
+            onDismiss = { showFromPicker = false },
         )
     }
 
-    if (showToTime) {
-        TimeDialog(
-            title = "Hasta",
-            initialHour = toHour,
-            initialMinute = toMinute,
-            onConfirm = { hour, minute ->
-                toHour = hour
-                toMinute = minute
-                showToTime = false
+    if (showToPicker) {
+        DateDialog(
+            initialDayMillis = toDayMillis,
+            onConfirm = { selected ->
+                toDayMillis = selected
+                showToPicker = false
             },
-            onDismiss = { showToTime = false },
+            onDismiss = { showToPicker = false },
         )
     }
 }
@@ -299,33 +238,30 @@ private fun FilterField(
     }
 }
 
-// Dialog to choose an hour in 24 hour format
+// Calendar dialog to choose one day
 @Suppress("ktlint:standard:function-naming")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TimeDialog(
-    title: String,
-    initialHour: Int,
-    initialMinute: Int,
-    onConfirm: (hour: Int, minute: Int) -> Unit,
+private fun DateDialog(
+    initialDayMillis: Long?,
+    onConfirm: (dayMillis: Long) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val timeState = rememberTimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = true,
-    )
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDayMillis)
 
-    AlertDialog(
+    DatePickerDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = title, style = AppTextStyle.TitleMedium, fontWeight = FontWeight.Bold)
-        },
-        text = {
-            TimeInput(state = timeState)
-        },
         confirmButton = {
-            TextButton(onClick = { onConfirm(timeState.hour, timeState.minute) }) {
+            TextButton(
+                onClick = {
+                    val selected = datePickerState.selectedDateMillis
+                    if (selected != null) {
+                        onConfirm(selected)
+                    } else {
+                        onDismiss()
+                    }
+                },
+            ) {
                 Text(text = "Aceptar", color = Purple, fontWeight = FontWeight.Bold)
             }
         },
@@ -334,5 +270,7 @@ private fun TimeDialog(
                 Text(text = "Cancelar", color = Purple)
             }
         },
-    )
+    ) {
+        DatePicker(state = datePickerState)
+    }
 }
