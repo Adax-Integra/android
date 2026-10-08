@@ -305,24 +305,22 @@ fun AppNavigation(
             }
 
             composable("profile") {
-                if (hasValidSession) {
-                    ProfileScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onPersonalDataClick = {},
-                        /*onSecurityClick = {},
-                        onNotificationsClick = {},*/
-                        onLogoutClick = viewModel::logout,
-                        isAdmin = isAdmin,
-                        onManageCollaboratorsClick = {
-                            navController.navigate("collaborators") {
-                                launchSingleTop = true
-                            }
-                        },
-                        viewModel = hiltViewModel(),
-                    )
-                }
+                ProfileScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onPersonalDataClick = {},
+                    /*onSecurityClick = {},
+                    onNotificationsClick = {},*/
+                    onLogoutClick = viewModel::logout,
+                    isAdmin = isAdmin,
+                    onManageCollaboratorsClick = {
+                        navController.navigate("collaborators") {
+                            launchSingleTop = true
+                        }
+                    },
+                    viewModel = hiltViewModel(),
+                )
             }
 
             // G-03: admin manages collaborator accounts
