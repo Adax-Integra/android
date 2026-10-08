@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,32 +25,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.viewmodel.RegisterUiState
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.BackIconButton
 import com.example.adaxintegra.presentation.views.designsystem.organisms.RegisterForm
+import com.example.adaxintegra.presentation.views.designsystem.organisms.UnsavedChangesDialog
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import com.example.adaxintegra.ui.theme.Purple
 
+/**
+ * // G-09-Register: User Registration Screen with form input, field validations, and unsaved changes back handler.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel,
     onBackClick: () -> Unit,
-    onRegisterSuccess: (String?) -> Unit,
+    onRegisterSuccess: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // // G-09-Register: Intercept physical/gesture back button to check for unsaved form changes
+    BackHandler {
+        viewModel.onBackPressed(onBackClick)
+    }
+
     RegisterScreen(
         uiState = uiState,
-        onBackClick = onBackClick,
-        onRegisterSuccess = onRegisterSuccess,
+        onBackClick = { viewModel.onBackPressed(onBackClick) },
+        onRegisterSuccess = { email ->
+            viewModel.resetRegisterSuccess()
+            onRegisterSuccess(email)
+        },
         onNameChange = { viewModel.onNameChanged(it) },
         onLastnameChange = { viewModel.onLastnameChanged(it) },
+        onCountryCodeChange = { viewModel.onCountryCodeChanged(it) },
         onPhoneChange = { viewModel.onPhoneChanged(it) },
         onEmailChange = { viewModel.onEmailChanged(it) },
         onPasswordChange = { viewModel.onPasswordChanged(it) },
@@ -59,6 +71,7 @@ fun RegisterScreen(
         onRegisterClick = { viewModel.register() },
         onConfirmRegister = { viewModel.onConfirmRegister() },
         onDismissDialog = { viewModel.onDismissDialog() },
+        onDismissUnsavedChanges = { viewModel.dismissUnsavedChangesDialog() },
         modifier = modifier,
     )
 }
@@ -68,7 +81,7 @@ fun RegisterScreen(
 fun RegisterScreen(
     uiState: RegisterUiState,
     onBackClick: () -> Unit,
-    onRegisterSuccess: (String?) -> Unit,
+    onRegisterSuccess: (String) -> Unit,
     onNameChange: (String) -> Unit,
     onLastnameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
@@ -79,13 +92,26 @@ fun RegisterScreen(
     onToggleConfirmPasswordVisibility: () -> Unit,
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onCountryCodeChange: (String) -> Unit = {},
     onConfirmRegister: () -> Unit = {},
     onDismissDialog: () -> Unit = {},
+    onDismissUnsavedChanges: () -> Unit = {},
 ) {
     LaunchedEffect(uiState.isRegisterSuccess) {
         if (uiState.isRegisterSuccess) {
-            onRegisterSuccess(uiState.userRole)
+            onRegisterSuccess(uiState.email)
         }
+    }
+
+    // // G-09-Register: Unsaved changes warning dialog
+    if (uiState.showUnsavedChangesDialog) {
+        UnsavedChangesDialog(
+            onConfirm = {
+                onDismissUnsavedChanges()
+                onBackClick()
+            },
+            onDismiss = onDismissUnsavedChanges,
+        )
     }
 
     if (uiState.showConfirmationDialog) {
@@ -141,23 +167,21 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        AdaxLogo(size = 90.dp)
-
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Regístrate a",
+            text = "Crear cuenta",
             style = AppTextStyle.TitleLarge,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
             modifier = Modifier.fillMaxWidth(),
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "ADAX INTEGRA",
-            style = AppTextStyle.TitleLarge,
-            fontWeight = FontWeight.Black,
-            color = Purple,
+            text = "Ingresa tus datos para registrarte",
+            style = AppTextStyle.BodySmall,
+            color = Color.Gray,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -171,6 +195,7 @@ fun RegisterScreen(
             onLastnameChange = onLastnameChange,
             lastnameError = uiState.lastnameError,
             countryCode = uiState.countryCode,
+            onCountryCodeChange = onCountryCodeChange,
             phoneValue = uiState.phone,
             onPhoneChange = onPhoneChange,
             phoneError = uiState.phoneError,
