@@ -1,6 +1,8 @@
 package com.example.adaxintegra.presentation.views.screens.reports
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,46 +41,49 @@ fun ReportSelectRange(
         isLoading = uiState.isLoading,
         onBack = onBackClick,
     ) {
+        Column() {
 
-        Text(
-            text = "Selecciona un rango predeterminado o selecciona uno más específico",
-            style = AppTextStyle.BodyMedium,
-        )
+            Text(
+                text = "Selecciona un rango predeterminado o selecciona uno más específico",
+                style = AppTextStyle.BodyMedium,
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        RowOfChips(
-            chips = listOf("Mes anterior", "Mes actual", "Trimestre previo"),
-            selectedChip = "Mes anterior",
-            onChipSelected = {},
-        )
+            RowOfChips(
+                chips = listOf("Mes anterior", "Mes actual", "Trimestre previo"),
+                selectedChip = "Mes anterior",
+                onChipSelected = {},
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Start Date Field
-        DateField(
-            label = "Inicio del reporte",
-            value = uiState.startDate,
-            errorMessage = uiState.startDateError,
-            onClick = { showStartDatePicker = true },
-        )
+            // Start Date Field
+            DateField(
+                label = "Inicio del reporte",
+                value = uiState.startDate,
+                errorMessage = uiState.startDateError,
+                onClick = { showStartDatePicker = true },
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // End Date Field
-        DateField(
-            label = "Fin del reporte",
-            value = uiState.endDate,
-            errorMessage = uiState.endDateError,
-            onClick = { showEndDatePicker = true },
-        )
+            // End Date Field
+            DateField(
+                label = "Fin del reporte",
+                value = uiState.endDate,
+                errorMessage = uiState.endDateError,
+                onClick = { showEndDatePicker = true },
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        AppButton(
-            text = "Generar Reporte",
-            onClick = onGenerateReportClick,
-        )
+            AppButton(
+                text = "Generar Reporte",
+                onClick = onGenerateReportClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         // Opens the date picker for the start date
         if (showStartDatePicker) {
