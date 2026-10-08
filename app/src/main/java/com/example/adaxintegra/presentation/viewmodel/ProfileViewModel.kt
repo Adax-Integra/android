@@ -17,50 +17,54 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileByUserIdUseCase: GetProfileByUserIdUseCase,
-    private val authRepository: AuthRepository, //get session to get userId
+    private val authRepository: AuthRepository, // get session to get userId
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ProfileUiState())
+    private val _uiState = MutableStateFlow(ProfileUiState(isLoading = true))
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     fun loadProfile() {
-        val userId = authRepository.session.value?.userId
+        _uiState.update { it.copy(isLoading = true, error = null) }
 
-        //if not logged in, no user id is available, so msg appears
-        if (userId == null) {
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    error = "No hay una sesión activa."
-                )
-            }
-            return
-        }
         viewModelScope.launch {
-            getProfileByUserIdUseCase(userId).collect { result ->
-                _uiState.update { state ->
-                    when (result) {
+            authRepository.session.collect { session ->
+                val userId = session?.userId
 
-                        is Result.Loading -> {
-                            state.copy(
-                                isLoading = true,
-                                error = null,
-                            )
-                        }
+                // if not logged in, no user id is available, so msg appears
+                if (userId.isNullOrBlank()) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "No hay una sesión activa."
+                        )
+                    }
+                    return@collect
+                }
 
-                        is Result.Success -> {
-                            state.copy(
-                                profile = result.data,
-                                isLoading = false,
-                                error = null,
-                            )
-                        }
+                getProfileByUserIdUseCase(userId).collect { result ->
+                    _uiState.update { state ->
+                        when (result) {
+                            is Result.Loading -> {
+                                state.copy(
+                                    isLoading = true,
+                                    error = null,
+                                )
+                            }
 
-                        is Result.Error -> {
-                            state.copy(
-                                error = mensajeDeError(result.exception),
-                                isLoading = false,
-                            )
+                            is Result.Success -> {
+                                state.copy(
+                                    profile = result.data,
+                                    isLoading = false,
+                                    error = null,
+                                )
+                            }
+
+                            is Result.Error -> {
+                                state.copy(
+                                    error = mensajeDeError(result.exception),
+                                    isLoading = false,
+                                )
+                            }
                         }
                     }
                 }
@@ -74,6 +78,6 @@ class ProfileViewModel @Inject constructor(
                 "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
 
             else ->
-                "Ocurrió un error al cargar el perfil."
+                e.message.takeIf { !it.isNullOrBlank() } ?: "Ocurrió un error al cargar el perfil."
         }
 }
