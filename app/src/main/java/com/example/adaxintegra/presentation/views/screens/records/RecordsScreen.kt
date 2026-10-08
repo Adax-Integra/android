@@ -64,6 +64,7 @@ fun RecordsScreen(
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onRegisterRecordClick: () -> Unit
 ) {
     val spacing = Spacing()
 
@@ -145,6 +146,12 @@ fun RecordsScreen(
                     Text(text = "Filtrar")
                 }
             }
+
+            AppButton(
+                text = "Registrar nuevo expediente",
+                onClick = onRegisterRecordClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             if (hasCriteria) {
                 Row(
@@ -442,6 +449,7 @@ private fun RecordsScreenPreview() {
             onNextPage = {},
             onPreviousPage = {},
             onRecordClick = {},
+            onRegisterRecordClick = {}
         )
     }
 }
