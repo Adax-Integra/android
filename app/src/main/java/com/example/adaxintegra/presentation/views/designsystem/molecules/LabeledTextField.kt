@@ -11,10 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextField
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
@@ -63,17 +60,4 @@ fun LabeledTextField(
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LabeledTextFieldPreview() {
-    LabeledTextField(
-        label = "Fecha",
-        value = "John Doe",
-        onValueChange = {},
-        placeholder = "Ingresa tu nombre",
-        leadingIcon = { AppIcon(imageVector = AppIcons.CheckMark, contentDescription = null) },
-        trailingIcon = { AppIcon(imageVector = AppIcons.CheckMark, contentDescription = null) },
-    )
 }

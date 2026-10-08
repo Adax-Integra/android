@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.designsystem.molecules
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -9,21 +10,22 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 
-// --- Option 2: Jetpack Compose Approach (Recommended for this project) ---
-// Since this project uses Jetpack Compose, Material 3 provides native DatePicker Composables.
+// Jetpack Compose implementation of a date picker
+// got from https://developer.android.com/develop/ui/compose/components/datepickers
 @Suppress("ktlint:standard:function-naming")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDatePickerDialog(
     onDateSelected: (selectedDateMillis: Long?) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String = "Selecciona una fecha",
     initialSelectedDateMillis: Long? = null,
 ) {
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialSelectedDateMillis ?: System.currentTimeMillis()
+        initialSelectedDateMillis = initialSelectedDateMillis ?: System.currentTimeMillis(),
     )
 
     DatePickerDialog(
@@ -33,7 +35,7 @@ fun AppDatePickerDialog(
                 onClick = {
                     onDateSelected(datePickerState.selectedDateMillis)
                     onDismiss()
-                }
+                },
             ) {
                 Text("Aceptar")
             }
@@ -43,9 +45,17 @@ fun AppDatePickerDialog(
                 Text("Cancelar")
             }
         },
-        modifier = modifier
+        modifier = modifier,
     ) {
-        DatePicker(state = datePickerState)
+        DatePicker(
+            state = datePickerState,
+            title = {
+                Text(
+                    text = title,
+                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp),
+                )
+            },
+        )
     }
 }
 

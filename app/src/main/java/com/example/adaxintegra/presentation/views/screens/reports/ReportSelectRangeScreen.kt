@@ -63,7 +63,7 @@ fun ReportSelectRange(
                 label = "Inicio del reporte",
                 value = uiState.startDate,
                 errorMessage = uiState.startDateError,
-                onClick = { showStartDatePicker = true },
+                onClick = { showStartDatePicker = true }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -96,6 +96,7 @@ fun ReportSelectRange(
                     }
                 },
                 onDismiss = { showStartDatePicker = false },
+                title = "Selecciona la fecha de inicio",
             )
         }
 
@@ -110,7 +111,9 @@ fun ReportSelectRange(
                     }
                 },
                 onDismiss = { showEndDatePicker = false },
-            )
+                title = "Selecciona la fecha de fin",
+
+                )
         }
     }
 }
