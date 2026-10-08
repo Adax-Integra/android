@@ -100,8 +100,8 @@ fun AppNavigation(
                         "recordFromUser/{userId}",
                             -> "records"
 
-                        // G-03: collaborators screen is opened from profile
-                        "collaborators" -> "profile"
+                        // G-03: collaborators screen is opened from the admin section (NV-02)
+                        "collaborators" -> "admin"
 
                         // V-06: activity log is opened from the admin section
                         "activityLog" -> "admin"
@@ -318,12 +318,6 @@ fun AppNavigation(
                         /*onSecurityClick = {},
                         onNotificationsClick = {},*/
                         onLogoutClick = viewModel::logout,
-                        isAdmin = isAdmin,
-                        onManageCollaboratorsClick = {
-                            navController.navigate("collaborators") {
-                                launchSingleTop = true
-                            }
-                        },
                         viewModel = hiltViewModel(),
                     )
                 }
