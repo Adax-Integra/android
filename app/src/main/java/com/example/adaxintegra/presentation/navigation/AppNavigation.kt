@@ -67,15 +67,14 @@ fun AppNavigation(
 
     val navController = rememberNavController()
 
-    //extracting token from the recovery link
+    //handle Supabase password recovery deep link
     LaunchedEffect(deepLinkUri) {
-        val token = deepLinkUri?.getQueryParameter("token")
-
         if (
-            deepLinkUri?.path == "/reset-password" &&
-            !token.isNullOrBlank()
+            deepLinkUri?.scheme == "adax" &&
+            deepLinkUri.host == "auth" &&
+            deepLinkUri.path == "/callback"
         ) {
-            navController.navigate("resetPassword/$token") {
+            navController.navigate("resetPassword") {
                 launchSingleTop = true
             }
         }
@@ -95,6 +94,7 @@ fun AppNavigation(
                     currentRoute != "login" &&
                     currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
+                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
                     !currentRoute.startsWith("pendingVerification") -> "login"
 
@@ -205,12 +205,9 @@ fun AppNavigation(
             }
 
             //reset password screen
-            composable("resetPassword/{token}") { entry ->
-                val token = entry.arguments?.getString("token")
+            composable("resetPassword") { entry ->
 
-                if (!token.isNullOrBlank()) {
                     ResetPasswordScreen(
-                        token = token,
                         onBack = {
                             navController.popBackStack()
                         },
@@ -222,10 +219,7 @@ fun AppNavigation(
                             }
                         }
                     )
-                } else {
-                    Text("No se encontró el token de recuperación.")
                 }
-            }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()

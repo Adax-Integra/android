@@ -44,7 +44,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun ResetPasswordScreen(
     viewModel: ResetPasswordViewModel = hiltViewModel(),
-    token: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onResetPasswordSuccess: () -> Unit,
@@ -153,7 +152,7 @@ fun ResetPasswordScreen(
             AppButton(
                 text = "Cambiar contraseña",
                 onClick = {
-                    viewModel.onResetPasswordClick(token)
+                    viewModel.onResetPasswordClick()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 isLoading = uiState.isLoading,

@@ -42,7 +42,7 @@ class ResetPasswordViewModel
     }
 
     //clicking button uses token
-    fun onResetPasswordClick(token: String) {
+    fun onResetPasswordClick() {
         val password = _uiState.value.password.trim()
         val confirmPassword = _uiState.value.confirmPassword.trim()
 
@@ -86,7 +86,6 @@ class ResetPasswordViewModel
 
         viewModelScope.launch {
             val result = resetPasswordUseCase(
-                token = token,
                 newPassword = password,
                 )
 

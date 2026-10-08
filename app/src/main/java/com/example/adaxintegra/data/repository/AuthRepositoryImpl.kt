@@ -1,7 +1,6 @@
 package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.remote.api.AuthApi
-import com.example.adaxintegra.data.remote.dto.ForgotPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
@@ -121,11 +120,10 @@ class AuthRepositoryImpl @Inject constructor(
         email: String,
     ): Result<Unit> {
         return try {
-            val response = api.forgotPassword(ForgotPasswordRequestDto(email))
-
-            if (!response.success) {
-                throw IllegalStateException("No se pudo enviar el correo")
-            }
+            supabase.auth.resetPasswordForEmail(
+                email = email,
+                redirectUrl = "adax://auth/callback",
+            )
 
             Result.Success(Unit)
         } catch (exception: CancellationException) {
@@ -136,21 +134,16 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun resetPassword(
-        token: String,
         newPassword: String,
     ): Result<Unit> {
         return try {
-            val response = api.resetPassword(ResetPasswordRequestDto(token, newPassword))
-
-            if (!response.success) {
-                throw IllegalStateException("No se pudo actualizar la contraseña.")
+            supabase.auth.updateUser {
+                password = newPassword
             }
 
             Result.Success(Unit)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Result.Error(exception)
+        } catch (e: Exception) {
+            Result.Error(e)
         }
     }
 

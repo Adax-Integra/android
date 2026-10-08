@@ -78,7 +78,7 @@ class ForgotPasswordViewModel
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Correo ha sido enviado.",
+                            successMessage = "Si el correo existe, un mensaje ha sido enviado.",
                             errorMessage = null,
                         )
                     }

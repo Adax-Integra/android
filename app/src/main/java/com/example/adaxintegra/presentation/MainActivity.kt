@@ -25,13 +25,10 @@ class MainActivity : ComponentActivity() {
         // Process Deep Link whe the app is initiated
         intent?.let { supabaseClient.handleDeeplinks(it)}
 
-
-        val deepLinkUri = intent?.data
-
         setContent {
             AdaxIntegraTheme {
                 AppNavigation(
-                    deepLinkUri = deepLinkUri
+                    deepLinkUri = intent?.data
                 )
             }
         }

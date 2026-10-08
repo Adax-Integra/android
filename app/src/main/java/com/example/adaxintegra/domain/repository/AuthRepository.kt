@@ -25,7 +25,6 @@ interface AuthRepository {
     ): Result<Unit>
 
     suspend fun resetPassword(
-        token: String,
         newPassword: String
     ): Result<Unit>
 

@@ -8,11 +8,9 @@ class ResetPasswordUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
     suspend operator fun invoke(
-        token: String,
         newPassword: String,
     ): Result<Unit> {
         return authRepository.resetPassword(
-            token = token,
             newPassword = newPassword,
         )
     }
