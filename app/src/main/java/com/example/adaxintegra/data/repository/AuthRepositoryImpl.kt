@@ -74,6 +74,37 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun forgotPassword(
+        email: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.resetPasswordForEmail(
+                email = email,
+                redirectUrl = "adax://auth/callback",
+            )
+
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
+        }
+    }
+
+    override suspend fun resetPassword(
+        newPassword: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.updateUser {
+                password = newPassword
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
     override fun logout() {
         // Clears local state
         _session.value = null

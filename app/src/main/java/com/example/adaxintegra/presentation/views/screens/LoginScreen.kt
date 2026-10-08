@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginFo
 fun LoginScreen(
     viewModel: LoginViewModel,
     onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
     modifier: Modifier = Modifier,
     onVerifyUnconfirmedAccount: (String) -> Unit = {},
 ) {
@@ -55,7 +57,7 @@ fun LoginScreen(
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
             onRegisterClick = onRegisterClick,
-            onForgotPasswordClick = { /* recover password */ },
+            onForgotPasswordClick = onForgotPasswordClick,
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
             isEmailNotConfirmed = uiState.isEmailNotConfirmed,

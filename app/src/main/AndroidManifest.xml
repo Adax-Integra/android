@@ -24,6 +24,8 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.AdaxIntegra"
             android:windowSoftInputMode="adjustResize">
+
+            <!-- normall app launch -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -31,7 +33,7 @@
 
 
             <!-- Deep Link Intent Filter para Supabase -->
-            <intent-filter android:autoVerify="true">
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

@@ -15,7 +15,17 @@ interface AuthRepository {
         password: String,
     ): Flow<Result<UserSession>>
 
+    //no session is needed for this action
+    suspend fun forgotPassword(
+        email: String
+    ): Result<Unit>
+
+    suspend fun resetPassword(
+        newPassword: String
+    ): Result<Unit>
+
     // Clears the session
+    // Clears local and active user session state
     fun logout()
 
     // register
