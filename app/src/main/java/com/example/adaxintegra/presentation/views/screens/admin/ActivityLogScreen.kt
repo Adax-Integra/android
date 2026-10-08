@@ -84,7 +84,7 @@ fun ActivityLogScreen(
                 SearchBar(
                     query = uiState.searchQuery,
                     onQueryChange = viewModel::onSearchQueryChange,
-                    placeholder = "Tu texto aquí...",
+                    placeholder = "Buscar por usuaria o acción...",
                     modifier = Modifier.weight(1f),
                 )
                 AppButton(
