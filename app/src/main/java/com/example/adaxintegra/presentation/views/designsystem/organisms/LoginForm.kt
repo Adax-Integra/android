@@ -40,6 +40,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.ui.theme.LightPurple
 
+/**
+ * // G-09-VerifyOTP: Login Form organism supporting email, password, login/register triggers,
+ * and seamless redirect to OTP code verification for unconfirmed accounts.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginForm(
@@ -53,6 +57,10 @@ fun LoginForm(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
+    isEmailNotConfirmed: Boolean = false,
+    onResendEmailClick: () -> Unit = {},
+    isResendingEmail: Boolean = false,
+    resendSuccessMessage: String? = null,
 ) {
     var passwordVisible by remember { mutableStateOf(value = false) }
 
@@ -152,6 +160,30 @@ fun LoginForm(
                 text = it,
                 style = AppTextStyle.BodyMedium,
                 color = Color.Red,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // // G-09-VerifyOTP: Prominent action button redirecting unconfirmed accounts directly to 6-digit OTP verification screen
+        if (isEmailNotConfirmed) {
+            Spacer(modifier = Modifier.height(16.dp))
+            AppButton(
+                text = "Verificar mi cuenta con código",
+                onClick = onResendEmailClick,
+                variant = ButtonVariant.Outlined,
+                isLoading = isResendingEmail,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        resendSuccessMessage?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                style = AppTextStyle.BodyMedium,
+                color = Color(0xFF2E7D32),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.fillMaxWidth(),
