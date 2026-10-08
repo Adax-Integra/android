@@ -39,6 +39,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
@@ -278,7 +279,23 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    HomeScreen(role = role)
+                    //NV-01: the external user gets her own home, the rest keep the role probe
+                    if (isExternal) {
+                        ExternalHomeScreen(
+                            onCaseClick = { caseId ->
+                                navController.navigate("case/$caseId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onRegisterCaseClick = {
+                                navController.navigate("createCase") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
+                    } else {
+                        HomeScreen(role = role ?: "sin rol")
+                    }
                 }
             }
 
