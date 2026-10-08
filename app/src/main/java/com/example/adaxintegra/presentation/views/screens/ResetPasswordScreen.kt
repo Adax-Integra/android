@@ -78,6 +78,7 @@ fun ResetPasswordScreen(
             LabeledTextField(
                 label = "Nueva contraseña",
                 value = uiState.password,
+                placeholder = "********",
                 onValueChange = viewModel::onPasswordChange,
                 leadingIcon = {
                     AppIcon(
@@ -123,6 +124,7 @@ fun ResetPasswordScreen(
             LabeledTextField(
                 label = "Confirmar contraseña",
                 value = uiState.confirmPassword,
+                placeholder = "********",
                 onValueChange = viewModel::onConfirmPasswordChange,
                 leadingIcon = {
                     AppIcon(
