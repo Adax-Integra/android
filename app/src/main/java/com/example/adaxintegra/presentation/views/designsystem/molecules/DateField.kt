@@ -1,11 +1,10 @@
 package com.example.adaxintegra.presentation.views.designsystem.molecules
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,23 +17,22 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextField
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import java.util.Calendar
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun LabeledTextField(
+fun DateField(
     label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
+    value: Calendar? = null,
+    onValueChange: (String) -> Unit,
+    placeholderDate: Calendar? = null,
+    errorMessage: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        // Text that appears above the date field
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
@@ -42,15 +40,15 @@ fun LabeledTextField(
             fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(8.dp))
+        // Formatter that transforms the Calendar object into readable dates
         AppTextField(
-            value = value,
+            value = DateFormat.format("dd/MM/yyyy", value).toString(),
             onValueChange = onValueChange,
-            placeholder = placeholder,
-            leadingIcon = leadingIcon,
+            placeholder = placeholderDate?.toInstant()?.atZone(java.time.ZoneId.systemDefault())
+                ?.toLocalDate()
+                .toString(),
             trailingIcon = trailingIcon,
             visualTransformation = visualTransformation,
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
             isError = errorMessage != null,
         )
         if (errorMessage != null) {
@@ -65,15 +63,19 @@ fun LabeledTextField(
     }
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
-fun LabeledTextFieldPreview() {
-    LabeledTextField(
-        label = "Fecha",
-        value = "John Doe",
+fun DateFieldPreview() {
+    DateField(
+        label = "Selecciona la fecha",
+        value = Calendar.Builder().setDate(2026, 10, 10).build(),
         onValueChange = {},
-        placeholder = "Ingresa tu nombre",
-        leadingIcon = { AppIcon(imageVector = AppIcons.CheckMark, contentDescription = null) },
-        trailingIcon = { AppIcon(imageVector = AppIcons.CheckMark, contentDescription = null) },
+        placeholderDate = Calendar.Builder().setDate(2023, 10, 10).build(),
+        trailingIcon = {
+            AppIcon(
+                imageVector = AppIcons.Calendar,
+            )
+        },
     )
 }

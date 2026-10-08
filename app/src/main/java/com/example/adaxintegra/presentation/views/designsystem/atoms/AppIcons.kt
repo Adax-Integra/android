@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Description
@@ -72,4 +73,7 @@ object AppIcons {
 
     val Reports: ImageVector
         get() = Icons.Default.Description
+
+    val Calendar: ImageVector
+        get() = Icons.Default.CalendarMonth
 }

@@ -22,8 +22,8 @@ enum class IconSize(
 @Composable
 fun AppIcon(
     imageVector: ImageVector,
-    contentDescription: String?,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
     size: IconSize = IconSize.RegularIcon,
     tint: Color = LocalContentColor.current,
 ) {
