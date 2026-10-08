@@ -37,10 +37,10 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.Profile
 @Composable
 fun ProfileScreen(
     onPersonalDataClick: () -> Unit,
-    /*onSecurityClick: () -> Unit,
-    onNotificationsClick: () -> Unit,*/
     onLogoutClick: () -> Unit,
     onBack: () -> Unit,
+    onSecurityClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     isAdmin: Boolean = false,
     onManageCollaboratorsClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -126,12 +126,23 @@ fun ProfileScreen(
                     modifier = Modifier.height(8.dp),
                 )
 
-                // three options for further details
+                // options for further details
                 ProfileOption(
                     icon = AppIcons.Profile,
                     title = "Datos Personales",
                     subtitle = "Nombre, teléfono, correo",
                     onClick = onPersonalDataClick,
+                )
+
+                Spacer(
+                    modifier = Modifier.height(12.dp),
+                )
+
+                ProfileOption(
+                    icon = AppIcons.Lock,
+                    title = "Seguridad",
+                    subtitle = "Cambio de contraseña",
+                    onClick = onSecurityClick,
                 )
 
                 Spacer(
@@ -153,7 +164,6 @@ fun ProfileScreen(
                 AppButton(
                     text = "Cerrar sesión",
                     onClick = { showLogoutConfirmation = true },
-                    variant = ButtonVariant.Outlined,
                     modifier = Modifier.fillMaxWidth(),
                 )
             } else {
