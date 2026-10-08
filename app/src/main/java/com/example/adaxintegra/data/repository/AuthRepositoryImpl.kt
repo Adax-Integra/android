@@ -187,19 +187,14 @@ class AuthRepositoryImpl @Inject constructor(
                 token = code,
             )
 
-            // // G-09-VerifyOTP: Retrieve current user upon successful OTP verification
-            val currentUser = supabase.auth.currentUserOrNull()
-            val accessToken = supabase.auth.currentAccessTokenOrNull() ?: ""
-
-            val userSession = UserSession(
-                token = accessToken,
-                userId = currentUser?.id,
+            // // G-09-VerifyOTP: Account is confirmed in Supabase.
+            // We return success without overriding _session with Supabase tokens so user logs in via Node backend.
+            val resultSession = UserSession(
+                token = "",
+                userId = null,
                 role = "external",
             )
-
-            // // G-09-VerifyOTP: Publish new active session and emit success
-            _session.value = userSession
-            emit(Result.Success(userSession))
+            emit(Result.Success(resultSession))
         } catch (e: Exception) {
             emit(Result.Error(Exception("Código de verificación incorrecto o expirado")))
         }

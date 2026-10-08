@@ -26,6 +26,7 @@ import com.example.adaxintegra.presentation.views.screens.PendingVerificationScr
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -36,6 +37,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
@@ -71,6 +74,7 @@ fun AppNavigation(
                     currentRoute != null &&
                     currentRoute != "login" &&
                     currentRoute != "register" &&
+                    currentRoute != "verificationSuccess" &&
                     !currentRoute.startsWith("pendingVerification") -> "login"
 
                 else -> null
@@ -93,6 +97,7 @@ fun AppNavigation(
                 currentRoute != null &&
                 currentRoute != "login" &&
                 currentRoute != "register" &&
+                currentRoute != "verificationSuccess" &&
                 !currentRoute.startsWith("pendingVerification")
             ) {
                 val selectedRoute =
@@ -165,15 +170,21 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onRegisterSuccess = { email ->
-                        navController.navigate("pendingVerification/$email") {
-                            popUpTo("login") { inclusive = true }
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
+                            popUpTo("register") { inclusive = false }
                         }
                     },
                 )
             }
 
             composable("pendingVerification/{email}") { backStackEntry ->
-                val email = backStackEntry.arguments?.getString("email") ?: ""
+                val rawEmail = backStackEntry.arguments?.getString("email") ?: ""
+                val email = try {
+                    URLDecoder.decode(rawEmail, "UTF-8")
+                } catch (_: Exception) {
+                    rawEmail
+                }
                 val pendingVerificationViewModel: PendingVerificationViewModel = hiltViewModel()
 
                 PendingVerificationScreen(
@@ -184,8 +195,21 @@ fun AppNavigation(
                             popUpTo("login") { inclusive = true }
                         }
                     },
+                    onEditRegisterData = {
+                        navController.popBackStack("register", inclusive = false)
+                    },
                     onVerificationSuccess = {
-                        navController.navigate("home") {
+                        navController.navigate("verificationSuccess") {
+                            popUpTo("login") { inclusive = false }
+                        }
+                    },
+                )
+            }
+
+            composable("verificationSuccess") {
+                VerificationSuccessScreen(
+                    onContinueClick = {
+                        navController.navigate("login") {
                             popUpTo("login") { inclusive = true }
                         }
                     },
