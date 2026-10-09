@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
@@ -83,14 +84,24 @@ fun AppNavigation(
         }
     }
 
+    val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
+
+    LaunchedEffect(hasValidSession, isExternal) {
+        if (hasValidSession && isExternal) {
+            viewModel.checkPrivacyConsent()
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
     // Clears the previous navigation history when entering or leaving login
-    LaunchedEffect(hasValidSession, currentRoute) {
+    LaunchedEffect(hasValidSession, currentRoute, needsPrivacyConsent) {
         val destination =
             when {
-                hasValidSession && currentRoute == "login" -> "home"
+                hasValidSession && needsPrivacyConsent && currentRoute != "privacyPolicy" -> "privacyPolicy"
+
+                hasValidSession && !needsPrivacyConsent && currentRoute == "login" -> "home"
 
                 !hasValidSession &&
                     currentRoute != null &&
@@ -499,12 +510,19 @@ fun AppNavigation(
 
             // Existing external-user case progress flow
             composable("privacyPolicy") {
+                val privacyViewModel: PrivacyPolicyViewModel = hiltViewModel()
                 PrivacyPolicyScreen(
+                    viewModel = privacyViewModel,
                     onBack = {
-                        navController.popBackStack()
+                        viewModel.logout()
                     },
                     onContinue = {
-                        navController.popBackStack()
+                        privacyViewModel.acceptPolicy {
+                            viewModel.setPrivacyConsentAccepted()
+                            navController.navigate("home") {
+                                popUpTo("privacyPolicy") { inclusive = true }
+                            }
+                        }
                     },
                 )
             }

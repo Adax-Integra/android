@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.screens
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,9 +31,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
@@ -55,8 +66,11 @@ fun PrivacyPolicyScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onContinue: () -> Unit = {},
+    viewModel: PrivacyPolicyViewModel = hiltViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var accepted by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val items = listOf(
         PrivacyPolicyItem(
@@ -111,6 +125,14 @@ fun PrivacyPolicyScreen(
             style = AppTextStyle.BodyMedium,
             color = IconGrey,
         )
+
+        if (uiState.error != null) {
+            Text(
+                text = uiState.error ?: "",
+                style = AppTextStyle.BodyMedium,
+                color = Color.Red,
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -168,11 +190,35 @@ fun PrivacyPolicyScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(
-                        text = "He leído y acepto el Aviso de privacidad",
-                        style = AppTextStyle.BodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                    val annotatedString = buildAnnotatedString {
+                        append("He leído y acepto el ")
+                        pushStringAnnotation(tag = "POLICY", annotation = "policy")
+                        withStyle(
+                            style = SpanStyle(
+                                color = Purple,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                        ) {
+                            append("Aviso de privacidad")
+                        }
+                        pop()
+                    }
+
+                    ClickableText(
+                        text = annotatedString,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                        ),
+                        onClick = { offset ->
+                            annotatedString.getStringAnnotations(tag = "POLICY", start = offset, end = offset)
+                                .firstOrNull()?.let {
+                                    val url = viewModel.getDocumentUrl()
+                                    if (!url.isNullOrBlank()) {
+                                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                                        context.startActivity(intent)
+                                    }
+                                }
+                        },
                     )
 
                     Text(
@@ -192,10 +238,12 @@ fun PrivacyPolicyScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             AppButton(
-                text = "Continuar",
-                onClick = onContinue,
+                text = if (uiState.isSubmitting) "Guardando..." else "Continuar",
+                onClick = {
+                    viewModel.acceptPolicy(onContinue)
+                },
                 variant = ButtonVariant.Primary,
-                enabled = accepted,
+                enabled = accepted && !uiState.isSubmitting && !uiState.isLoading,
                 modifier = Modifier.weight(1f),
             )
 
@@ -257,7 +305,7 @@ fun PrivacyPolicyRow(
     }
 }
 
-@Suppress("ktlint:standard:function-naming")
+@Suppress("ktlint:standard:preview")
 @Preview(showBackground = true)
 @Composable
 private fun PrivacyPolicyScreenPreview() {
