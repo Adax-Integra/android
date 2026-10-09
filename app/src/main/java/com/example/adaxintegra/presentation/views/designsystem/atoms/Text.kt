@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextOverflow
 
 // text styles and parameters to be reused
 enum class AppTextStyle {
+    HeadLineLarge,
     TitleLarge,
     TitleMedium,
     BodyLarge,
@@ -36,6 +37,7 @@ fun Text(
 ) {
     val textStyle: TextStyle =
         when (style) {
+            AppTextStyle.HeadLineLarge -> MaterialTheme.typography.headlineLarge
             AppTextStyle.TitleLarge -> MaterialTheme.typography.titleLarge
             AppTextStyle.TitleMedium -> MaterialTheme.typography.titleMedium
             AppTextStyle.BodyLarge -> MaterialTheme.typography.bodyLarge

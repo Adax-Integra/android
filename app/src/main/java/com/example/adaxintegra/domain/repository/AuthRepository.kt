@@ -24,6 +24,14 @@ interface AuthRepository {
 
     // Clears the session from storage and memory.
     suspend fun logout()
+    //no session is needed for this action
+    suspend fun forgotPassword(
+        email: String
+    ): Result<Unit>
+
+    suspend fun resetPassword(
+        newPassword: String
+    ): Result<Unit>
 
     // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
     fun register(

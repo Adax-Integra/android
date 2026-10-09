@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +29,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.StatusRow
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.IconGrey
-import com.example.adaxintegra.ui.theme.White
 import java.util.Date
 
 // case card, same design and order as CaseCard in iOS
@@ -48,22 +48,23 @@ fun CaseSummaryCard(
             .joinToString(", ") { it.type }
             .ifBlank { "Sin tipo registrado" }
 
+    // Theme colors so the card is readable in light and dark mode
     Row(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .clip(RoundedCornerShape(12.dp))
-            .background(White)
-            .clickable { onClick() },
+            Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable { onClick() },
     ) {
         // color stripe by state
         Box(
             modifier =
-            Modifier
-                .width(4.dp)
-                .fillMaxHeight()
-                .background(statusColor),
+                Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(statusColor),
         )
 
         Column(
@@ -74,6 +75,7 @@ fun CaseSummaryCard(
                 text = "ID: ${caseItem.caseId.take(8).uppercase()}",
                 style = AppTextStyle.BodyLarge,
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Text(
@@ -87,6 +89,7 @@ fun CaseSummaryCard(
                 text = violenceText,
                 style = AppTextStyle.BodyMedium,
                 fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             StatusRow(

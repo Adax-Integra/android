@@ -21,12 +21,14 @@ import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
@@ -37,7 +39,9 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -56,11 +60,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.res.painterResource
 import com.example.adaxintegra.R
 
-// provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
+    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
@@ -128,6 +132,20 @@ fun AppNavigation(
             (isExternal || canViewAllCases)
 
     val navController = rememberNavController()
+
+    //handle Supabase password recovery deep link
+    LaunchedEffect(deepLinkUri) {
+        if (
+            deepLinkUri?.scheme == "adax" &&
+            deepLinkUri.host == "auth" &&
+            deepLinkUri.path == "/callback"
+        ) {
+            navController.navigate("resetPassword") {
+                launchSingleTop = true
+            }
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -138,15 +156,18 @@ fun AppNavigation(
 
             hasValidSession && currentRoute == "login" -> "home"
 
-            !hasValidSession &&
-                currentRoute != null &&
-                currentRoute != "login" &&
-                currentRoute != "register" &&
-                currentRoute != "verificationSuccess" &&
-                !currentRoute.startsWith("pendingVerification") -> "login"
+                !hasValidSession &&
+                    currentRoute != null &&
+                    currentRoute != "login" &&
+                    currentRoute != "register" &&
+                    currentRoute != "forgotPassword" &&
+                    currentRoute != "resetPassword" &&
+                    currentRoute != "verificationSuccess" &&
+                    !currentRoute.startsWith("pendingVerification") -> "login"
 
-            else -> null
-        }
+
+                else -> null
+            }
 
         if (destination != null) {
             navController.navigate(destination) {
@@ -237,8 +258,40 @@ fun AppNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onForgotPasswordClick = {
+                        navController.navigate("forgotPassword") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
+
+            //forgot password screen
+            composable("forgotPassword") {
+
+                ForgotPasswordScreen(
+                    onBack = {
+                        navController.popBackStack() },
+                    viewModel = hiltViewModel()
+                )
+            }
+
+            //reset password screen
+            composable("resetPassword") { entry ->
+
+                    ResetPasswordScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onResetPasswordSuccess = {
+                            navController.navigate("login") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    )
+                }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
@@ -297,7 +350,23 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    HomeScreen(role = role)
+                    //NV-01: the external user gets her own home, the rest keep the role probe
+                    if (isExternal) {
+                        ExternalHomeScreen(
+                            onCaseClick = { caseId ->
+                                navController.navigate("case/$caseId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onRegisterCaseClick = {
+                                navController.navigate("createCase") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
+                    } else {
+                        HomeScreen(role = role ?: "sin rol")
+                    }
                 }
             }
 
