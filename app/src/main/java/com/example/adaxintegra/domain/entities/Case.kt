@@ -10,6 +10,8 @@ data class Case(
     val severity: Int?,
     val urgency: String,
     val updatedAt: String?,
+    val caseNumber: String? = null,
+    val internsAssigned: List<String> = emptyList(),
 ) {
     companion object {
         // Fictional data for previews and UI development, as in the lab.
@@ -20,37 +22,55 @@ data class Case(
                 caseId = "13221-4231",
                 name = "María García López",
                 violenceTypes = listOf("Violencia familiar", "Violencia económica"),
-                state = "En proceso",
+                state = "Abierto",
                 severity = 9,
                 urgency = "Alta",
                 updatedAt = "2026-09-21T10:00:00",
+                caseNumber = "CAS-26-0216",
+                internsAssigned = listOf(
+                    "María Gómez",
+                    "Lucía Martínez",
+                    "Amanda Luna"
+                )
             ),
             Case(
                 caseId = "13221-4232",
                 name = "Sofía Méndez Duarte",
                 violenceTypes = listOf("Violencia psicológica"),
-                state = "En proceso",
+                state = "Abierto",
                 severity = 5,
                 urgency = "Media",
                 updatedAt = "2026-09-20T12:30:00",
+                caseNumber = "CAS-26-0001",
+                internsAssigned = emptyList()
             ),
             Case(
                 caseId = "13221-4233",
                 name = "Laura Torres Ortiz",
                 violenceTypes = listOf("Violencia económica"),
-                state = "En proceso",
+                state = "Abierto",
                 severity = 2,
                 urgency = "Baja",
                 updatedAt = "2026-09-18T09:15:00",
+                caseNumber = "CAS-26-5100",
+                internsAssigned = listOf(
+                    "Carla Rodríguez",
+                    "Ana García"
+                )
+
             ),
             Case(
                 caseId = "13221-4234",
                 name = "Ana Martínez Ruiz",
                 violenceTypes = emptyList(),
-                state = "En proceso",
+                state = "Cerrado",
                 severity = null,
                 urgency = "Sin evaluar",
                 updatedAt = null,
+                caseNumber = "CAS-27-0516",
+                internsAssigned = listOf(
+                    "Dana Ortíz"
+                )
             ),
         )
     }

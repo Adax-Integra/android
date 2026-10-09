@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -20,8 +21,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -36,6 +40,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.ui.theme.LightPurple
 
+/**
+ * // G-09-VerifyOTP: Login Form organism supporting email, password, login/register triggers,
+ * and seamless redirect to OTP code verification for unconfirmed accounts.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginForm(
@@ -49,8 +57,15 @@ fun LoginForm(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
+    isEmailNotConfirmed: Boolean = false,
+    onResendEmailClick: () -> Unit = {},
+    isResendingEmail: Boolean = false,
+    resendSuccessMessage: String? = null,
 ) {
     var passwordVisible by remember { mutableStateOf(value = false) }
+
+    // This property allows the user to select the next field automatically when enter is pressed
+    val focusManager = LocalFocusManager.current
 
     Column(modifier = modifier.fillMaxWidth()) {
         LabeledTextField(
@@ -66,6 +81,8 @@ fun LoginForm(
                     tint = Color.Gray,
                 )
             },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -74,6 +91,7 @@ fun LoginForm(
             label = "Contraseña",
             value = passwordValue,
             onValueChange = onPasswordChange,
+            placeholder = "********",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Lock,
@@ -94,7 +112,11 @@ fun LoginForm(
                 }
             },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+                onLoginClick()
+            }),
         )
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -139,6 +161,30 @@ fun LoginForm(
                 text = it,
                 style = AppTextStyle.BodyMedium,
                 color = Color.Red,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // // G-09-VerifyOTP: Prominent action button redirecting unconfirmed accounts directly to 6-digit OTP verification screen
+        if (isEmailNotConfirmed) {
+            Spacer(modifier = Modifier.height(16.dp))
+            AppButton(
+                text = "Verificar mi cuenta con código",
+                onClick = onResendEmailClick,
+                variant = ButtonVariant.Outlined,
+                isLoading = isResendingEmail,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        resendSuccessMessage?.let {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = it,
+                style = AppTextStyle.BodyMedium,
+                color = Color(0xFF2E7D32),
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.fillMaxWidth(),

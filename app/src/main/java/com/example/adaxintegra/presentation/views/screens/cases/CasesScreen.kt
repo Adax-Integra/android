@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,12 +47,17 @@ import com.example.adaxintegra.domain.entities.Case
 import com.example.adaxintegra.presentation.viewmodel.CasesUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CasesScreen(
     uiState: CasesUiState,
     onBackClick: () -> Unit,
+    onCaseClick: (String) -> Unit,
     onSearchChange: (String) -> Unit,
     onUrgencyChange: (String) -> Unit,
     onClearFilters: () -> Unit,
@@ -67,8 +73,16 @@ fun CasesScreen(
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 0.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -86,6 +100,7 @@ fun CasesScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -93,13 +108,15 @@ fun CasesScreen(
                 OutlinedTextField(
                     value = uiState.search,
                     onValueChange = onSearchChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                     placeholder = {
                         Text(
-                            text = "Buscar por nombre o caso",
+                            text = "Buscar...",
                             fontSize = 14.sp,
+                            maxLines = 1,
                         )
                     },
                     leadingIcon = {
@@ -123,6 +140,7 @@ fun CasesScreen(
                     Text("Filtrar")
                 }
             }
+
             if (uiState.search.isNotEmpty() || selectedUrgency != "Todas") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -133,11 +151,13 @@ fun CasesScreen(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
+
                     TextButton(onClick = onClearFilters) {
                         Text("Limpiar")
                     }
                 }
             }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -149,6 +169,7 @@ fun CasesScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(50),
@@ -160,10 +181,12 @@ fun CasesScreen(
                     )
                 }
             }
+
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 when {
@@ -189,14 +212,15 @@ fun CasesScreen(
 
                     uiState.cases.isEmpty() -> {
                         Text(
-                            text = if (
-                                uiState.search.isNotBlank() ||
-                                selectedUrgency != "Todas"
-                            ) {
-                                "No hay casos que coincidan con tu busqueda y filtro."
-                            } else {
-                                "No hay casos disponibles"
-                            },
+                            text =
+                                if (
+                                    uiState.search.isNotBlank() ||
+                                    selectedUrgency != "Todas"
+                                ) {
+                                    "No hay casos que coincidan con tu busqueda y filtro."
+                                } else {
+                                    "No hay casos disponibles"
+                                },
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
@@ -210,36 +234,83 @@ fun CasesScreen(
                                 items = uiState.cases,
                                 key = { it.caseId },
                             ) { case ->
-                                CaseCard(case = case)
+                                CaseCard(
+                                    case = case,
+                                    modifier =
+                                        Modifier.clickable {
+                                            onCaseClick(case.caseId)
+                                        },
+                                )
                             }
                         }
                     }
                 }
             }
 
-            if (!uiState.isLoading && uiState.error == null && uiState.total > 0) {
-                Row(
+            if (
+                !uiState.isLoading &&
+                uiState.error == null &&
+                uiState.total > uiState.limit
+            ) {
+                val canGoBack = uiState.page > 1
+                val canGoNext =
+                    uiState.page.toLong() * uiState.limit < uiState.total
+
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    shape = RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp,
+                    ),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                 ) {
-                    TextButton(
-                        onClick = onPreviousPage,
-                        enabled = uiState.page > 1,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Anterior")
-                    }
+                        IconButton(
+                            onClick = onPreviousPage,
+                            enabled = canGoBack,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Página anterior",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoBack) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
 
-                    Text(
-                        text = "Página ${uiState.page}",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                        Text(
+                            text = "Página ${uiState.page}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
 
-                    TextButton(
-                        onClick = onNextPage,
-                        enabled = uiState.page.toLong() * uiState.limit < uiState.total,
-                    ) {
-                        Text("Siguiente")
+                        IconButton(
+                            onClick = onNextPage,
+                            enabled = canGoNext,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Página siguiente",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoNext) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -256,29 +327,37 @@ fun CasesScreen(
                 ) {
                     listOf("Todas", "Alta", "Media", "Baja", "Sin evaluar").forEach { urgency ->
                         Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .selectable(
-                                    selected = pendingUrgency == urgency,
-                                    onClick = { pendingUrgency = urgency },
-                                    role = Role.RadioButton,
-                                )
-                                .padding(vertical = 10.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = pendingUrgency == urgency,
+                                        onClick = { pendingUrgency = urgency },
+                                        role = Role.RadioButton,
+                                    )
+                                    .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            RadioButton(selected = pendingUrgency == urgency, onClick = null)
+                            RadioButton(
+                                selected = pendingUrgency == urgency,
+                                onClick = null,
+                            )
+
                             Text(urgency)
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    onUrgencyChange(
-                        if (pendingUrgency == "Todas") "" else pendingUrgency,
-                    )
-                    showFilters = false
-                }) {
+                TextButton(
+                    onClick = {
+                        onUrgencyChange(
+                            if (pendingUrgency == "Todas") "" else pendingUrgency,
+                        )
+                        showFilters = false
+                    },
+                ) {
                     Text("Aplicar")
                 }
             },
@@ -292,17 +371,26 @@ fun CasesScreen(
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, widthDp = 400, heightDp = 850)
+@Preview(
+    name = "Casos con paginación",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 804,
+)
 @Composable
 private fun CasesScreenPreview() {
     val mockCases = Case.getMockData()
+
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(
             uiState = CasesUiState(
                 cases = mockCases,
-                total = mockCases.size,
+                total = 45,
+                page = 2,
+                limit = 20,
             ),
             onBackClick = {},
+            onCaseClick = {},
             onSearchChange = {},
             onUrgencyChange = {},
             onClearFilters = {},

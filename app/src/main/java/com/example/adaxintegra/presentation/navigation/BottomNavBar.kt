@@ -6,6 +6,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -22,18 +23,25 @@ fun BottomNavBar(
     currentRoute: String?,
     onNavigateToRoute: (String) -> Unit,
     modifier: Modifier = Modifier,
-    isInternal: Boolean = false,
+    showRecords: Boolean = false,
+    isAdmin: Boolean = false,
 ) {
-    val items =
-        listOf(
+    val items = remember(showRecords, isAdmin) {
+        listOfNotNull(
             BottomNavBarItem.Inicio,
-            if (isInternal) {
+            if (showRecords) {
                 BottomNavBarItem.MisExpedientes
             } else {
                 BottomNavBarItem.MisCasos
             },
             BottomNavBarItem.Perfil,
+            if (isAdmin) {
+                BottomNavBarItem.Administrar
+            } else {
+                null
+            },
         )
+    }
 
     NavigationBar(
         modifier = modifier.fillMaxWidth(),
@@ -115,6 +123,6 @@ fun BottomNavBarPreviewMisExpedientes() {
     BottomNavBar(
         currentRoute = BottomNavBarItem.MisExpedientes.route,
         onNavigateToRoute = {},
-        isInternal = true,
+        showRecords = true,
     )
 }

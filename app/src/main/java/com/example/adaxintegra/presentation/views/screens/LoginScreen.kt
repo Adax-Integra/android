@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,29 +21,30 @@ import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LoginHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginForm
 
+/**
+ * // G-09-VerifyOTP: Login Screen with unconfirmed account verification redirect handling.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onNavigateToHome: (String?) -> Unit,
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onVerifyUnconfirmedAccount: (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(uiState.isLoginSuccess) {
-        if (uiState.isLoginSuccess) {
-            onNavigateToHome(uiState.userRole)
-        }
-    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF3F3F3))
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState())
+            .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         LoginHeader()
 
@@ -52,10 +56,20 @@ fun LoginScreen(
             passwordValue = uiState.password,
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
-            onRegisterClick = { /* register action*/ },
-            onForgotPasswordClick = { /* recover password */ },
+            onRegisterClick = onRegisterClick,
+            onForgotPasswordClick = onForgotPasswordClick,
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
+            isEmailNotConfirmed = uiState.isEmailNotConfirmed,
+            onResendEmailClick = {
+                viewModel.resendVerificationEmail { email ->
+                    onVerifyUnconfirmedAccount(email)
+                }
+            },
+            isResendingEmail = uiState.isResendingEmail,
+            resendSuccessMessage = uiState.resendSuccessMessage,
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
