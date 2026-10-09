@@ -60,6 +60,41 @@ private fun getCaseStateUi(state: String): CaseStateUi {
     }
 }
 
+private fun formatListByCharacterLimit(
+    items: List<String>,
+    maxChars: Int = 25,
+    emptyText: String,
+): String {
+    if (items.isEmpty()) return emptyText
+
+    val selected = mutableListOf<String>()
+    var currentLength = 0
+    var hasMore = false
+
+    for (item in items) {
+        val additionalLength = if (selected.isEmpty()) item.length else item.length + 2
+        if (currentLength + additionalLength <= maxChars) {
+            selected.add(item)
+            currentLength += additionalLength
+        } else {
+            hasMore = true
+            break
+        }
+    }
+
+    return when {
+        selected.isEmpty() -> {
+            "${items.first().take(maxChars - 3)}..."
+        }
+        hasMore -> {
+            "${selected.joinToString(", ")}, ..."
+        }
+        else -> {
+            selected.joinToString(", ")
+        }
+    }
+}
+
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CaseCard(
@@ -67,6 +102,16 @@ fun CaseCard(
     modifier: Modifier = Modifier,
 ) {
     val stateUi = getCaseStateUi(case.state)
+    val violenceText = formatListByCharacterLimit(
+        items = case.violenceTypes,
+        maxChars = 28,
+        emptyText = "Sin tipos de violencia registrados",
+    )
+    val internsText = formatListByCharacterLimit(
+        items = case.internsAssigned,
+        maxChars = 24,
+        emptyText = "Sin asignar",
+    )
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -152,11 +197,10 @@ fun CaseCard(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = case.violenceTypes.joinToString(", ")
-                                .ifBlank { "Sin tipos de violencia registrados" },
+                            text = violenceText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -172,11 +216,10 @@ fun CaseCard(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = case.internsAssigned.joinToString(", ")
-                                .ifBlank { "Sin asignar" },
+                            text = internsText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -196,7 +239,7 @@ fun CaseCard(
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, name = "Open Case")
+@Preview(showBackground = true)
 @Composable
 private fun CaseCardOpenPreview() {
     AdaxIntegraTheme {
@@ -204,13 +247,13 @@ private fun CaseCardOpenPreview() {
             case = Case(
                 caseId = "13221-4231",
                 name = "Adriana Velásquez Mondragón",
-                violenceTypes = listOf("Sexual", "Psicológica"),
+                violenceTypes = listOf("Sexual", "Psicológica", "Física"),
                 state = "Abierto",
                 severity = null,
                 urgency = "",
                 updatedAt = "06-01-2026",
-                caseNumber = "C-26-9999",
-                internsAssigned = listOf("Alejandra Benítez"),
+                caseNumber = "CAS-26-0001",
+                internsAssigned = listOf("Alejandra Beatriz Benítez Mondragón", "María Gómez"),
             ),
             modifier = Modifier.padding(12.dp),
         )
@@ -218,7 +261,7 @@ private fun CaseCardOpenPreview() {
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, name = "Closed Case")
+@Preview(showBackground = true)
 @Composable
 private fun CaseCardClosedPreview() {
     AdaxIntegraTheme {
