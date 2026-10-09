@@ -41,6 +41,20 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScr
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.res.painterResource
+import com.example.adaxintegra.R
 
 // provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
@@ -49,6 +63,57 @@ import java.net.URLEncoder
 fun AppNavigation(
     viewModel: AppViewModel = hiltViewModel(),
 ) {
+    val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
+
+    val restoreError by viewModel.restoreError.collectAsStateWithLifecycle()
+
+    val logoutError by viewModel.logoutError.collectAsStateWithLifecycle()
+
+// Avoid opening login before the stored session has been read.
+    if (isRestoringSession) {
+        SessionLoadingScreen()
+        return
+    }
+
+    if (restoreError != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(text = restoreError.orEmpty())
+
+            TextButton(onClick = viewModel::retryRestoreSession) {
+                Text(text = "Reintentar")
+            }
+        }
+        return
+    }
+
+    if (logoutError != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissLogoutError,
+            title = {
+                Text(text = "No se pudo cerrar sesión")
+            },
+            text = {
+                Text(text = logoutError.orEmpty())
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::logout) {
+                    Text(text = "Reintentar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissLogoutError) {
+                    Text(text = "Cancelar")
+                }
+            },
+        )
+    }
+
     val session by viewModel.session.collectAsStateWithLifecycle()
     val role = session?.role
 
@@ -68,19 +133,20 @@ fun AppNavigation(
 
     // Clears the previous navigation history when entering or leaving login
     LaunchedEffect(hasValidSession, currentRoute) {
-        val destination =
-            when {
-                hasValidSession && currentRoute == "login" -> "home"
+        val destination = when {
+            currentRoute == "session" -> { if (hasValidSession) "home" else "login" }
 
-                !hasValidSession &&
-                    currentRoute != null &&
-                    currentRoute != "login" &&
-                    currentRoute != "register" &&
-                    currentRoute != "verificationSuccess" &&
-                    !currentRoute.startsWith("pendingVerification") -> "login"
+            hasValidSession && currentRoute == "login" -> "home"
 
-                else -> null
-            }
+            !hasValidSession &&
+                currentRoute != null &&
+                currentRoute != "login" &&
+                currentRoute != "register" &&
+                currentRoute != "verificationSuccess" &&
+                !currentRoute.startsWith("pendingVerification") -> "login"
+
+            else -> null
+        }
 
         if (destination != null) {
             navController.navigate(destination) {
@@ -97,6 +163,7 @@ fun AppNavigation(
             if (
                 hasValidSession &&
                 currentRoute != null &&
+                currentRoute != "session" &&
                 currentRoute != "login" &&
                 currentRoute != "register" &&
                 currentRoute != "verificationSuccess" &&
@@ -143,12 +210,16 @@ fun AppNavigation(
 
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "session",
             modifier =
                 Modifier
                     .padding(innerPadding)
                     .consumeWindowInsets(innerPadding),
         ) {
+            composable("session") {
+                SessionLoadingScreen()
+            }
+
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
 
@@ -484,6 +555,35 @@ fun AppNavigation(
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SessionLoadingScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(
+                space = 24.dp,
+                alignment = Alignment.CenterVertically,
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_adax_logo),
+                contentDescription = "ADAX",
+                modifier = Modifier.size(220.dp),
+            )
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(32.dp),
+            )
         }
     }
 }

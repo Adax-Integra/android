@@ -19,8 +19,11 @@ interface AuthRepository {
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Clears local and active user session state
-    fun logout()
+    // Restores the session saved on the device.
+    suspend fun restoreSession()
+
+    // Clears the session from storage and memory.
+    suspend fun logout()
 
     // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
     fun register(
