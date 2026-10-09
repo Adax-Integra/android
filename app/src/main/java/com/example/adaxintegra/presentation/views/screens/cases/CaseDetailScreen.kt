@@ -75,14 +75,17 @@ fun CaseDetailScreen(
 
     ScreenTemplate(
         title = "Detalle del caso",
-        subtitle = case?.caseNumber ?: caseId,
+        subtitle = "",
         onBack = onBack,
         isLoading = uiState.isLoading,
         error = uiState.error,
     ) {
         if (case != null) {
             CaseDetailContent(
-                caseNumber = case.caseNumber ?: case.caseId,
+                caseNumber =
+                    case.caseNumber
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "Sin número de caso",
                 statusText = statusText,
                 statusColor = statusColor,
                 createdAt = DateFormatter.dateTime(case.createdAt),
