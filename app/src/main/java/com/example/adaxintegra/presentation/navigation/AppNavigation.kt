@@ -510,6 +510,11 @@ fun AppNavigation(
                         onBackClick = {
                             navController.popBackStack()
                         },
+                        onCaseClick = { caseId ->
+                            navController.navigate("caseDetail/$caseId") {
+                                launchSingleTop = true
+                            }
+                        },
                         onSearchChange = casesViewModel::searchCases,
                         onUrgencyChange = casesViewModel::filterCases,
                         onClearFilters = casesViewModel::clearFilters,
