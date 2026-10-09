@@ -102,6 +102,9 @@ fun CaseCard(
     modifier: Modifier = Modifier,
 ) {
     val stateUi = getCaseStateUi(case.state)
+    val violenceLabel = if (case.violenceTypes.size > 1) "Violencias: " else "Violencia: "
+    val internsLabel = if (case.internsAssigned.size > 1) "Encargadas del caso: " else "Encargada del caso: "
+
     val violenceText = formatListByCharacterLimit(
         items = case.violenceTypes,
         maxChars = 28,
@@ -184,14 +187,14 @@ fun CaseCard(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                // Middle section: Violencia and Asignada al caso
+                // Middle section: Violencia and Encargada(s) del caso
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = "Violencia: ",
+                            text = violenceLabel,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -210,7 +213,7 @@ fun CaseCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = "Asignada al caso: ",
+                            text = internsLabel,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,

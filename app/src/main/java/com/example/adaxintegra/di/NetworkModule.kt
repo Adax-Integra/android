@@ -21,7 +21,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://adax-integra.duckdns.org"
+    private const val BASE_URL = "http://localhost:3001/"
 
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
     // in AndroidManifest and run "adb reverse tcp:3001 tcp:3001".
@@ -55,7 +55,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi = retrofit.create(CollaboratorApi::class.java)
+    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi =
+        retrofit.create(CollaboratorApi::class.java)
 
     @Provides
     @Singleton
@@ -63,7 +64,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi = retrofit.create(ExpedientApi::class.java)
+    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi =
+        retrofit.create(ExpedientApi::class.java)
 
     @Provides
     @Singleton
