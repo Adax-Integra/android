@@ -23,7 +23,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://localhost:3001/"
+    private const val BASE_URL = "https://adax-integra.duckdns.org"
 
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
     // in AndroidManifest and run "adb reverse tcp:3001 tcp:3001".
@@ -71,7 +71,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi = retrofit.create(ActivityLogApi::class.java)
+    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi =
+        retrofit.create(ActivityLogApi::class.java)
 
     @Provides
     @Singleton
@@ -79,5 +80,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi = retrofit.create(PrivacyPolicyApi::class.java)
+    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi =
+        retrofit.create(PrivacyPolicyApi::class.java)
 }
