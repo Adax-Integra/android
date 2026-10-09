@@ -11,5 +11,7 @@ fun Case.toUiEntity(): UiCase = UiCase(
     state = this.state ?: "Sin estado",
     severity = null,
     urgency = "Sin evaluar",
-    updatedAt = DateFormatter.dateTime(this.updatedAt).ifBlank { null }
+    updatedAt = DateFormatter.dateTime(this.updatedAt).ifBlank { null },
+    caseNumber = this.caseNumber,
+    internsAssigned = emptyList(),
 )

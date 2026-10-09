@@ -12,4 +12,6 @@ fun CollaboratorCaseListItemDto.toDomain(): Case = Case(
     severity = severity,
     urgency = urgency,
     updatedAt = updatedAt,
+    caseNumber = null,
+    internsAssigned = emptyList(),
 )
