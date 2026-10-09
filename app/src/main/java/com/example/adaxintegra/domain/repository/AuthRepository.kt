@@ -5,24 +5,20 @@ import com.example.adaxintegra.domain.model.UserSession
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-/**
- * Interface defining authentication contracts for Supabase Auth and remote API services.
- * Covers user registration, login, session observation, email verification OTP, change password, and logout.
- */
 interface AuthRepository {
-    // Exposes current user session changes. A null value indicates no active user session.
+    // Expresa los cambios en la sesión del usuario actual
     val session: StateFlow<UserSession?>
 
-    // // G-09-Register: Executes user login and validates email confirmation status
+    // Inicio de sesión (con validación de correo confirmado)
     fun login(
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Clears local and active user session state
+    // Cierra la sesión activa y local
     fun logout()
 
-    // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
+    // Registro de nuevo usuario
     fun register(
         name: String,
         lastname: String,
@@ -31,16 +27,22 @@ interface AuthRepository {
         password: String,
     ): Flow<Result<UserSession>>
 
-    // // G-09-VerifyOTP: Resends the 6-digit confirmation email OTP code to the specified email
+    // Reenvío de correo de verificación OTP
     fun resendVerificationEmail(email: String): Flow<Result<Unit>>
 
-    // // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user against Supabase Auth
+    // Verificación de código OTP enviado por correo
     fun verifyEmailCode(
         email: String,
         code: String,
     ): Flow<Result<UserSession>>
 
-    // Changes the password for the currently logged in user
+    // Solicitud de recuperación de contraseña (forgot password)
+    suspend fun forgotPassword(email: String): Result<Unit>
+
+    // Restablecimiento de contraseña
+    suspend fun resetPassword(newPassword: String): Result<Unit>
+
+    // Cambio de contraseña para usuario autenticado
     fun changePassword(
         currentPassword: String,
         newPassword: String,
