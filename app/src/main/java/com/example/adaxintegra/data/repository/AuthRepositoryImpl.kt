@@ -49,7 +49,7 @@ class AuthRepositoryImpl @Inject constructor(
             }
             // G-09-Register: Ensure the user's email has been confirmed before granting session access
             val currentUser = supabase.auth.currentUserOrNull()
-            if (currentUser != null && currentUser.emailConfirmedAt == null) {
+            if (currentUser != null && (currentUser.emailConfirmedAt == null)) {
                 supabase.auth.signOut()
                 throw IllegalStateException("email_not_confirmed")
             }
@@ -106,6 +106,35 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun logout() {
         _session.value = null
+    }
+
+    override suspend fun forgotPassword(
+        email: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.resetPasswordForEmail(
+                email = email,
+                redirectUrl = "adax://auth/callback",
+            )
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
+        }
+    }
+
+    override suspend fun resetPassword(
+        newPassword: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.updateUser {
+                password = newPassword
+            }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
     }
 
     // G-09-Register: Creates a new user account with Supabase Auth and remote backend
