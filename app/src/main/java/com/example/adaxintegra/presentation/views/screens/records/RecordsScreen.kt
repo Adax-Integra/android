@@ -50,6 +50,11 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -103,8 +108,13 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+                .padding(
+                    start = spacing.medium,
+                    end = spacing.medium,
+                    top = spacing.medium,
+                    bottom = 0.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -274,29 +284,65 @@ fun RecordsScreen(
                 (uiState.page > 1 || uiState.total > uiState.limit)
 
             if (showPagination) {
-                Row(
+                val canGoBack = uiState.page > 1
+                val canGoNext = uiState.error == null &&
+                    uiState.page.toLong() * uiState.limit < uiState.total
+
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    shape = RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp,
+                    ),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                 ) {
-                    TextButton(
-                        onClick = onPreviousPage,
-                        enabled = uiState.page > 1,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = "Anterior")
-                    }
+                        IconButton(
+                            onClick = onPreviousPage,
+                            enabled = canGoBack,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Página anterior",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoBack) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
 
-                    Text(
-                        text = "Página ${uiState.page}",
-                        style = AppTextStyle.BodySmall,
-                    )
+                        androidx.compose.material3.Text(
+                            text = "Página ${uiState.page}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
 
-                    TextButton(
-                        onClick = onNextPage,
-                        enabled = uiState.error == null &&
-                            uiState.page.toLong() * uiState.limit < uiState.total,
-                    ) {
-                        Text(text = "Siguiente")
+                        IconButton(
+                            onClick = onNextPage,
+                            enabled = canGoNext,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Página siguiente",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoNext) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -439,7 +485,9 @@ private fun RecordsScreenPreview() {
         RecordsScreen(
             uiState = RecordsUiState(
                 records = records,
-                total = records.size,
+                total = 25,
+                page = 2,
+                limit = 10,
             ),
             onBackClick = {},
             onSearchChange = {},
