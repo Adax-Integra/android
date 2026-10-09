@@ -17,3 +17,12 @@ data class Collaborator(
     val email: String,
     val phone: String?,
 )
+
+// G-06: collaborator shown in the admin's list
+data class CollaboratorSummary(
+    val userId: String,
+    val name: String,
+    val lastName: String,
+    val email: String?,
+    val isActive: Boolean,
+)
