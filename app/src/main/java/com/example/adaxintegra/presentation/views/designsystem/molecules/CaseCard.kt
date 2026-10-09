@@ -86,9 +86,11 @@ private fun formatListByCharacterLimit(
         selected.isEmpty() -> {
             "${items.first().take(maxChars - 3)}..."
         }
+
         hasMore -> {
             "${selected.joinToString(", ")}, ..."
         }
+
         else -> {
             selected.joinToString(", ")
         }
@@ -103,7 +105,8 @@ fun CaseCard(
 ) {
     val stateUi = getCaseStateUi(case.state)
     val violenceLabel = if (case.violenceTypes.size > 1) "Violencias: " else "Violencia: "
-    val internsLabel = if (case.internsAssigned.size > 1) "Encargadas del caso: " else "Encargada del caso: "
+    val internsLabel =
+        if (case.internsAssigned.size > 1) "Encargadas del caso: " else "Encargada del caso: "
 
     val violenceText = formatListByCharacterLimit(
         items = case.violenceTypes,
@@ -154,7 +157,8 @@ fun CaseCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = case.caseNumber ?: case.caseId,
+                            // If there is no caseNumber then it will instead show the caseId truncated to 12 chars
+                            text = (case.caseNumber ?: case.caseId).take(12),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
