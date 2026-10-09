@@ -1,8 +1,10 @@
 package com.example.adaxintegra.data.remote.api
 
+import com.example.adaxintegra.data.remote.dto.CollaboratorListResponseDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorResponseDto
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
@@ -13,4 +15,10 @@ interface CollaboratorApi {
         @Header("Authorization") authorization: String,
         @Body request: CreateCollaboratorRequestDto,
     ): CreateCollaboratorResponseDto
+
+    // G-06: admin consults the list of collaborators (requires the admin token)
+    @GET("api/internal-users")
+    suspend fun getCollaborators(
+        @Header("Authorization") authorization: String,
+    ): CollaboratorListResponseDto
 }
