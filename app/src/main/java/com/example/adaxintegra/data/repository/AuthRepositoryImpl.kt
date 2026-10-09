@@ -20,6 +20,10 @@ import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Base64
+import com.example.adaxintegra.data.local.SessionPreferences
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * Implementation of AuthRepository managing Supabase Auth and remote backend synchronization.
@@ -29,6 +33,7 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val api: AuthApi,
     private val supabase: SupabaseClient,
+    private val sessionPreferences: SessionPreferences,
 ) : AuthRepository {
     // G-09-Register: Active user session StateFlow held in memory
     private val _session = MutableStateFlow<UserSession?>(null)
@@ -78,6 +83,8 @@ class AuthRepositoryImpl @Inject constructor(
                 role = role,
             )
 
+            // Persist the session before making it available to the interface.
+            sessionPreferences.save(userSession)
             _session.value = userSession
             emit(Result.Success(userSession))
         } catch (exception: CancellationException) {
@@ -102,6 +109,31 @@ class AuthRepositoryImpl @Inject constructor(
                 emit(Result.Error(exception))
             }
         }
+    }
+
+
+
+    override suspend fun restoreSession() {
+        val storedSession = sessionPreferences.load()
+
+        if (storedSession == null) {
+            _session.value = null
+            return
+        }
+
+        if (!hasUnexpiredToken(storedSession.token)) {
+            sessionPreferences.clear()
+            _session.value = null
+            return
+        }
+
+        _session.value = storedSession
+    }
+
+    override suspend fun logout() {
+        // Clear storage first so the session cannot return after reopening.
+        sessionPreferences.clear()
+        _session.value = null
     }
 
     override suspend fun forgotPassword(
@@ -135,8 +167,33 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun logout() {
-        _session.value = null
+
+
+
+    // Reads expiration locally; the backend still verifies the JWT signature.
+    private fun hasUnexpiredToken(token: String): Boolean {
+        val parts = token.split(".")
+        if (parts.size != 3) return false
+
+        return try {
+            val decodedPayload = Base64.decode(
+                parts[1],
+                Base64.URL_SAFE or Base64.NO_WRAP,
+            )
+
+            val payload = JSONObject(
+                String(decodedPayload, Charsets.UTF_8),
+            )
+
+            val expiresAt = payload.getLong("exp")
+            val currentTime = System.currentTimeMillis() / 1000
+
+            expiresAt > currentTime
+        } catch (_: IllegalArgumentException) {
+            false
+        } catch (_: JSONException) {
+            false
+        }
     }
 
     // G-09-Register: Creates a new user account with Supabase Auth and remote backend
