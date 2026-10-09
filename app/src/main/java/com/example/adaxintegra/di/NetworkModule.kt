@@ -57,7 +57,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi = retrofit.create(CollaboratorApi::class.java)
+    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi =
+        retrofit.create(CollaboratorApi::class.java)
 
     @Provides
     @Singleton
@@ -65,11 +66,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi = retrofit.create(ExpedientApi::class.java)
+    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi =
+        retrofit.create(ExpedientApi::class.java)
 
     @Provides
     @Singleton
-    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi = retrofit.create(ActivityLogApi::class.java)
+    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi =
+        retrofit.create(ActivityLogApi::class.java)
 
     @Provides
     @Singleton
@@ -77,5 +80,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi = retrofit.create(PrivacyPolicyApi::class.java)
+    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi =
+        retrofit.create(PrivacyPolicyApi::class.java)
 }

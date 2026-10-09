@@ -31,4 +31,10 @@ data class CollaboratorCaseListItemDto(
 
     @SerializedName("updated_at")
     val updatedAt: String?,
+
+    @SerializedName("case_number")
+    val caseNumber: String? = null,
+
+    @SerializedName("interns_assigned")
+    val internsAssigned: List<String>? = emptyList(),
 )

@@ -8,8 +8,18 @@ fun Case.toUiEntity(): UiCase = UiCase(
     caseId = this.caseId,
     name = "Usuario", // Placeholder since the name isn't in the backend case model directly.
     violenceTypes = this.violenceList?.map { it.type } ?: emptyList(),
-    state = this.state ?: "Sin estado",
+    state = mapStateToSpanish(this.state),
     severity = null,
     urgency = "Sin evaluar",
-    updatedAt = DateFormatter.dateTime(this.updatedAt).ifBlank { null }
+    updatedAt = DateFormatter.dateTime(this.updatedAt).ifBlank { null },
+    caseNumber = this.caseNumber,
+    internsAssigned = emptyList(),
 )
+
+private fun mapStateToSpanish(rawState: String?): String {
+    return when (rawState?.trim()?.lowercase()) {
+        "open", "abierto" -> "Abierto"
+        "closed", "cerrado" -> "Cerrado"
+        else -> rawState ?: "Sin estado"
+    }
+}
