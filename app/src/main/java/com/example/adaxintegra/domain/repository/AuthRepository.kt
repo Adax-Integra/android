@@ -5,20 +5,28 @@ import com.example.adaxintegra.domain.model.UserSession
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Interface defining authentication contracts for Supabase Auth and remote API services.
+ * Covers user registration, login, session observation, email verification OTP, and logout.
+ */
 interface AuthRepository {
-    // Expresa los cambios en la sesión del usuario actual
+    // Exposes current user session changes. A null value indicates no active user session.
+    // Exposes session changes. A null value means no user is signed in.
     val session: StateFlow<UserSession?>
 
-    // Inicio de sesión (con validación de correo confirmado)
+    // // G-09-Register: Executes user login and validates email confirmation status
+    // Emits state while singing in
     fun login(
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Cierra la sesión activa y local
+    // Clears local and active user session state
+    // Clears the session
     fun logout()
 
-    // Registro de nuevo usuario
+    // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
+    // register
     fun register(
         name: String,
         lastname: String,
@@ -27,22 +35,7 @@ interface AuthRepository {
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Reenvío de correo de verificación OTP
-    fun resendVerificationEmail(email: String): Flow<Result<Unit>>
-
-    // Verificación de código OTP enviado por correo
-    fun verifyEmailCode(
-        email: String,
-        code: String,
-    ): Flow<Result<UserSession>>
-
-    // Solicitud de recuperación de contraseña (forgot password)
-    suspend fun forgotPassword(email: String): Result<Unit>
-
-    // Restablecimiento de contraseña
-    suspend fun resetPassword(newPassword: String): Result<Unit>
-
-    // Cambio de contraseña para usuario autenticado
+    // change password
     fun changePassword(
         currentPassword: String,
         newPassword: String,
