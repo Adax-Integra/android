@@ -1,5 +1,6 @@
 package com.example.adaxintegra.di
 
+import com.example.adaxintegra.data.remote.api.ActivityLogApi
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
@@ -64,6 +65,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideExpedientApi(retrofit: Retrofit): ExpedientApi = retrofit.create(ExpedientApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi = retrofit.create(ActivityLogApi::class.java)
 
     @Provides
     @Singleton
