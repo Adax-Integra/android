@@ -248,7 +248,7 @@ fun PrivacyPolicyScreen(
             )
 
             AppButton(
-                text = "¿No deseas continuar?",
+                text = "Cancelar",
                 onClick = onBack,
                 variant = ButtonVariant.Outlined,
                 modifier = Modifier.weight(1f),
