@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,6 +47,10 @@ import com.example.adaxintegra.domain.entities.Case
 import com.example.adaxintegra.presentation.viewmodel.CasesUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -70,8 +73,16 @@ fun CasesScreen(
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 0.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -236,29 +247,70 @@ fun CasesScreen(
                 }
             }
 
-            if (!uiState.isLoading && uiState.error == null && uiState.total > uiState.limit) {
-                Row(
+            if (
+                !uiState.isLoading &&
+                uiState.error == null &&
+                uiState.total > uiState.limit
+            ) {
+                val canGoBack = uiState.page > 1
+                val canGoNext =
+                    uiState.page.toLong() * uiState.limit < uiState.total
+
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    shape = RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp,
+                    ),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                 ) {
-                    TextButton(
-                        onClick = onPreviousPage,
-                        enabled = uiState.page > 1,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Anterior")
-                    }
+                        IconButton(
+                            onClick = onPreviousPage,
+                            enabled = canGoBack,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Página anterior",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoBack) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
 
-                    Text(
-                        text = "Página ${uiState.page}",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                        Text(
+                            text = "Página ${uiState.page}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
 
-                    TextButton(
-                        onClick = onNextPage,
-                        enabled = uiState.page.toLong() * uiState.limit < uiState.total,
-                    ) {
-                        Text("Siguiente")
+                        IconButton(
+                            onClick = onNextPage,
+                            enabled = canGoNext,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Página siguiente",
+                                modifier = Modifier.size(28.dp),
+                                tint = if (canGoNext) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -319,18 +371,24 @@ fun CasesScreen(
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, widthDp = 360, heightDp = 804)
+@Preview(
+    name = "Casos con paginación",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 804,
+)
 @Composable
 private fun CasesScreenPreview() {
     val mockCases = Case.getMockData()
 
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(
-            uiState =
-                CasesUiState(
-                    cases = mockCases,
-                    total = mockCases.size,
-                ),
+            uiState = CasesUiState(
+                cases = mockCases,
+                total = 45,
+                page = 2,
+                limit = 20,
+            ),
             onBackClick = {},
             onCaseClick = {},
             onSearchChange = {},
