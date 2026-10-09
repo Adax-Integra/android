@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,6 +57,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 fun CasesScreen(
     uiState: CasesUiState,
     onBackClick: () -> Unit,
+    onCaseClick: (String) -> Unit,
     onSearchChange: (String) -> Unit,
     onUrgencyChange: (String) -> Unit,
     onClearFilters: () -> Unit,
@@ -98,6 +100,7 @@ fun CasesScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -105,9 +108,10 @@ fun CasesScreen(
                 OutlinedTextField(
                     value = uiState.search,
                     onValueChange = onSearchChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                     placeholder = {
                         Text(
                             text = "Buscar...",
@@ -136,6 +140,7 @@ fun CasesScreen(
                     Text("Filtrar")
                 }
             }
+
             if (uiState.search.isNotEmpty() || selectedUrgency != "Todas") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -146,11 +151,13 @@ fun CasesScreen(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
+
                     TextButton(onClick = onClearFilters) {
                         Text("Limpiar")
                     }
                 }
             }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -162,6 +169,7 @@ fun CasesScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(50),
@@ -173,10 +181,12 @@ fun CasesScreen(
                     )
                 }
             }
+
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 when {
@@ -202,14 +212,15 @@ fun CasesScreen(
 
                     uiState.cases.isEmpty() -> {
                         Text(
-                            text = if (
-                                uiState.search.isNotBlank() ||
-                                selectedUrgency != "Todas"
-                            ) {
-                                "No hay casos que coincidan con tu busqueda y filtro."
-                            } else {
-                                "No hay casos disponibles"
-                            },
+                            text =
+                                if (
+                                    uiState.search.isNotBlank() ||
+                                    selectedUrgency != "Todas"
+                                ) {
+                                    "No hay casos que coincidan con tu busqueda y filtro."
+                                } else {
+                                    "No hay casos disponibles"
+                                },
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
@@ -223,7 +234,13 @@ fun CasesScreen(
                                 items = uiState.cases,
                                 key = { it.caseId },
                             ) { case ->
-                                CaseCard(case = case)
+                                CaseCard(
+                                    case = case,
+                                    modifier =
+                                        Modifier.clickable {
+                                            onCaseClick(case.caseId)
+                                        },
+                                )
                             }
                         }
                     }
@@ -310,29 +327,37 @@ fun CasesScreen(
                 ) {
                     listOf("Todas", "Alta", "Media", "Baja", "Sin evaluar").forEach { urgency ->
                         Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .selectable(
-                                    selected = pendingUrgency == urgency,
-                                    onClick = { pendingUrgency = urgency },
-                                    role = Role.RadioButton,
-                                )
-                                .padding(vertical = 10.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = pendingUrgency == urgency,
+                                        onClick = { pendingUrgency = urgency },
+                                        role = Role.RadioButton,
+                                    )
+                                    .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            RadioButton(selected = pendingUrgency == urgency, onClick = null)
+                            RadioButton(
+                                selected = pendingUrgency == urgency,
+                                onClick = null,
+                            )
+
                             Text(urgency)
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    onUrgencyChange(
-                        if (pendingUrgency == "Todas") "" else pendingUrgency,
-                    )
-                    showFilters = false
-                }) {
+                TextButton(
+                    onClick = {
+                        onUrgencyChange(
+                            if (pendingUrgency == "Todas") "" else pendingUrgency,
+                        )
+                        showFilters = false
+                    },
+                ) {
                     Text("Aplicar")
                 }
             },
@@ -365,6 +390,7 @@ private fun CasesScreenPreview() {
                 limit = 20,
             ),
             onBackClick = {},
+            onCaseClick = {},
             onSearchChange = {},
             onUrgencyChange = {},
             onClearFilters = {},
