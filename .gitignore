@@ -14,3 +14,7 @@
 .cxx
 local.properties
 /.idea
+/app/build/
+*.jks
+*.keystore
+signing.properties
