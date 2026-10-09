@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.model.UserSession
+import com.example.adaxintegra.domain.usecases.CheckPrivacyConsentUseCase
 import com.example.adaxintegra.domain.usecases.LogoutUseCase
 import com.example.adaxintegra.domain.usecases.ObserveSessionUseCase
 import com.example.adaxintegra.domain.usecases.RestoreSessionUseCase
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     observeSessionUseCase: ObserveSessionUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val checkPrivacyConsentUseCase: CheckPrivacyConsentUseCase,
     private val restoreSessionUseCase: RestoreSessionUseCase,
 ) : ViewModel() {
 
@@ -31,6 +33,9 @@ class AppViewModel @Inject constructor(
 
     private val _logoutError = MutableStateFlow<String?>(null)
     val logoutError = _logoutError.asStateFlow()
+
+    private val _needsPrivacyConsent = MutableStateFlow(false)
+    val needsPrivacyConsent: StateFlow<Boolean> = _needsPrivacyConsent.asStateFlow()
 
     private var isLoggingOut = false
 
@@ -63,6 +68,25 @@ class AppViewModel @Inject constructor(
         }
     }
 
+    fun checkPrivacyConsent() {
+        viewModelScope.launch {
+            try {
+                if (session.value?.role == "external") {
+                    val hasAccepted = checkPrivacyConsentUseCase()
+                    _needsPrivacyConsent.value = !hasAccepted
+                } else {
+                    _needsPrivacyConsent.value = false
+                }
+            } catch (_: Exception) {
+                _needsPrivacyConsent.value = false
+            }
+        }
+    }
+
+    fun setPrivacyConsentAccepted() {
+        _needsPrivacyConsent.value = false
+    }
+
     fun logout() {
         if (isLoggingOut) return
         isLoggingOut = true
@@ -72,6 +96,7 @@ class AppViewModel @Inject constructor(
 
             try {
                 logoutUseCase()
+                _needsPrivacyConsent.value = false
             } catch (exception: CancellationException) {
                 throw exception
             } catch (_: Exception) {

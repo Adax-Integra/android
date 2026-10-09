@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
@@ -26,13 +27,13 @@ import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
-import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
-import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
@@ -148,15 +149,26 @@ fun AppNavigation(
         }
     }
 
+    val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
+
+    LaunchedEffect(hasValidSession, isExternal) {
+        if (hasValidSession && isExternal) {
+            viewModel.checkPrivacyConsent()
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
     // Clears the previous navigation history when entering or leaving login
-    LaunchedEffect(hasValidSession, currentRoute) {
-        val destination = when {
-            currentRoute == "session" -> { if (hasValidSession) "home" else "login" }
+    LaunchedEffect(hasValidSession, currentRoute, needsPrivacyConsent) {
+        val destination =
+            when {
+                hasValidSession && needsPrivacyConsent && currentRoute != "privacyPolicy" -> "privacyPolicy"
 
-            hasValidSession && currentRoute == "login" -> "home"
+                hasValidSession && !needsPrivacyConsent && (currentRoute == "login" || currentRoute == "session") -> "home"
+
+                !hasValidSession && currentRoute == "session" -> "login"
 
                 !hasValidSession &&
                     currentRoute != null &&
@@ -166,7 +178,6 @@ fun AppNavigation(
                     currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
                     !currentRoute.startsWith("pendingVerification") -> "login"
-
 
                 else -> null
             }
@@ -517,8 +528,11 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onPersonalDataClick = {},
-                    /*onSecurityClick = {},
-                    onNotificationsClick = {},*/
+                    onSecurityClick = {
+                        navController.navigate("changePassword") {
+                            launchSingleTop = true
+                        }
+                    },
                     onLogoutClick = viewModel::logout,
                     isAdmin = isAdmin,
                     onManageCollaboratorsClick = {
@@ -527,6 +541,14 @@ fun AppNavigation(
                         }
                     },
                     viewModel = hiltViewModel(),
+                )
+            }
+
+            composable("changePassword") {
+                ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
                 )
             }
 
@@ -562,12 +584,19 @@ fun AppNavigation(
 
             // Existing external-user case progress flow
             composable("privacyPolicy") {
+                val privacyViewModel: PrivacyPolicyViewModel = hiltViewModel()
                 PrivacyPolicyScreen(
+                    viewModel = privacyViewModel,
                     onBack = {
-                        navController.popBackStack()
+                        viewModel.logout()
                     },
                     onContinue = {
-                        navController.popBackStack()
+                        privacyViewModel.acceptPolicy {
+                            viewModel.setPrivacyConsentAccepted()
+                            navController.navigate("home") {
+                                popUpTo("privacyPolicy") { inclusive = true }
+                            }
+                        }
                     },
                 )
             }

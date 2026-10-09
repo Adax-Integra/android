@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.remote.api.AuthApi
+import com.example.adaxintegra.data.remote.dto.ChangePasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.domain.common.Result
@@ -13,6 +14,7 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -25,7 +27,7 @@ import org.json.JSONObject
 
 /**
  * Implementation of AuthRepository managing Supabase Auth and remote backend synchronization.
- * Handles login validation, user registration, OTP verification, and session management.
+ * Handles login validation, user registration, OTP verification, password change, and session management.
  */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
@@ -33,11 +35,11 @@ class AuthRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
     private val sessionPreferences: SessionPreferences,
 ) : AuthRepository {
-    // // G-09-Register: Active user session StateFlow held in memory
+    // G-09-Register: Active user session StateFlow held in memory
     private val _session = MutableStateFlow<UserSession?>(null)
-    override val session = _session.asStateFlow()
+    override val session: StateFlow<UserSession?> = _session.asStateFlow()
 
-    // // G-09-Register: Authenticates user credentials with Supabase Auth and enforces email confirmation
+    // G-09-Register: Authenticates user credentials with Supabase Auth and enforces email confirmation
     override fun login(
         email: String,
         password: String,
@@ -45,31 +47,16 @@ class AuthRepositoryImpl @Inject constructor(
         emit(Result.Loading)
 
         try {
-            // // G-09-Register: Attempt direct Supabase authentication
-            try {
-                supabase.auth.signInWith(Email) {
-                    this.email = email
-                    this.password = password
-                }
-                // // G-09-Register: Ensure the user's email has been confirmed before granting session access
-                val currentUser = supabase.auth.currentUserOrNull()
-                if (currentUser != null && currentUser.emailConfirmedAt == null) {
-                    supabase.auth.signOut()
-                    throw IllegalStateException("email_not_confirmed")
-                }
-            } catch (e: Exception) {
-                val errorText = "${e.message} ${e.cause} ${e.javaClass.simpleName}".lowercase()
-                if (errorText.contains("email_not_confirmed") ||
-                    errorText.contains("email not confirmed") ||
-                    e.message == "email_not_confirmed"
-                ) {
-                    throw IllegalStateException("email_not_confirmed")
-                } else if (e is IllegalStateException && e.message == "email_not_confirmed") {
-                    throw e
-                } else {
-                    // // G-09-Register: Re-throw Supabase authentication errors
-                    throw e
-                }
+            // G-09-Register: Attempt direct Supabase authentication
+            supabase.auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            // G-09-Register: Ensure the user's email has been confirmed before granting session access
+            val currentUser = supabase.auth.currentUserOrNull()
+            if (currentUser != null && (currentUser.emailConfirmedAt == null)) {
+                supabase.auth.signOut()
+                throw IllegalStateException("email_not_confirmed")
             }
 
             // Remote backend authentication fallback/synchronization
@@ -112,8 +99,10 @@ class AuthRepositoryImpl @Inject constructor(
                 emit(Result.Error(exception))
             }
         } catch (exception: Exception) {
-            if (exception.message == "email_not_confirmed" ||
-                exception.message?.contains("email_not_confirmed", ignoreCase = true) == true
+            val errorText = "${exception.message} ${exception.cause} ${exception.javaClass.simpleName}".lowercase()
+            if (errorText.contains("email_not_confirmed") ||
+                errorText.contains("email not confirmed") ||
+                exception.message == "email_not_confirmed"
             ) {
                 emit(Result.Error(IllegalStateException("email_not_confirmed")))
             } else {
@@ -207,7 +196,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    // // G-09-Register: Creates a new user account with Supabase Auth and remote backend
+    // G-09-Register: Creates a new user account with Supabase Auth and remote backend
     override fun register(
         name: String,
         lastname: String,
@@ -217,13 +206,14 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
         try {
-            // // G-09-Register: Register account in Supabase Auth
+            // G-09-Register: Register account in Supabase Auth
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
 
             // Synchronize user account registration with Node backend
+            @Suppress("SwallowedException")
             try {
                 api.register(
                     RegisterRequestDto(
@@ -250,7 +240,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    // // G-09-VerifyOTP: Requests Supabase to resend the 6-digit email confirmation OTP
+    // G-09-VerifyOTP: Requests Supabase to resend the 6-digit email confirmation OTP
     override fun resendVerificationEmail(email: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try {
@@ -261,30 +251,84 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    // // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user with Supabase Auth
+    // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user with Supabase Auth
     override fun verifyEmailCode(
         email: String,
         code: String,
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
         try {
-            // // G-09-VerifyOTP: Call Supabase Auth verifyEmailOtp API for SIGNUP type
+            // G-09-VerifyOTP: Call Supabase Auth verifyEmailOtp API for SIGNUP type
             supabase.auth.verifyEmailOtp(
                 type = OtpType.Email.SIGNUP,
                 email = email,
                 token = code,
             )
 
-            // // G-09-VerifyOTP: Account is confirmed in Supabase.
-            // We return success without overriding _session with Supabase tokens so user logs in via Node backend.
             val resultSession = UserSession(
                 token = "",
                 userId = null,
                 role = "external",
             )
             emit(Result.Success(resultSession))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emit(Result.Error(Exception("Código de verificación incorrecto o expirado")))
+        }
+    }
+
+    override fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmPassword: String,
+    ): Flow<Result<String>> = flow {
+        emit(Result.Loading)
+        try {
+            val token = _session.value?.token
+            if (token.isNullOrBlank()) {
+                throw IllegalStateException("Inicia sesión para cambiar la contraseña.")
+            }
+
+            val response = api.changePassword(
+                authorization = "Bearer $token",
+                request = ChangePasswordRequestDto(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword,
+                    confirmPassword = confirmPassword,
+                ),
+            )
+
+            if (!response.success) {
+                val errorMsg = translateErrorMessage(response.error)
+                throw IllegalStateException(errorMsg)
+            }
+
+            val message = "Contraseña actualizada exitosamente."
+            emit(Result.Success(message))
+        } catch (e: Exception) {
+            val translated = when (e) {
+                is java.io.IOException -> "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+                else -> translateErrorMessage(e.message)
+            }
+            emit(Result.Error(Exception(translated)))
+        }
+    }
+
+    private fun translateErrorMessage(rawError: String?): String {
+        if (rawError.isNullOrBlank()) return "Ocurrió un error al cambiar la contraseña."
+        val lower = rawError.lowercase()
+        return when {
+            "current password" in lower || "incorrect" in lower ->
+                "La contraseña actual es incorrecta."
+            "unauthorized" in lower || "token" in lower || "401" in lower ->
+                "Tu sesión ha caducado. Vuelve a iniciar sesión."
+            "same" in lower || "different" in lower ->
+                "La nueva contraseña debe ser diferente a la actual."
+            "match" in lower ->
+                "Las contraseñas no coinciden."
+            "network" in lower || "connect" in lower ->
+                "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+            else ->
+                "No se pudo cambiar la contraseña. Revisa que tu contraseña actual sea correcta."
         }
     }
 }
