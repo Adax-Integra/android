@@ -17,6 +17,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHead
 @Composable
 fun ScreenTemplate(
     title: String,
+    showBackButton: Boolean = true,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
     isLoading: Boolean = false,
@@ -25,7 +26,7 @@ fun ScreenTemplate(
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        AppHeader(title = title, subtitle = subtitle, onBack = onBack)
+        AppHeader(title = title, subtitle = subtitle, onBack = if (showBackButton) onBack else null)
 
         when {
             isLoading -> {

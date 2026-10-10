@@ -49,9 +49,8 @@ constructor(
     // Update of the form
     fun onPersonalDataChange(updated: PersonalDataForm) {
         val cleanPhone = updated.phone.filter { it.isDigit() }.take(15)
-        val cleanZip = updated.zipCode.filter {it.isDigit()}.take(5)
         val finalState = if (updated.country=="Otro") "" else updated.state
-        val filteredData = updated.copy(phone=cleanPhone, zipCode=cleanZip, state=finalState)
+        val filteredData = updated.copy(phone=cleanPhone, state=finalState)
         _uiState.update { it.copy(personalData = filteredData, personalDataErrors = emptyMap()) }
     }
 
@@ -87,19 +86,12 @@ constructor(
         }
 
         // Address validation
-        if (current.addressLine1.isBlank()) errors["addressLine1"] = "La calle y número son obligatorios"
-        if (current.neighborhood.isBlank()) errors["neighborhood"] = "La colonia es obligatoria"
-        if (current.zipCode.isBlank()) {
-            errors["zipCode"] = "El código postal es obligatorio"
-        } else if (current.zipCode.length < 5){
-            errors["zipCode"] = "El código postal debe tener 5 digitos"
-        }
         if (current.country.isBlank()) errors["country"] = "El país es obligatorio"
         if (current.country != "Otro" && current.state.isBlank()){
             errors["state"] = "El estado es obligatorio"
         }
         if (current.state.isBlank()) errors["state"] = "El estado es obligatorio"
-        if (current.city.isBlank()) errors["city"] = "El municipio es obligatorio"
+        if (current.municipality.isBlank()) errors["municipality"] = "El municipio es obligatorio"
 
         // Show errors if there exist, if not, show confirmation dialog
         if (errors.isNotEmpty()) {

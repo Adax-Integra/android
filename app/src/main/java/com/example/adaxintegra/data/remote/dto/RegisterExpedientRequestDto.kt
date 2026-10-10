@@ -16,13 +16,9 @@ data class ProfileDto(
 )
 
 data class AddressDto(
-    @SerializedName("address_line_1") val addressLine1: String,
-    @SerializedName("address_line_2") val addressLine2: String? = null,
-    @SerializedName("neighborhood") val neighborhood: String,
-    @SerializedName("zip_code") val zipCode: String,
     @SerializedName("country") val country: String,
     @SerializedName("state") val state: String,
-    @SerializedName("city") val city: String,
+    @SerializedName("municipality") val municipality: String,
 )
 
 data class RegisterExpedientResponseDto(

@@ -37,16 +37,18 @@ fun AppHeader(
         // arrow and title centered on the same line
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(
-            onClick = {
-                onBack?.invoke()
-            },
-        ) {
-            AppIcon(
-                imageVector = AppIcons.ArrowBack,
-                contentDescription = "Regresar",
-                size = IconSize.LargeIcon,
-            )
+        if (onBack != null) {
+            IconButton(
+                onClick = {
+                    onBack.invoke()
+                },
+            ) {
+                AppIcon(
+                    imageVector = AppIcons.ArrowBack,
+                    contentDescription = "Regresar",
+                    size = IconSize.LargeIcon,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(4.dp))

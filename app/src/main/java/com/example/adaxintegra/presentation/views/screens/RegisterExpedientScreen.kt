@@ -16,17 +16,25 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +55,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AutoCompleteOutlinedTextField
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 // Data catálog of states for smart autocomplete
 private val MEXICAN_STATES = listOf(
@@ -58,7 +70,11 @@ private val MEXICAN_STATES = listOf(
     "Veracruz", "Yucatán", "Zacatecas",
 )
 
-private val COUNTRIES = listOf("México", "Otro")
+private val ALL_COUNTRIES: List<String> by lazy {
+    java.util.Locale.getISOCountries().map {countryCode ->
+        java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale("es", "ES"))
+    }.filter {it.isNotBlank()}.distinct().sorted()
+}
 private val PHONE_PREFIXES = listOf("+52", "+1", "+34", "+57", "+54", "+56", "+51", "+502", "+503", "+504")
 
 @Suppress("ktlint:standard:function-naming")
@@ -131,6 +147,41 @@ fun PersonalDataStepContent(
     // Design System spacing rules
     val spacing = Spacing()
     val data = uiState.personalData
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    val datePickerState = rememberDatePickerState()
+    // Diálogo emergente con el Calendario de Material 3
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val selectedMillis = datePickerState.selectedDateMillis
+                        if (selectedMillis != null) {
+                            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+                                timeZone = TimeZone.getTimeZone("UTC")
+                            }
+                            val formattedDate = formatter.format(Date(selectedMillis))
+
+                            onDataChange(data.copy(birthDate = formattedDate))
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Column(
         modifier =
@@ -198,7 +249,7 @@ fun PersonalDataStepContent(
             },
         )
 
-        // Birthdate field
+        // Phone prefix field
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing.small)
@@ -215,7 +266,7 @@ fun PersonalDataStepContent(
                     value = data.phonePrefix,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Lada", style = AppTextStyle.BodySmall) },
+                    label = { Text("Prefijo", style = AppTextStyle.BodySmall) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = prefixExpanded) },
                     modifier = Modifier.menuAnchor()
                 )
@@ -249,6 +300,30 @@ fun PersonalDataStepContent(
                 }
             )
         }
+
+        // Birthdate field
+        OutlinedTextField(
+            value = data.birthDate,
+            onValueChange = { onDataChange(data.copy(birthDate = it)) },
+            label = { Text("Fecha de Nacimiento (AAAA-MM-DD)", style = AppTextStyle.BodySmall) },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = {showDatePicker = true}) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Seleccionar fecha de nacimiento"
+                    )
+                }
+            },
+            isError = uiState.personalDataErrors.containsKey("birthDate"),
+            supportingText = {
+                uiState.personalDataErrors["birthDate"]?.let { errorMsg ->
+                    Text(text = errorMsg, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+
         Spacer(modifier = Modifier.height(spacing.small))
 
         // Location
@@ -258,64 +333,53 @@ fun PersonalDataStepContent(
             fontWeight = FontWeight.Bold,
         )
 
-        OutlinedTextField(
-            value = data.addressLine1,
-            onValueChange = { onDataChange(data.copy(addressLine1 = it)) },
-            label = { Text("Calle y número exterior *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
-            modifier = Modifier.fillMaxWidth(),
-            isError = uiState.personalDataErrors.containsKey("addressLine1"),
-        )
-
-        OutlinedTextField(
-            value = data.addressLine2,
-            onValueChange = { onDataChange(data.copy(addressLine2 = it)) },
-            label = { Text("Num. Interior / Ref. (Opcional)", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
-            OutlinedTextField(
-                value = data.neighborhood,
-                onValueChange = { onDataChange(data.copy(neighborhood = it)) },
-                label = { Text("Colonia *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
-                modifier = Modifier.weight(1f),
-                isError = uiState.personalDataErrors.containsKey("neighborhood"),
-            )
-            OutlinedTextField(
-                value = data.zipCode,
-                onValueChange = { onDataChange(data.copy(zipCode = it)) },
-                label = { Text("C.P. *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                isError = uiState.personalDataErrors.containsKey("zipCode"),
-            )
-        }
-
         AutoCompleteOutlinedTextField(
             value = data.country,
-            onValueChange = { onDataChange(data.copy(country = it)) },
+            onValueChange = { newCountry ->
+                // If country changes, the state restarts for avoiding inconsistences
+                onDataChange(data.copy(country = newCountry, state = ""))
+            },
             label = "País *",
-            options = COUNTRIES,
+            options = ALL_COUNTRIES,
             isError = uiState.personalDataErrors.containsKey("country"),
         )
 
-        val isStateEnabled = data.country != "Otro"
+        val isMexico = data.country.trim().equals("México", ignoreCase = true)
 
-        AutoCompleteOutlinedTextField(
-            value = if (isStateEnabled) data.state else "No aplica (Otro país)",
-            onValueChange = { if (isStateEnabled) onDataChange(data.copy(state = it)) },
-            label = if (isStateEnabled) "Estado *" else "Estado (No requerido)",
-            options = if (isStateEnabled) MEXICAN_STATES else emptyList(),
-            isError = uiState.personalDataErrors.containsKey("state"),
-            enabled = isStateEnabled
-        )
+        if (isMexico) {
+            AutoCompleteOutlinedTextField(
+                value = data.state,
+                onValueChange = { onDataChange(data.copy(state = it)) },
+                label = "Estado *",
+                options = MEXICAN_STATES,
+                isError = uiState.personalDataErrors.containsKey("state")
+            )
+        } else {
+            OutlinedTextField(
+                value = data.state,
+                onValueChange = { onDataChange(data.copy(state = it)) },
+                label = { Text("Estado / Provincia *", style = AppTextStyle.BodySmall) },
+                modifier = Modifier.fillMaxWidth(),
+                isError = uiState.personalDataErrors.containsKey("state"),
+                supportingText = {
+                    uiState.personalDataErrors["state"]?.let { errorMsg ->
+                        Text(text = errorMsg, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            )
+        }
 
         OutlinedTextField(
-            value = data.city,
-            onValueChange = { onDataChange(data.copy(city = it)) },
-            label = { Text("Ciudad / Municipio *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
+            value = data.municipality,
+            onValueChange = { onDataChange(data.copy(municipality = it)) },
+            label = { Text("Municipio / Comunidad *", style = AppTextStyle.BodySmall) },
             modifier = Modifier.fillMaxWidth(),
-            isError = uiState.personalDataErrors.containsKey("city"),
+            isError = uiState.personalDataErrors.containsKey("municipality"),
+            supportingText = {
+                uiState.personalDataErrors["municipality"]?.let {errorMsg ->
+                    Text(text = errorMsg, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
         )
 
         uiState.errorMessage?.let { error ->
