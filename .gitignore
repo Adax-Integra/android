@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+/.idea
+/app/build/
+/app/release/
+*.jks
+*.keystore
+signing.properties

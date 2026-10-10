@@ -1,1 +1,1 @@
-//entity file example
+// entity file example
