@@ -50,6 +50,7 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
 
 @Suppress("ktlint:standard:function-naming")
@@ -64,6 +65,7 @@ fun CasesScreen(
     onRetry: () -> Unit,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pendingUrgency by rememberSaveable { mutableStateOf("Todas") }
@@ -182,7 +184,9 @@ fun CasesScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isLoading,
+                onRefresh = onRefresh,
                 modifier =
                     Modifier
                         .weight(1f)
@@ -196,6 +200,9 @@ fun CasesScreen(
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -211,18 +218,26 @@ fun CasesScreen(
                     }
 
                     uiState.cases.isEmpty() -> {
-                        Text(
-                            text =
-                                if (
-                                    uiState.search.isNotBlank() ||
-                                    selectedUrgency != "Todas"
-                                ) {
-                                    "No hay casos que coincidan con tu busqueda y filtro."
-                                } else {
-                                    "No hay casos disponibles"
-                                },
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                text =
+                                    if (
+                                        uiState.search.isNotBlank() ||
+                                        selectedUrgency != "Todas"
+                                    ) {
+                                        "No hay casos que coincidan con tu busqueda y filtro."
+                                    } else {
+                                        "No hay casos disponibles"
+                                    },
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
                     }
 
                     else -> {
@@ -397,6 +412,7 @@ private fun CasesScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
+            onRefresh = {},
         )
     }
 }

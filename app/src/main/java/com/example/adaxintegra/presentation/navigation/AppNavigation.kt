@@ -521,6 +521,7 @@ fun AppNavigation(
                         onRetry = casesViewModel::retry,
                         onNextPage = casesViewModel::nextPage,
                         onPreviousPage = casesViewModel::previousPage,
+                        onRefresh = casesViewModel::refresh,
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
