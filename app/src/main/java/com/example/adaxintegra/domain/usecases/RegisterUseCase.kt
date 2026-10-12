@@ -1,12 +1,11 @@
 package com.example.adaxintegra.domain.usecases
 
 import com.example.adaxintegra.domain.common.Result
-import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-// R-01 Register user
+// G-01: register an external user; the session starts after verifying the email (G-09)
 class RegisterUseCase @Inject constructor(
     private val repository: AuthRepository,
 ) {
@@ -16,5 +15,5 @@ class RegisterUseCase @Inject constructor(
         phone: String,
         email: String,
         password: String,
-    ): Flow<Result<UserSession>> = repository.register(name, lastname, phone, email, password)
+    ): Flow<Result<Unit>> = repository.register(name, lastname, phone, email, password)
 }

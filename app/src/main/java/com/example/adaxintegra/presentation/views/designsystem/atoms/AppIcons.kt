@@ -6,12 +6,14 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
@@ -69,6 +71,12 @@ object AppIcons {
 
     val Admin: ImageVector
         get() = Icons.Default.Shield
+
+    val People: ImageVector
+        get() = Icons.Default.People
+
+    val History: ImageVector
+        get() = Icons.Default.History
 
     val Email: ImageVector
         get() = Icons.Outlined.MailOutline

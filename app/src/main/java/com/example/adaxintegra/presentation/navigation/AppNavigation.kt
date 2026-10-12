@@ -164,7 +164,12 @@ fun AppNavigation(
     LaunchedEffect(hasValidSession, currentRoute, needsPrivacyConsent) {
         val destination =
             when {
-                hasValidSession && needsPrivacyConsent && currentRoute != "privacyPolicy" -> "privacyPolicy"
+                // G-09: let the user read the success screen; "Continuar" goes on to
+                // the privacy policy or home once she leaves it
+                hasValidSession &&
+                    needsPrivacyConsent &&
+                    currentRoute != "privacyPolicy" &&
+                    currentRoute != "verificationSuccess" -> "privacyPolicy"
 
                 hasValidSession && !needsPrivacyConsent && (currentRoute == "login" || currentRoute == "session") -> "home"
 
