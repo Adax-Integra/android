@@ -67,7 +67,7 @@ fun CollaboratorsScreen(
     // Same template as the other screens, so it follows the light/dark theme
     ScreenTemplate(
         title = "Gestión de Colaboradoras",
-        subtitle = "Administra el acceso y estatus de las colaboradoras de ADAX INTEGRA",
+        subtitle = "Administración de colaboradoras",
         onBack = onBack,
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
