@@ -55,6 +55,10 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
+import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -69,7 +73,8 @@ fun RecordsScreen(
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onRegisterRecordClick: () -> Unit
+    onRegisterRecordClick: () -> Unit,
+    viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val spacing = Spacing()
 
@@ -108,6 +113,7 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(
                     start = spacing.medium,
                     end = spacing.medium,
@@ -202,21 +208,30 @@ fun RecordsScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.refresh() },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = uiState.error
@@ -233,8 +248,11 @@ fun RecordsScreen(
 
                     uiState.records.isEmpty() -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = when {
