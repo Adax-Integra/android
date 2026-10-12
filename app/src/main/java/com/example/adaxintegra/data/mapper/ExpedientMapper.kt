@@ -14,12 +14,8 @@ fun PersonalDataForm.toDto(): RegisterExpedientRequestDto = RegisterExpedientReq
         phone = this.phone.ifBlank { null },
     ),
     address = AddressDto(
-        addressLine1 = this.addressLine1,
-        addressLine2 = this.addressLine2.ifBlank { null },
-        neighborhood = this.neighborhood,
-        zipCode = this.zipCode,
         country = this.country,
         state = this.state,
-        city = this.city,
+        municipality = this.municipality,
     ),
 )

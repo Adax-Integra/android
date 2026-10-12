@@ -15,11 +15,7 @@ data class PersonalDataForm(
     val birthDate: String = "",
     val phonePrefix: String = "+52",
     val phone: String = "",
-    val addressLine1: String = "",
-    val addressLine2: String = "",
-    val neighborhood: String = "",
-    val zipCode: String = "",
     val country: String = "",
     val state: String = "",
-    val city: String = "",
+    val municipality: String = "",
 )
