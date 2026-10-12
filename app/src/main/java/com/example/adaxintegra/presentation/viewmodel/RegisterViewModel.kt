@@ -2,15 +2,15 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.RegisterUseCase
+import com.example.adaxintegra.presentation.mapper.toAuthMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -114,8 +114,8 @@ class RegisterViewModel @Inject constructor(
         if (state.phone.isBlank()) {
             phoneErr = "El teléfono celular es obligatorio"
             hasError = true
-        } else if (state.phone.trim().length < 10) {
-            phoneErr = "El teléfono debe ser de 10 dígitos"
+        } else if (!state.phone.trim().matches(Regex("^\\d{10}$"))) {
+            phoneErr = "El teléfono debe tener exactamente 10 dígitos"
             hasError = true
         }
 
@@ -198,35 +198,17 @@ class RegisterViewModel @Inject constructor(
                         is Result.Success -> current.copy(
                             isLoading = false,
                             isRegisterSuccess = true,
-                            userRole = result.data.role,
                         )
 
-                        is Result.Error -> {
-                            val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
-                            val isDuplicateEmail = rawMsg.contains("User already registered", ignoreCase = true) ||
-                                rawMsg.contains("user_already_exists", ignoreCase = true) ||
-                                rawMsg.contains("already exists", ignoreCase = true)
-
-                            val errorMessage = when {
-                                isDuplicateEmail -> "El correo electrónico ya está registrado"
-                                rawMsg.contains("Password should be at least", ignoreCase = true) -> "La contraseña debe tener al menos 8 caracteres"
-
-                                result.exception is HttpException -> when (result.exception.code()) {
-                                    400 -> "Datos de registro inválidos"
-                                    409 -> "El correo electrónico o teléfono ya está registrado"
-                                    else -> "Error del servidor (${result.exception.code()})"
-                                }
-
-                                result.exception is IOException -> "Error de conexión a internet"
-
-                                else -> rawMsg.ifBlank { "Error al registrar la cuenta" }
-                            }
-                            current.copy(
-                                isLoading = false,
-                                error = errorMessage,
-                                emailError = if (isDuplicateEmail) "El correo electrónico ya está registrado" else current.emailError,
-                            )
-                        }
+                        is Result.Error -> current.copy(
+                            isLoading = false,
+                            error = result.exception.toAuthMessage(),
+                            emailError = if (result.exception == AuthError.EmailTaken) {
+                                "Este correo ya está registrado"
+                            } else {
+                                current.emailError
+                            },
+                        )
                     }
                 }
             }

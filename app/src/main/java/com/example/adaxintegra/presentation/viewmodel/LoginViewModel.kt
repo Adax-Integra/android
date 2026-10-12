@@ -2,20 +2,20 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.LoginUseCase
 import com.example.adaxintegra.domain.usecases.ResendVerificationEmailUseCase
+import com.example.adaxintegra.presentation.mapper.toAuthMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 /**
- * // G-09-VerifyOTP: ViewModel managing login validation and routing unconfirmed email accounts to 6-digit OTP verification.
+ * G-02 / G-09: login, and the path to the code screen for unverified accounts.
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -53,63 +53,48 @@ class LoginViewModel @Inject constructor(
                             userRole = result.data.role,
                         )
 
-                        is Result.Error -> {
-                            val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
-                            val isUnconfirmed = rawMsg.contains("email_not_confirmed", ignoreCase = true) ||
-                                rawMsg.contains("Email not confirmed", ignoreCase = true) ||
-                                rawMsg == "email_not_confirmed"
-
-                            val isInvalidCredentials = rawMsg.contains("invalid login credentials", ignoreCase = true) ||
-                                rawMsg.contains("invalid_credentials", ignoreCase = true)
-
-                            val errorMessage = when {
-                                isUnconfirmed -> "Debes confirmar tu correo electrónico antes de iniciar sesión."
-                                isInvalidCredentials -> "Correo o contraseña incorrectos"
-                                result.exception is HttpException -> when (result.exception.code()) {
-                                    400 -> "Credenciales incorrectas"
-                                    401 -> "Credenciales incorrectas"
-                                    404 -> "Endpoint no encontrado (404)"
-                                    else -> "Error en la solicitud (${result.exception.code()})"
-                                }
-
-                                result.exception is IOException -> "Error de conexión a internet"
-                                else -> rawMsg.ifBlank { "Error desconocido al iniciar sesión" }
-                            }
-
-                            state.copy(
-                                isLoading = false,
-                                error = errorMessage,
-                                isEmailNotConfirmed = isUnconfirmed || isInvalidCredentials,
-                            )
-                        }
+                        // only an unverified account shows the "verify with code" button;
+                        // a wrong password must not offer to send codes
+                        is Result.Error -> state.copy(
+                            isLoading = false,
+                            error = result.exception.toAuthMessage(),
+                            isEmailNotConfirmed = result.exception == AuthError.EmailNotVerified,
+                        )
                     }
                 }
             }
         }
     }
 
-    // // G-09-VerifyOTP: Requests a fresh OTP verification email and triggers direct navigation to OTP screen
+    // G-09: asks for a new code and opens the code screen.
+    // Navigation runs outside _uiState.update, whose block may run more than once
     fun resendVerificationEmail(onNavigateToVerify: (String) -> Unit = {}) {
-        val targetEmail = _uiState.value.email
+        val targetEmail = _uiState.value.email.trim()
         if (targetEmail.isBlank()) return
 
         viewModelScope.launch {
             resendVerificationEmailUseCase(targetEmail).collect { result ->
-                _uiState.update { state ->
-                    when (result) {
-                        is Result.Loading -> state.copy(isResendingEmail = true)
-                        is Result.Success -> {
-                            onNavigateToVerify(targetEmail)
-                            state.copy(
+                when (result) {
+                    is Result.Loading -> _uiState.update { it.copy(isResendingEmail = true) }
+
+                    is Result.Success -> {
+                        _uiState.update {
+                            it.copy(
                                 isResendingEmail = false,
                                 resendSuccessMessage = "Código de 6 dígitos enviado.",
                             )
                         }
+                        onNavigateToVerify(targetEmail)
+                    }
 
-                        is Result.Error -> state.copy(
-                            isResendingEmail = false,
-                            error = "Error al solicitar el código. Inténtalo de nuevo.",
-                        )
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isResendingEmail = false) }
+                        // a code sent less than 60 s ago is still valid: go enter it
+                        if (result.exception == AuthError.ResendTooSoon) {
+                            onNavigateToVerify(targetEmail)
+                        } else {
+                            _uiState.update { it.copy(error = result.exception.toAuthMessage()) }
+                        }
                     }
                 }
             }
