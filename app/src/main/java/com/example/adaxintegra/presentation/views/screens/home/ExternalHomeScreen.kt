@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.screens.home
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
@@ -23,10 +21,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
-
-//NV-01: link the team left, the podcast card is the only way into it
-private const val PODCAST_URL =
-    "https://open.spotify.com/show/5yaZdYjbR36lrDmaJ0WhVk?si=pbLJm3ifQIuItgKcnyN08Q&utm_source=copy-link"
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -80,12 +74,7 @@ fun ExternalHomeScreen(
         SectionTitle(text = "Podcast")
 
         PodcastCard(
-            onClick = {
-                //Spotify if it is installed, the browser otherwise
-                runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, PODCAST_URL.toUri()))
-                }
-            },
+            onClick = { HomeLinks.openPodcast(context) },
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
