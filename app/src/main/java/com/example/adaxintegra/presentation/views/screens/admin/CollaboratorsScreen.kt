@@ -122,7 +122,7 @@ fun CollaboratorsScreen(
                     modifier = Modifier.weight(1f),
                 )
                 AppButton(
-                    text = "Agregar colaboradora +",
+                    text = "Agregar colaboradora",
                     onClick = viewModel::openDialog,
                 )
             }
