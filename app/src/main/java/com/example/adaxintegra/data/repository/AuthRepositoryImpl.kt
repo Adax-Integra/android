@@ -4,10 +4,12 @@ import android.util.Base64
 import com.example.adaxintegra.data.local.SessionPreferences
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.dto.ChangePasswordRequestDto
+import com.example.adaxintegra.data.remote.dto.ForgotPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginDataDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
+import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
 import com.example.adaxintegra.data.remote.toAuthError
 import com.example.adaxintegra.domain.common.AuthError
@@ -34,8 +36,6 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val api: AuthApi,
-    // TODO(G-05): remove once password recovery uses backend codes
-    private val supabase: SupabaseClient,
     private val sessionPreferences: SessionPreferences,
 ) : AuthRepository {
     // Active user session held in memory
@@ -86,10 +86,12 @@ class AuthRepositoryImpl @Inject constructor(
         email: String,
     ): Result<Unit> {
         return try {
-            supabase.auth.resetPasswordForEmail(
-                email = email,
-                redirectUrl = "adax://auth/callback",
-            )
+            val response = api.forgotPassword(ForgotPasswordRequestDto(email))
+
+            if (!response.success) {
+                throw IllegalStateException("No se pudo enviar el correo")
+            }
+
             Result.Success(Unit)
         } catch (exception: CancellationException) {
             throw exception
@@ -98,17 +100,22 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    // G-05 (unchanged): still uses Supabase Auth
     override suspend fun resetPassword(
+        token: String,
         newPassword: String,
     ): Result<Unit> {
         return try {
-            supabase.auth.updateUser {
-                password = newPassword
+            val response = api.resetPassword(ResetPasswordRequestDto(token, newPassword))
+
+            if (!response.success) {
+                throw IllegalStateException("No se pudo actualizar la contraseña.")
             }
+
             Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
         }
     }
 

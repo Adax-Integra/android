@@ -15,29 +15,16 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var supabaseClient: SupabaseClient
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Process Deep Link whe the app is initiated
-        intent?.let { supabaseClient.handleDeeplinks(it)}
 
         setContent {
             AdaxIntegraTheme {
                 AppNavigation(
-                    deepLinkUri = intent?.data
                 )
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-
-        // Process Deep Link if the app is already running
-        supabaseClient.handleDeeplinks(intent)
     }
 }
