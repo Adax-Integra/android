@@ -1,27 +1,26 @@
 package com.example.adaxintegra.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 data class ProfileViewDto(
-    @SerializedName("user_id")
-    val userId: String,
+    @SerializedName(value = "user_id", alternate = ["userId"])
+    val userId: String? = null,
 
     @SerializedName("name")
-    val name: String,
+    val name: String? = null,
 
-    @SerializedName("last_name")
-    val lastName: String,
+    @SerializedName(value = "last_name", alternate = ["lastName"])
+    val lastName: String? = null,
 
     @SerializedName("email")
-    val email: String,
+    val email: String? = null,
 
-    @SerializedName("birth_date")
-    val birthDate: String?,
+    @SerializedName(value = "birth_date", alternate = ["birthDate"])
+    val birthDate: String? = null,
 
     @SerializedName("phone")
-    val phone: String?,
+    val phone: String? = null,
 
-    @SerializedName("created_at")
-    val createdAt: String,
+    @SerializedName(value = "created_at", alternate = ["createdAt"])
+    val createdAt: String? = null,
 )

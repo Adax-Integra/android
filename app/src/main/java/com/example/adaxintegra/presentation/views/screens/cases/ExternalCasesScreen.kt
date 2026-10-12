@@ -46,17 +46,18 @@ fun ExternalCasesScreen(
             modifier = Modifier.padding(top = spacing.small),
             verticalArrangement = Arrangement.spacedBy(spacing.medium),
         ) {
-            //R-02: entry point to the "Registrar el caso" screen
-            AppButton(
-                text = "Registrar un caso",
-                onClick = onCreateCaseClick,
-                modifier = Modifier.fillMaxWidth(),
-            )
 
             CasesListHeader(
                 searchQuery = uiState.searchQuery,
                 onSearchQueryChange = viewModel::onSearchQueryChange,
                 count = uiState.cases.size,
+            )
+
+            //R-02: entry point to the "Registrar el caso" screen
+            AppButton(
+                text = "+ Nuevo caso",
+                onClick = onCreateCaseClick,
+                modifier = Modifier.fillMaxWidth(),
             )
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {

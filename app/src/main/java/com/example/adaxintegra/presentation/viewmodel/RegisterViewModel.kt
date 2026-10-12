@@ -13,23 +13,34 @@ import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-// ViewModel to manage user registration screen logic with per-field validations
+/**
+ * // G-09-Register: ViewModel managing user registration form input, per-field validations,
+ * unsaved changes warning dialogs, and registration execution.
+ */
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
 ) : ViewModel() {
 
-    // Observable UI state flow initialized with default values
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
 
-    // Form field updates clearing field-specific errors upon typing
+    // // G-09-Register: Clears registration success flag when user edits registration details
+    fun resetRegisterSuccess() {
+        _uiState.update { it.copy(isRegisterSuccess = false) }
+    }
+
+    // // G-09-Register: Form field updates clearing field-specific errors upon typing
     fun onNameChanged(name: String) {
         _uiState.update { it.copy(name = name, nameError = null, error = null) }
     }
 
     fun onLastnameChanged(lastname: String) {
         _uiState.update { it.copy(lastname = lastname, lastnameError = null, error = null) }
+    }
+
+    fun onCountryCodeChanged(countryCode: String) {
+        _uiState.update { it.copy(countryCode = countryCode, phoneError = null, error = null) }
     }
 
     fun onPhoneChanged(phone: String) {
@@ -55,6 +66,26 @@ class RegisterViewModel @Inject constructor(
 
     fun toggleConfirmPasswordVisibility() {
         _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
+    }
+
+    // // G-09-Register: Intercepts back navigation to warn user if unsaved form data exists
+    fun onBackPressed(onConfirmBack: () -> Unit) {
+        val state = _uiState.value
+        val hasInput = state.name.isNotBlank() ||
+            state.lastname.isNotBlank() ||
+            state.phone.isNotBlank() ||
+            state.email.isNotBlank() ||
+            state.password.isNotBlank()
+
+        if (hasInput && !state.isRegisterSuccess) {
+            _uiState.update { it.copy(showUnsavedChangesDialog = true) }
+        } else {
+            onConfirmBack()
+        }
+    }
+
+    fun dismissUnsavedChangesDialog() {
+        _uiState.update { it.copy(showUnsavedChangesDialog = false) }
     }
 
     // Opens confirmation dialog only if all per-field validations pass
@@ -147,7 +178,7 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(showConfirmationDialog = false) }
     }
 
-    // Confirms and executes registration UseCase via coroutine flow
+    // // G-09-Register: Confirms and executes registration UseCase via coroutine flow
     fun onConfirmRegister() {
         val state = _uiState.value
         _uiState.update { it.copy(showConfirmationDialog = false) }
@@ -171,18 +202,30 @@ class RegisterViewModel @Inject constructor(
                         )
 
                         is Result.Error -> {
-                            val errorMessage = when (val e = result.exception) {
-                                is HttpException -> when (e.code()) {
+                            val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
+                            val isDuplicateEmail = rawMsg.contains("User already registered", ignoreCase = true) ||
+                                rawMsg.contains("user_already_exists", ignoreCase = true) ||
+                                rawMsg.contains("already exists", ignoreCase = true)
+
+                            val errorMessage = when {
+                                isDuplicateEmail -> "El correo electrónico ya está registrado"
+                                rawMsg.contains("Password should be at least", ignoreCase = true) -> "La contraseña debe tener al menos 8 caracteres"
+
+                                result.exception is HttpException -> when (result.exception.code()) {
                                     400 -> "Datos de registro inválidos"
-                                    409 -> "El correo o teléfono ya está registrado"
-                                    else -> "Error del servidor (${e.code()})"
+                                    409 -> "El correo electrónico o teléfono ya está registrado"
+                                    else -> "Error del servidor (${result.exception.code()})"
                                 }
 
-                                is IOException -> "Error de conexión a internet"
+                                result.exception is IOException -> "Error de conexión a internet"
 
-                                else -> e.localizedMessage ?: "Error al registrar la cuenta"
+                                else -> rawMsg.ifBlank { "Error al registrar la cuenta" }
                             }
-                            current.copy(isLoading = false, error = errorMessage)
+                            current.copy(
+                                isLoading = false,
+                                error = errorMessage,
+                                emailError = if (isDuplicateEmail) "El correo electrónico ya está registrado" else current.emailError,
+                            )
                         }
                     }
                 }

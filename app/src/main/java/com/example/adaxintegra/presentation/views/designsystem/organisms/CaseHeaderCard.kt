@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.designsystem.organisms
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,13 +29,13 @@ fun CaseHeaderCard(
                 Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = caseNumber,
                 style = AppTextStyle.TitleMedium,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
             )
 
             CaseStatusBadge(

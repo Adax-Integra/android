@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.designsystem.molecules
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -10,8 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,10 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextField
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
-import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
@@ -36,6 +33,7 @@ fun PhoneField(
     phoneValue: String,
     onPhoneChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onCountryCodeChange: (String) -> Unit = {},
     label: String = "Teléfono celular",
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -59,21 +57,12 @@ fun PhoneField(
                 modifier = Modifier.height(56.dp),
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = countryCode,
-                        style = AppTextStyle.BodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    AppIcon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        size = IconSize.RegularIcon,
-                        tint = Color.Gray,
+                    CountryCodeSelector(
+                        selectedCode = countryCode,
+                        onCodeSelected = onCountryCodeChange,
                     )
                 }
             }
@@ -83,7 +72,7 @@ fun PhoneField(
             AppTextField(
                 value = phoneValue,
                 onValueChange = onPhoneChange,
-                placeholder = "4421234567",
+                placeholder = "Tu número aquí",
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
                 isError = errorMessage != null,

@@ -1,6 +1,8 @@
 package com.example.adaxintegra.presentation.viewmodel
 
-// uistate that holds the form's values and per-field validation error messages
+/**
+ * // G-09-Register: UI State holder for the registration screen containing form values, per-field errors, and dialog visibility.
+ */
 data class RegisterUiState(
     val name: String = "",
     val nameError: String? = null,
@@ -18,6 +20,7 @@ data class RegisterUiState(
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
     val showConfirmationDialog: Boolean = false,
+    val showUnsavedChangesDialog: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val isRegisterSuccess: Boolean = false,

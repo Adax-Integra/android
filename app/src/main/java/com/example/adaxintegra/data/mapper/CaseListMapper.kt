@@ -8,8 +8,18 @@ fun CollaboratorCaseListItemDto.toDomain(): Case = Case(
     caseId = caseId,
     name = name,
     violenceTypes = violenceTypes,
-    state = state,
+    state = mapStateToSpanish(state),
     severity = severity,
     urgency = urgency,
     updatedAt = updatedAt,
+    caseNumber = caseNumber,
+    internsAssigned = internsAssigned ?: emptyList(),
 )
+
+private fun mapStateToSpanish(rawState: String?): String {
+    return when (rawState?.trim()?.lowercase()) {
+        "open", "abierto" -> "Abierto"
+        "closed", "cerrado" -> "Cerrado"
+        else -> rawState ?: "Sin estado"
+    }
+}

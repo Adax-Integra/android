@@ -14,19 +14,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
-import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterScreen
+import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
+import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -34,16 +42,85 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
+import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import java.net.URLDecoder
+import java.net.URLEncoder
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.res.painterResource
+import com.example.adaxintegra.R
 
-// provide values(screens) to BottomNavBar
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
+    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
+    val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
+
+    val restoreError by viewModel.restoreError.collectAsStateWithLifecycle()
+
+    val logoutError by viewModel.logoutError.collectAsStateWithLifecycle()
+
+// Avoid opening login before the stored session has been read.
+    if (isRestoringSession) {
+        SessionLoadingScreen()
+        return
+    }
+
+    if (restoreError != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(text = restoreError.orEmpty())
+
+            TextButton(onClick = viewModel::retryRestoreSession) {
+                Text(text = "Reintentar")
+            }
+        }
+        return
+    }
+
+    if (logoutError != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissLogoutError,
+            title = {
+                Text(text = "No se pudo cerrar sesión")
+            },
+            text = {
+                Text(text = logoutError.orEmpty())
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::logout) {
+                    Text(text = "Reintentar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissLogoutError) {
+                    Text(text = "Cancelar")
+                }
+            },
+        )
+    }
+
     val session by viewModel.session.collectAsStateWithLifecycle()
     val role = session?.role
 
@@ -58,19 +135,49 @@ fun AppNavigation(
             (isExternal || canViewAllCases)
 
     val navController = rememberNavController()
+
+    //handle Supabase password recovery deep link
+    LaunchedEffect(deepLinkUri) {
+        if (
+            deepLinkUri?.scheme == "adax" &&
+            deepLinkUri.host == "auth" &&
+            deepLinkUri.path == "/callback"
+        ) {
+            navController.navigate("resetPassword") {
+                launchSingleTop = true
+            }
+        }
+    }
+
+    val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
+
+    LaunchedEffect(hasValidSession, isExternal) {
+        if (hasValidSession && isExternal) {
+            viewModel.checkPrivacyConsent()
+        }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
     // Clears the previous navigation history when entering or leaving login
-    LaunchedEffect(hasValidSession, currentRoute) {
+    LaunchedEffect(hasValidSession, currentRoute, needsPrivacyConsent) {
         val destination =
             when {
-                hasValidSession && currentRoute == "login" -> "home"
+                hasValidSession && needsPrivacyConsent && currentRoute != "privacyPolicy" -> "privacyPolicy"
+
+                hasValidSession && !needsPrivacyConsent && (currentRoute == "login" || currentRoute == "session") -> "home"
+
+                !hasValidSession && currentRoute == "session" -> "login"
 
                 !hasValidSession &&
                     currentRoute != null &&
                     currentRoute != "login" &&
-                    currentRoute != "register" -> "login"
+                    currentRoute != "register" &&
+                    currentRoute != "forgotPassword" &&
+                    currentRoute != "resetPassword" &&
+                    currentRoute != "verificationSuccess" &&
+                    !currentRoute.startsWith("pendingVerification") -> "login"
 
                 else -> null
             }
@@ -90,8 +197,11 @@ fun AppNavigation(
             if (
                 hasValidSession &&
                 currentRoute != null &&
+                currentRoute != "session" &&
                 currentRoute != "login" &&
-                currentRoute != "register"
+                currentRoute != "register" &&
+                currentRoute != "verificationSuccess" &&
+                !currentRoute.startsWith("pendingVerification")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -101,8 +211,11 @@ fun AppNavigation(
                         "recordFromUser/{userId}",
                             -> "records"
 
-                        // G-03: collaborators screen is opened from profile
-                        "collaborators" -> "profile"
+                        // G-03: collaborators screen is opened from the admin section (NV-02)
+                        "collaborators" -> "admin"
+
+                        // V-06: activity log is opened from the admin section
+                        "activityLog" -> "admin"
 
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
@@ -134,12 +247,16 @@ fun AppNavigation(
 
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = "session",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
+            composable("session") {
+                SessionLoadingScreen()
+            }
+
             composable("login") {
                 val loginViewModel: LoginViewModel = hiltViewModel()
 
@@ -151,8 +268,46 @@ fun AppNavigation(
                             launchSingleTop = true
                         }
                     },
+                    onVerifyUnconfirmedAccount = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onForgotPasswordClick = {
+                        navController.navigate("forgotPassword") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
+
+            //forgot password screen
+            composable("forgotPassword") {
+
+                ForgotPasswordScreen(
+                    onBack = {
+                        navController.popBackStack() },
+                    viewModel = hiltViewModel()
+                )
+            }
+
+            //reset password screen
+            composable("resetPassword") { entry ->
+
+                    ResetPasswordScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onResetPasswordSuccess = {
+                            navController.navigate("login") {
+                                popUpTo("login") {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    )
+                }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
@@ -162,8 +317,47 @@ fun AppNavigation(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onRegisterSuccess = {
-                        navController.navigate("home") {
+                    onRegisterSuccess = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("pendingVerification/$encodedEmail") {
+                            popUpTo("register") { inclusive = false }
+                        }
+                    },
+                )
+            }
+
+            composable("pendingVerification/{email}") { backStackEntry ->
+                val rawEmail = backStackEntry.arguments?.getString("email") ?: ""
+                val email = try {
+                    URLDecoder.decode(rawEmail, "UTF-8")
+                } catch (_: Exception) {
+                    rawEmail
+                }
+                val pendingVerificationViewModel: PendingVerificationViewModel = hiltViewModel()
+
+                PendingVerificationScreen(
+                    email = email,
+                    viewModel = pendingVerificationViewModel,
+                    onBackToLogin = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onEditRegisterData = {
+                        navController.popBackStack("register", inclusive = false)
+                    },
+                    onVerificationSuccess = {
+                        navController.navigate("verificationSuccess") {
+                            popUpTo("login") { inclusive = false }
+                        }
+                    },
+                )
+            }
+
+            composable("verificationSuccess") {
+                VerificationSuccessScreen(
+                    onContinueClick = {
+                        navController.navigate("login") {
                             popUpTo("login") { inclusive = true }
                         }
                     },
@@ -172,7 +366,23 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    HomeScreen(role = role)
+                    //NV-01: the external user gets her own home, the rest keep the role probe
+                    if (isExternal) {
+                        ExternalHomeScreen(
+                            onCaseClick = { caseId ->
+                                navController.navigate("case/$caseId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onRegisterCaseClick = {
+                                navController.navigate("createCase") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
+                    } else {
+                        HomeScreen(role = role ?: "sin rol")
+                    }
                 }
             }
 
@@ -300,6 +510,11 @@ fun AppNavigation(
                         onBackClick = {
                             navController.popBackStack()
                         },
+                        onCaseClick = { caseId ->
+                            navController.navigate("caseDetail/$caseId") {
+                                launchSingleTop = true
+                            }
+                        },
                         onSearchChange = casesViewModel::searchCases,
                         onUrgencyChange = casesViewModel::filterCases,
                         onClearFilters = casesViewModel::clearFilters,
@@ -313,24 +528,33 @@ fun AppNavigation(
             }
 
             composable("profile") {
-                if (hasValidSession) {
-                    ProfileScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onPersonalDataClick = {},
-                        /*onSecurityClick = {},
-                        onNotificationsClick = {},*/
-                        onLogoutClick = viewModel::logout,
-                        isAdmin = isAdmin,
-                        onManageCollaboratorsClick = {
-                            navController.navigate("collaborators") {
-                                launchSingleTop = true
-                            }
-                        },
-                        viewModel = hiltViewModel(),
-                    )
-                }
+                ProfileScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onPersonalDataClick = {},
+                    onSecurityClick = {
+                        navController.navigate("changePassword") {
+                            launchSingleTop = true
+                        }
+                    },
+                    onLogoutClick = viewModel::logout,
+                    isAdmin = isAdmin,
+                    onManageCollaboratorsClick = {
+                        navController.navigate("collaborators") {
+                            launchSingleTop = true
+                        }
+                    },
+                    viewModel = hiltViewModel(),
+                )
+            }
+
+            composable("changePassword") {
+                ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
             }
 
             // G-03: admin manages collaborator accounts
@@ -365,12 +589,19 @@ fun AppNavigation(
 
             // Existing external-user case progress flow
             composable("privacyPolicy") {
+                val privacyViewModel: PrivacyPolicyViewModel = hiltViewModel()
                 PrivacyPolicyScreen(
+                    viewModel = privacyViewModel,
                     onBack = {
-                        navController.popBackStack()
+                        viewModel.logout()
                     },
                     onContinue = {
-                        navController.popBackStack()
+                        privacyViewModel.acceptPolicy {
+                            viewModel.setPrivacyConsentAccepted()
+                            navController.navigate("home") {
+                                popUpTo("privacyPolicy") { inclusive = true }
+                            }
+                        }
                     },
                 )
             }
@@ -406,8 +637,24 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        // V-06: opens the activity log
                         onAuditLogClick = {
-                            // Pantalla de bitácora
+                            navController.navigate("activityLog") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // V-06: admin consults the activity log
+            composable("activityLog") {
+                if (hasValidSession && isAdmin) {
+                    ActivityLogScreen(
+                        onBack = {
+                            navController.popBackStack()
                         },
                     )
                 } else {
@@ -432,6 +679,35 @@ fun AppNavigation(
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SessionLoadingScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(
+                space = 24.dp,
+                alignment = Alignment.CenterVertically,
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_adax_logo),
+                contentDescription = "ADAX",
+                modifier = Modifier.size(220.dp),
+            )
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(32.dp),
+            )
         }
     }
 }

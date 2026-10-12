@@ -60,6 +60,7 @@ fun RegisterForm(
     onRegisterClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
+    onCountryCodeChange: (String) -> Unit = {},
     nameError: String? = null,
     lastnameError: String? = null,
     phoneError: String? = null,
@@ -73,10 +74,10 @@ fun RegisterForm(
 
     Column(modifier = modifier.fillMaxWidth()) {
         LabeledTextField(
-            label = "Nombre(s)",
+            label = "Nombre",
             value = nameValue,
             onValueChange = onNameChange,
-            placeholder = "Tu nombre",
+            placeholder = "Ingresa tu nombre",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Person,
@@ -93,10 +94,10 @@ fun RegisterForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         LabeledTextField(
-            label = "Apellidos",
+            label = "Apellido",
             value = lastnameValue,
             onValueChange = onLastnameChange,
-            placeholder = "Tus apellidos",
+            placeholder = "Ingresa tu apellido",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Person,
@@ -116,6 +117,7 @@ fun RegisterForm(
             countryCode = countryCode,
             phoneValue = phoneValue,
             onPhoneChange = onPhoneChange,
+            onCountryCodeChange = onCountryCodeChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             errorMessage = phoneError,
@@ -147,6 +149,7 @@ fun RegisterForm(
             label = "Contraseña",
             value = passwordValue,
             onValueChange = onPasswordChange,
+            placeholder = "Ingresa tu contraseña",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Lock,
@@ -175,7 +178,7 @@ fun RegisterForm(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "La Contraseña debe ser de 8 o más carácteres",
+            text = "Debe tener entre 8 y 24 caracteres, una mayúscula, un número y un carácter especial. No puede incluir acentos ni letras especiales",
             style = AppTextStyle.BodySmall,
             color = Color.Gray,
             fontWeight = FontWeight.Medium,
@@ -188,6 +191,7 @@ fun RegisterForm(
             label = "Confirmar contraseña",
             value = confirmPasswordValue,
             onValueChange = onConfirmPasswordChange,
+            placeholder = "Confirma tu contraseña",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Lock,

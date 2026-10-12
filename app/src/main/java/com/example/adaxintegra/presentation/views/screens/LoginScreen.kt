@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,12 +21,17 @@ import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LoginHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.LoginForm
 
+/**
+ * // G-09-VerifyOTP: Login Screen with unconfirmed account verification redirect handling.
+ */
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
     onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onVerifyUnconfirmedAccount: (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -51,9 +57,17 @@ fun LoginScreen(
             onPasswordChange = { viewModel.onPasswordChanged(it) },
             onLoginClick = { viewModel.login() },
             onRegisterClick = onRegisterClick,
-            onForgotPasswordClick = { /* recover password */ },
+            onForgotPasswordClick = onForgotPasswordClick,
             isLoading = uiState.isLoading,
             errorMessage = uiState.error,
+            isEmailNotConfirmed = uiState.isEmailNotConfirmed,
+            onResendEmailClick = {
+                viewModel.resendVerificationEmail { email ->
+                    onVerifyUnconfirmedAccount(email)
+                }
+            },
+            isResendingEmail = uiState.isResendingEmail,
+            resendSuccessMessage = uiState.resendSuccessMessage,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
