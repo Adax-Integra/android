@@ -41,7 +41,8 @@ fun LoginScreen(
             .background(Color(0xFFF3F3F3))
             .padding(horizontal = 24.dp)
             .verticalScroll(rememberScrollState())
-            .imePadding(),
+            .imePadding()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(40.dp))
