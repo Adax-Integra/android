@@ -7,4 +7,5 @@ data class ProfileUiState(
     val profile: ProfileView? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )

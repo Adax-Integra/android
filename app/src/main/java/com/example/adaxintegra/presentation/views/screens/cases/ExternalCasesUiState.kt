@@ -8,4 +8,5 @@ data class ExternalCasesUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )

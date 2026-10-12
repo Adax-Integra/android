@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +49,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val profile = uiState.profile
 
     var showLogoutConfirmation by rememberSaveable {
         mutableStateOf(false)
@@ -55,158 +59,146 @@ fun ProfileScreen(
         viewModel.loadProfile()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 32.dp,
-            ),
-    ) {
-        AppHeader(
-            title = "Perfil",
-            onBack = onBack,
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 32.dp,
+                ),
+        ) {
+            AppHeader(
+                title = "Perfil",
+                onBack = onBack,
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (uiState.error != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp),
-                ) {
-                    Text(
-                        text = uiState.error!!,
-                        style = AppTextStyle.BodyMedium,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AppButton(
-                        text = "Reintentar",
-                        onClick = { viewModel.loadProfile() },
-                    )
-                }
-            }
-        } else {
-            val profile = uiState.profile
-            if (profile != null) {
-                // header card that includes the name of profile
-                ProfileHeaderCard(
-                    name = "${profile.name} ${profile.lastName}".trim().ifBlank { "Usuario" },
-                )
-
-                Spacer(
-                    modifier = Modifier.height(20.dp),
-                )
-
-                // title before cards
-                Text(
-                    text = "Información Personal",
-                    style = AppTextStyle.LabelMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-
-                Spacer(
-                    modifier = Modifier.height(8.dp),
-                )
-
-                // options for further details
-                ProfileOption(
-                    icon = AppIcons.Profile,
-                    title = "Datos Personales",
-                    subtitle = "Nombre, teléfono, correo",
-                    onClick = onPersonalDataClick,
-                )
-
-                Spacer(
-                    modifier = Modifier.height(12.dp),
-                )
-
-                ProfileOption(
-                    icon = AppIcons.Lock,
-                    title = "Seguridad",
-                    subtitle = "Cambio de contraseña",
-                    onClick = onSecurityClick,
-                )
-
-                Spacer(
-                    modifier = Modifier.weight(1f),
-                )
-
-                AppButton(
-                    text = "Cerrar sesión",
-                    onClick = { showLogoutConfirmation = true },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            } else {
+            if (uiState.isLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "No se encontró la información del perfil.",
-                            style = AppTextStyle.BodyMedium,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AppButton(
-                            text = "Reintentar",
-                            onClick = { viewModel.loadProfile() },
-                        )
+                    CircularProgressIndicator()
+                }
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = viewModel::refresh,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        when {
+                            profile != null -> {
+                                // header card that includes the name of profile
+                                ProfileHeaderCard(
+                                    name = "${profile.name} ${profile.lastName}".trim().ifBlank { "Usuario" },
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                // title before cards
+                                Text(
+                                    text = "Información Personal",
+                                    style = AppTextStyle.LabelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // options for further details
+                                ProfileOption(
+                                    icon = AppIcons.Profile,
+                                    title = "Datos Personales",
+                                    subtitle = "Nombre, teléfono, correo",
+                                    onClick = onPersonalDataClick,
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                ProfileOption(
+                                    icon = AppIcons.Lock,
+                                    title = "Seguridad",
+                                    subtitle = "Cambio de contraseña",
+                                    onClick = onSecurityClick,
+                                )
+                            }
+
+                            else -> {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 32.dp),
+                                ) {
+                                    Text(
+                                        text = uiState.error ?: "No se encontró la información del perfil.",
+                                        style = AppTextStyle.BodyMedium,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    AppButton(
+                                        text = "Reintentar",
+                                        onClick = { viewModel.loadProfile() },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+
+                //button stays outside the scroll area
+                if (profile != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    AppButton(
+                        text = "Cerrar sesión",
+                        onClick = { showLogoutConfirmation = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            //logout confirmation
+            if (showLogoutConfirmation) {
+                AlertDialog(
+                    onDismissRequest = { showLogoutConfirmation = false },
+                    title = {
+                        Text(
+                            text = "Cerrar sesión",
+                            style = AppTextStyle.TitleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    text = {
+                        Text("¿Quieres cerrar tu sesión?")
+                    },
+                    confirmButton = {
+                        AppButton(
+                            text = "Cerrar sesión",
+                            onClick = {
+                                showLogoutConfirmation = false
+                                onLogoutClick()
+                            },
+                        )
+                    },
+                    dismissButton = {
+                        AppButton(
+                            text = "Cancelar",
+                            onClick = { showLogoutConfirmation = false },
+                            variant = ButtonVariant.Outlined,
+                        )
+                    },
+                )
             }
         }
-
-        if (showLogoutConfirmation) {
-            AlertDialog(
-                onDismissRequest = { showLogoutConfirmation = false },
-                title = {
-                    Text(
-                        text = "Cerrar sesión",
-                        style = AppTextStyle.TitleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                text = {
-                    Text("¿Quieres cerrar tu sesión?")
-                },
-                confirmButton = {
-                    AppButton(
-                        text = "Cerrar sesión",
-                        onClick = {
-                            showLogoutConfirmation = false
-                            onLogoutClick()
-                        },
-                    )
-                },
-                dismissButton = {
-                    AppButton(
-                        text = "Cancelar",
-                        onClick = { showLogoutConfirmation = false },
-                        variant = ButtonVariant.Outlined,
-                    )
-                },
-            )
-        }
-    }
 }

@@ -15,4 +15,5 @@ data class RecordsUiState(
     val limit: Int = 10,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )
