@@ -15,6 +15,8 @@ data class Case(
     val helpList: List<Helps>?,
     val createdAt: Date?,
     val updatedAt: Date?,
+    val internsAssigned: List<String>? = emptyList(),
+    val userName: String? = null,
 )
 
 //R-02: data the external user fills to register a new case

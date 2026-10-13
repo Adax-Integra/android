@@ -33,7 +33,7 @@ fun CaseDto.toDomain(): Case = Case(
 
 fun UserCaseItemDto.toDomain(): Case = Case(
     caseId = caseId ?: "",
-    caseNumber = null,
+    caseNumber = caseNumber,
     state = state,
     caseSteps = emptyList(),
     description = writtenDescription,
@@ -43,6 +43,8 @@ fun UserCaseItemDto.toDomain(): Case = Case(
     createdAt = parseIsoDate(createdAt),
     updatedAt = parseIsoDate(updatedAt),
     helpList = helps?.map { Helps(description = it) } ?: emptyList(),
+    internsAssigned = assignedUsers?.mapNotNull { it.name } ?: emptyList(),
+    userName = userName,
 )
 
 //R-02: form data -> request body
