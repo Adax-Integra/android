@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.SendRecoveryEmailUseCase
+import com.example.adaxintegra.presentation.mapper.toAuthMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,9 +85,7 @@ class ForgotPasswordViewModel
 
                 is Result.Error -> {
                     _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = result.exception.toMessage())
+                        it.copy(isLoading = false, errorMessage = result.exception.toAuthMessage())
                     }
                 }
                 is Result.Loading -> Unit
