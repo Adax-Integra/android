@@ -25,32 +25,50 @@ constructor(
     private val _uiState = MutableStateFlow(CaseDetailUiState())
     val uiState: StateFlow<CaseDetailUiState> = _uiState.asStateFlow()
 
-    // loads the complete information of the selected case
+    //loads the complete information of the selected case
     fun loadCase(caseId: String) {
+        loadCaseInternal(caseId, isRefresh = false)
+    }
+
+    //re-fetches case without hiding current content
+    fun refresh(caseId: String) {
+        val state = _uiState.value
+        if (state.isRefreshing || state.isLoading) return
+        loadCaseInternal(caseId, isRefresh = true)
+    }
+
+    private fun loadCaseInternal(caseId: String, isRefresh: Boolean) {
         viewModelScope.launch {
             getCaseDetailUseCase(caseId).collect { result ->
                 _uiState.update { state ->
                     when (result) {
                         is Result.Loading -> {
-                            state.copy(
-                                isLoading = true,
-                                error = null,
-                            )
+                            if (isRefresh) {
+                                state.copy(isRefreshing = true)
+                            } else {
+                                state.copy(isLoading = true, error = null)
+                            }
                         }
 
                         is Result.Success -> {
                             state.copy(
                                 case = result.data,
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = null,
                             )
                         }
 
                         is Result.Error -> {
-                            state.copy(
-                                isLoading = false,
-                                error = "No fue posible cargar el detalle del caso.",
-                            )
+                            if (isRefresh) {
+                                state.copy(isRefreshing = false)
+                            } else {
+                                state.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    error = "No fue posible cargar el detalle del caso.",
+                                )
+                            }
                         }
                     }
                 }

@@ -116,7 +116,8 @@ fun RegisterExpedientScreen(
             modifier =
             Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState()),
         ) {
             when {
                 uiState.isLoadingCatalogs || uiState.isSubmitting -> {
