@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
 
@@ -84,4 +85,7 @@ object AppIcons {
 
     val Calendar: ImageVector
         get() = Icons.Default.CalendarMonth
+  
+    val Email: ImageVector
+        get() = Icons.Outlined.MailOutline
 }
