@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.presentation.viewmodel.ForgotPasswordEvent
 import com.example.adaxintegra.presentation.viewmodel.ForgotPasswordViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
@@ -37,10 +39,20 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = hiltViewModel(),
     onBack: () -> Unit,
+    onCodeRequested: (email: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    //event received will be handled
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ForgotPasswordEvent.CodeRequested -> onCodeRequested(event.email)
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -52,7 +64,7 @@ fun ForgotPasswordScreen(
                 ) },
             ) { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp),
@@ -88,23 +100,13 @@ fun ForgotPasswordScreen(
                 isLoading = uiState.isLoading,
             )
 
-            uiState.successMessage?.let { message ->
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = message,
-                    style = AppTextStyle.BodySmall,
-                    color = Color(0xFF2E7D32),
-                )
-            }
-
             uiState.errorMessage?.let { message ->
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = message,
                     style = AppTextStyle.BodySmall,
-                    color = Color(0xFF2E7D32),
+                    color = Color(0xFFC62828),
                 )
             }
         }
