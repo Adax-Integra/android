@@ -54,14 +54,13 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.PillBadge
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -76,7 +75,8 @@ fun RecordsScreen(
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onRegisterRecordClick: () -> Unit
+    onRegisterRecordClick: () -> Unit,
+    viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val spacing = Spacing()
 
@@ -115,6 +115,7 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(
                     start = spacing.medium,
                     end = spacing.medium,
@@ -232,21 +233,30 @@ fun RecordsScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.refresh() },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = uiState.error
@@ -263,8 +273,11 @@ fun RecordsScreen(
 
                     uiState.records.isEmpty() -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = when {
@@ -318,63 +331,13 @@ fun RecordsScreen(
                 val canGoNext = uiState.error == null &&
                     uiState.page.toLong() * uiState.limit < uiState.total
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 0.dp,
-                    ),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(
-                            onClick = onPreviousPage,
-                            enabled = canGoBack,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Página anterior",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoBack) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-
-                        androidx.compose.material3.Text(
-                            text = "Página ${uiState.page}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-
-                        IconButton(
-                            onClick = onNextPage,
-                            enabled = canGoNext,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Página siguiente",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoNext) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-                    }
-                }
+                PageSwitcher(
+                    page = uiState.page,
+                    canGoBack = canGoBack,
+                    canGoNext = canGoNext,
+                    onPreviousPage = onPreviousPage,
+                    onNextPage = onNextPage,
+                )
             }
         }
     }

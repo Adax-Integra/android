@@ -6,4 +6,5 @@ data class CaseProgressUiState(
     val case: Case? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )

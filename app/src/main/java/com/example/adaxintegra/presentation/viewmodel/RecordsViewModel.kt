@@ -26,6 +26,11 @@ class RecordsViewModel @Inject constructor(
         loadRecords()
     }
 
+    fun refresh() {
+        val state = _uiState.value
+        if (state.isRefreshing || state.isLoading) return
+    }
+
     // Restart pagination when the search changes, preserving both filters.
     fun searchRecords(search: String) {
         _uiState.update {

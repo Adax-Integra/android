@@ -3,6 +3,8 @@ package com.example.adaxintegra.presentation.views.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +26,8 @@ fun VerificationSuccessScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F3F3)),
+            .background(Color(0xFFF3F3F3))
+            .verticalScroll(rememberScrollState()),
         contentAlignment = Alignment.Center,
     ) {
         VerificationSuccessContent(onContinueClick = onContinueClick)

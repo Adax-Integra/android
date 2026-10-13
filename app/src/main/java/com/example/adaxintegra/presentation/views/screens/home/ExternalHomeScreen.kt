@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,36 +48,43 @@ fun ExternalHomeScreen(
         !"closed".equals(case.state, ignoreCase = true)
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = viewModel::refresh,
         modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing.medium),
-        verticalArrangement = Arrangement.spacedBy(spacing.medium),
+            .fillMaxSize(),
     ) {
-        Spacer(modifier = Modifier.height(spacing.small))
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            Spacer(modifier = Modifier.height(spacing.small))
 
-        HomeHeader()
+            HomeHeader()
 
-        CurrentCaseCard(
-            currentCase = currentCase,
-            onCaseClick = onCaseClick,
-            onRegisterCaseClick = onRegisterCaseClick,
-            isLoading = uiState.isLoading,
-            error = uiState.error,
-        )
+            CurrentCaseCard(
+                currentCase = currentCase,
+                onCaseClick = onCaseClick,
+                onRegisterCaseClick = onRegisterCaseClick,
+                isLoading = uiState.isLoading,
+                error = uiState.error,
+            )
 
-        SectionTitle(text = "Eventos")
+            SectionTitle(text = "Eventos")
 
-        //NV-01: there is no events endpoint yet, the section stays empty as in iOS
-        Spacer(modifier = Modifier.height(spacing.extraLarge))
+            //NV-01: there is no events endpoint yet, the section stays empty as in iOS
+            Spacer(modifier = Modifier.height(spacing.extraLarge))
 
-        SectionTitle(text = "Podcast")
+            SectionTitle(text = "Podcast")
 
-        PodcastCard(
-            onClick = { HomeLinks.openPodcast(context) },
-        )
+            PodcastCard(
+                onClick = { HomeLinks.openPodcast(context) },
+            )
 
-        Spacer(modifier = Modifier.height(spacing.large))
+            Spacer(modifier = Modifier.height(spacing.large))
+        }
     }
 }
