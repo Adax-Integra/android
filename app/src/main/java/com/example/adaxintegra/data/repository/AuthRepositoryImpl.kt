@@ -1,202 +1,281 @@
 package com.example.adaxintegra.data.repository
 
+import android.util.Base64
+import com.example.adaxintegra.data.local.SessionPreferences
 import com.example.adaxintegra.data.remote.api.AuthApi
+import com.example.adaxintegra.data.remote.dto.ChangePasswordRequestDto
+import com.example.adaxintegra.data.remote.dto.LoginDataDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
+import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
+import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
+import com.example.adaxintegra.data.remote.toAuthError
+import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
+import org.json.JSONException
+import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Implementation of AuthRepository managing Supabase Auth and remote backend synchronization.
- * Handles login validation, user registration, OTP verification, and session management.
+/*
+ * Auth against the Node backend (G-01, G-02, G-09, G-12) with the session saved
+ * on the device (G-15). Supabase Auth is only used by G-05 until it moves to codes.
  */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val api: AuthApi,
+    // TODO(G-05): remove once password recovery uses backend codes
     private val supabase: SupabaseClient,
+    private val sessionPreferences: SessionPreferences,
 ) : AuthRepository {
-    // // G-09-Register: Active user session StateFlow held in memory
+    // Active user session held in memory
     private val _session = MutableStateFlow<UserSession?>(null)
-    override val session = _session.asStateFlow()
+    override val session: StateFlow<UserSession?> = _session.asStateFlow()
 
-    // // G-09-Register: Authenticates user credentials with Supabase Auth and enforces email confirmation
+    // G-02: one request to the backend; it also rejects unverified emails (403)
     override fun login(
         email: String,
         password: String,
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
-
         try {
-            // // G-09-Register: Attempt direct Supabase authentication
-            try {
-                supabase.auth.signInWith(Email) {
-                    this.email = email
-                    this.password = password
-                }
-                // // G-09-Register: Ensure the user's email has been confirmed before granting session access
-                val currentUser = supabase.auth.currentUserOrNull()
-                if (currentUser != null && currentUser.emailConfirmedAt == null) {
-                    supabase.auth.signOut()
-                    throw IllegalStateException("email_not_confirmed")
-                }
-            } catch (e: Exception) {
-                val errorText = "${e.message} ${e.cause} ${e.javaClass.simpleName}".lowercase()
-                if (errorText.contains("email_not_confirmed") ||
-                    errorText.contains("email not confirmed") ||
-                    e.message == "email_not_confirmed"
-                ) {
-                    throw IllegalStateException("email_not_confirmed")
-                } else if (e is IllegalStateException && e.message == "email_not_confirmed") {
-                    throw e
-                } else {
-                    // // G-09-Register: Re-throw Supabase authentication errors
-                    throw e
-                }
-            }
-
-            // Remote backend authentication fallback/synchronization
-            val response = api.login(LoginRequestDto(email, password))
-
-            if (!response.success) {
-                throw IllegalStateException("No se pudo iniciar sesión")
-            }
-
-            val data = response.data
-            val role = data.roles?.singleOrNull()
-
-            if (role == null || role !in listOf("external", "internal", "admin")) {
-                throw IllegalStateException("La cuenta no tiene un rol válido. Contacta al administrador.")
-            }
-
-            if (data.token.isBlank() || data.userId.isNullOrBlank()) {
-                throw IllegalStateException("La respuesta de inicio de sesión está incompleta")
-            }
-
-            val userSession = UserSession(
-                token = data.token,
-                userId = data.userId,
-                role = role,
-            )
-
-            _session.value = userSession
-            emit(Result.Success(userSession))
+            val response = api.login(LoginRequestDto(email.trim(), password))
+            emit(Result.Success(startSession(response.data)))
         } catch (exception: CancellationException) {
             throw exception
-        } catch (exception: HttpException) {
-            val errorBody = exception.response()?.errorBody()?.string() ?: ""
-            if (errorBody.contains("email_not_confirmed", ignoreCase = true) ||
-                errorBody.contains("Email not confirmed", ignoreCase = true)
-            ) {
-                emit(Result.Error(IllegalStateException("email_not_confirmed")))
-            } else {
-                emit(Result.Error(exception))
-            }
         } catch (exception: Exception) {
-            if (exception.message == "email_not_confirmed" ||
-                exception.message?.contains("email_not_confirmed", ignoreCase = true) == true
-            ) {
-                emit(Result.Error(IllegalStateException("email_not_confirmed")))
-            } else {
-                emit(Result.Error(exception))
-            }
+            emit(Result.Error(exception.toAuthError()))
         }
     }
 
-    override fun logout() {
+    override suspend fun restoreSession() {
+        val storedSession = sessionPreferences.load()
+
+        if (storedSession == null) {
+            _session.value = null
+            return
+        }
+
+        if (!hasUnexpiredToken(storedSession.token)) {
+            sessionPreferences.clear()
+            _session.value = null
+            return
+        }
+
+        _session.value = storedSession
+    }
+
+    override suspend fun logout() {
+        // Clear storage first so the session cannot return after reopening.
+        sessionPreferences.clear()
         _session.value = null
     }
 
-    // // G-09-Register: Creates a new user account with Supabase Auth and remote backend
+    // G-05 (unchanged): still uses Supabase Auth
+    override suspend fun forgotPassword(
+        email: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.resetPasswordForEmail(
+                email = email,
+                redirectUrl = "adax://auth/callback",
+            )
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception)
+        }
+    }
+
+    // G-05 (unchanged): still uses Supabase Auth
+    override suspend fun resetPassword(
+        newPassword: String,
+    ): Result<Unit> {
+        return try {
+            supabase.auth.updateUser {
+                password = newPassword
+            }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    // G-01: errors are no longer swallowed; the screen shows what the backend answered
     override fun register(
         name: String,
         lastname: String,
         phone: String,
         email: String,
         password: String,
-    ): Flow<Result<UserSession>> = flow {
+    ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try {
-            // // G-09-Register: Register account in Supabase Auth
-            supabase.auth.signUpWith(Email) {
-                this.email = email
-                this.password = password
-            }
-
-            // Synchronize user account registration with Node backend
-            try {
-                api.register(
-                    RegisterRequestDto(
-                        name = name,
-                        lastName = lastname,
-                        phone = phone,
-                        email = email,
-                        password = password,
-                        confirmPassword = password,
-                    ),
-                )
-            } catch (_: Exception) {
-                // Secondary backend synchronization catch
-            }
-
-            val session = UserSession(
-                token = "",
-                userId = null,
-                role = "external",
+            api.register(
+                RegisterRequestDto(
+                    name = name,
+                    lastName = lastname,
+                    phone = phone,
+                    email = email,
+                    password = password,
+                    confirmPassword = password,
+                ),
             )
-            emit(Result.Success(session))
-        } catch (e: Exception) {
-            emit(Result.Error(e))
+            emit(Result.Success(Unit))
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            emit(Result.Error(exception.toAuthError()))
         }
     }
 
-    // // G-09-VerifyOTP: Requests Supabase to resend the 6-digit email confirmation OTP
+    // G-09: the backend answers the same for unknown emails, so success does not
+    // mean the email exists
     override fun resendVerificationEmail(email: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try {
-            supabase.auth.resendEmail(OtpType.Email.SIGNUP, email)
+            api.resendVerification(ResendVerificationRequestDto(email.trim()))
             emit(Result.Success(Unit))
-        } catch (e: Exception) {
-            emit(Result.Error(e))
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            emit(Result.Error(exception.toAuthError()))
         }
     }
 
-    // // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user with Supabase Auth
+    // G-09: a valid code returns the same session as the login, so the user
+    // is signed in right away and the session survives restarts (G-15)
     override fun verifyEmailCode(
         email: String,
         code: String,
     ): Flow<Result<UserSession>> = flow {
         emit(Result.Loading)
         try {
-            // // G-09-VerifyOTP: Call Supabase Auth verifyEmailOtp API for SIGNUP type
-            supabase.auth.verifyEmailOtp(
-                type = OtpType.Email.SIGNUP,
-                email = email,
-                token = code,
+            val response = api.verifyEmail(VerifyEmailRequestDto(email.trim(), code))
+            emit(Result.Success(startSession(response.data)))
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            emit(Result.Error(exception.toAuthError()))
+        }
+    }
+
+    // G-12 (unchanged)
+    override fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmPassword: String,
+    ): Flow<Result<String>> = flow {
+        emit(Result.Loading)
+        try {
+            val token = _session.value?.token
+            if (token.isNullOrBlank()) {
+                throw IllegalStateException("Inicia sesión para cambiar la contraseña.")
+            }
+
+            val response = api.changePassword(
+                authorization = "Bearer $token",
+                request = ChangePasswordRequestDto(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword,
+                    confirmPassword = confirmPassword,
+                ),
             )
 
-            // // G-09-VerifyOTP: Account is confirmed in Supabase.
-            // We return success without overriding _session with Supabase tokens so user logs in via Node backend.
-            val resultSession = UserSession(
-                token = "",
-                userId = null,
-                role = "external",
-            )
-            emit(Result.Success(resultSession))
+            if (!response.success) {
+                val errorMsg = translateErrorMessage(response.error)
+                throw IllegalStateException(errorMsg)
+            }
+
+            val message = "Contraseña actualizada exitosamente."
+            emit(Result.Success(message))
         } catch (e: Exception) {
-            emit(Result.Error(Exception("Código de verificación incorrecto o expirado")))
+            val translated = when (e) {
+                is java.io.IOException -> "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+                else -> translateErrorMessage(e.message)
+            }
+            emit(Result.Error(Exception(translated)))
         }
+    }
+
+    // Shared by login and verification: validates the backend answer, then saves
+    // the session before exposing it (same order G-15 used for the login)
+    private suspend fun startSession(data: LoginDataDto): UserSession {
+        val role = data.roles?.singleOrNull()
+
+        if (role !in VALID_ROLES || data.token.isBlank() || data.userId.isNullOrBlank()) {
+            throw AuthError.Unknown("Invalid session data from the server")
+        }
+
+        val userSession = UserSession(
+            token = data.token,
+            userId = data.userId,
+            role = role,
+        )
+
+        sessionPreferences.save(userSession)
+        _session.value = userSession
+        return userSession
+    }
+
+    // Reads expiration locally; the backend still verifies the JWT signature.
+    private fun hasUnexpiredToken(token: String): Boolean {
+        val parts = token.split(".")
+        if (parts.size != 3) return false
+
+        return try {
+            val decodedPayload = Base64.decode(
+                parts[1],
+                Base64.URL_SAFE or Base64.NO_WRAP,
+            )
+
+            val payload = JSONObject(
+                String(decodedPayload, Charsets.UTF_8),
+            )
+
+            val expiresAt = payload.getLong("exp")
+            val currentTime = System.currentTimeMillis() / 1000
+
+            expiresAt > currentTime
+        } catch (_: IllegalArgumentException) {
+            false
+        } catch (_: JSONException) {
+            false
+        }
+    }
+
+    // G-12 (unchanged)
+    private fun translateErrorMessage(rawError: String?): String {
+        if (rawError.isNullOrBlank()) return "Ocurrió un error al cambiar la contraseña."
+        val lower = rawError.lowercase()
+        return when {
+            "current password" in lower || "incorrect" in lower ->
+                "La contraseña actual es incorrecta."
+            "unauthorized" in lower || "token" in lower || "401" in lower ->
+                "Tu sesión ha caducado. Vuelve a iniciar sesión."
+            "same" in lower || "different" in lower ->
+                "La nueva contraseña debe ser diferente a la actual."
+            "match" in lower ->
+                "Las contraseñas no coinciden."
+            "network" in lower || "connect" in lower ->
+                "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+            else ->
+                "No se pudo cambiar la contraseña. Revisa que tu contraseña actual sea correcta."
+        }
+    }
+
+    private companion object {
+        val VALID_ROLES = setOf("external", "internal", "admin")
     }
 }

@@ -11,13 +11,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
-import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
-import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordMenuOptionCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
@@ -28,8 +25,10 @@ fun AdminScreen(
     onAuditLogClick: () -> Unit = {},
 ) {
     ScreenTemplate(
-        title = "Panel de Administración",
-        modifier = Modifier.statusBarsPadding(),
+        title = "  Panel de Administración",
+        showBackButton = false,
+        modifier = Modifier
+            .statusBarsPadding(),
     ) {
         Column(
             modifier = Modifier
@@ -50,25 +49,26 @@ fun AdminScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            RecordMenuOptionCard(
-                title = "Gestionar usuarios",
-                description = "Administra y crea las cuentas de los colaboradores de la aplicación.",
-                icon = AppIcons.Admin,
-                nextScreen = onManageUsersClick,
+
+            MenuOptionCard(
+                title = "Gestion de colaboradoras",
+                subtitle = "Administra y crea las cuentas de los colaboradores de la aplicación.",
+                icon = AppIcons.People,
+                onClick = onManageUsersClick,
             )
 
-            RecordMenuOptionCard(
+            MenuOptionCard(
                 title = "Gestionar expedientes",
-                description = "Administra y crea las cuentas de las usuarias externas.",
-                icon = AppIcons.Folder,
-                nextScreen = onManageExpedientsClick,
+                subtitle = "Administra y crea las cuentas de las usuarias externas.",
+                icon = AppIcons.Profile,
+                onClick = onManageExpedientsClick,
             )
 
-            RecordMenuOptionCard(
+            MenuOptionCard(
                 title = "Bitácora de cambios",
-                description = "Consulta el historial de actividades e incidencias en el sistema.",
-                icon = AppIcons.Folder,
-                nextScreen = onAuditLogClick,
+                subtitle = "Consulta el historial de actividades e incidencias en el sistema.",
+                icon = AppIcons.History,
+                onClick = onAuditLogClick,
             )
         }
     }

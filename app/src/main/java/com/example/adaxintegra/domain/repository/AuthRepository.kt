@@ -5,38 +5,52 @@ import com.example.adaxintegra.domain.model.UserSession
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-/**
- * Interface defining authentication contracts for Supabase Auth and remote API services.
- * Covers user registration, login, session observation, email verification OTP, and logout.
- */
-interface AuthRepository {
-    // Exposes current user session changes. A null value indicates no active user session.
+// Auth contracts. Every flow ends in Result.Error(AuthError) when it fails
+interface  AuthRepository {
+    // Exposes session changes. Null value means no user is signed in
     val session: StateFlow<UserSession?>
 
-    // // G-09-Register: Executes user login and validates email confirmation status
+    // G-02: signs in and saves the session on the device
     fun login(
         email: String,
         password: String,
     ): Flow<Result<UserSession>>
 
-    // Clears local and active user session state
-    fun logout()
+    // Restores the session saved on device
+    suspend fun restoreSession()
 
-    // // G-09-Register: Registers a new user account with Supabase Auth and remote backend
+    // Clears the session from storage and memory
+    suspend fun logout()
+
+    //G-05: no session is needed for this action (still on Supabase Auth)
+    suspend fun forgotPassword(
+        email: String,
+    ): Result<Unit>
+
+    suspend fun resetPassword(
+        newPassword: String,
+    ): Result<Unit>
+
+    // G-01: creates the account; the backend emails a 6 digit code.
+    // There is no session until the email is verified (G-09)
     fun register(
         name: String,
         lastname: String,
         phone: String,
         email: String,
         password: String,
-    ): Flow<Result<UserSession>>
+    ): Flow<Result<Unit>>
 
-    // // G-09-VerifyOTP: Resends the 6-digit confirmation email OTP code to the specified email
+    // G-09: asks the backend for a new verification code
     fun resendVerificationEmail(email: String): Flow<Result<Unit>>
 
-    // // G-09-VerifyOTP: Verifies the 6-digit OTP code entered by the user against Supabase Auth
-    fun verifyEmailCode(
-        email: String,
-        code: String,
-    ): Flow<Result<UserSession>>
+    // G-09: verifies the code; on success the user is signed in
+    fun verifyEmailCode(email: String, code: String): Flow<Result<UserSession>>
+
+    // G-12: change password
+    fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmPassword: String,
+    ): Flow<Result<String>>
 }

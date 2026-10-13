@@ -61,16 +61,37 @@ fun CaseDetailDto.toDomain(): CaseDetail {
 private fun parseCaseDetailDate(value: String?): Date? {
     if (value.isNullOrBlank()) return null
 
-    return try {
-        val parser =
-            SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                Locale.US,
-            )
+    val normalizedValue =
+        value
+            .trim()
+            .replace(Regex("(\\.\\d{3})\\d+"), "\$1")
 
-        parser.timeZone = TimeZone.getTimeZone("UTC")
-        parser.parse(value)
-    } catch (e: ParseException) {
-        null
+    val supportedFormats =
+        listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+        )
+
+    supportedFormats.forEach { format ->
+        try {
+            val parser =
+                SimpleDateFormat(
+                    format,
+                    Locale.US,
+                )
+
+            parser.isLenient = false
+            parser.timeZone = TimeZone.getTimeZone("UTC")
+
+            return parser.parse(normalizedValue)
+        } catch (_: ParseException) {
+            // tries the next supported backend date format
+        }
     }
+
+    return null
 }

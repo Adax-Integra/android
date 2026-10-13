@@ -91,6 +91,7 @@ fun LoginForm(
             label = "Contraseña",
             value = passwordValue,
             onValueChange = onPasswordChange,
+            placeholder = "********",
             leadingIcon = {
                 AppIcon(
                     imageVector = Icons.Default.Lock,

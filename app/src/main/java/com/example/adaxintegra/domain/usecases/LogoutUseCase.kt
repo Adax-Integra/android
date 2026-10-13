@@ -6,8 +6,8 @@ import javax.inject.Inject
 class LogoutUseCase @Inject constructor(
     private val repository: AuthRepository,
 ) {
-    // Clears the session stored in memory
-    operator fun invoke() {
+    // Clears the session from local storage and memory.
+    suspend operator fun invoke() {
         repository.logout()
     }
 }

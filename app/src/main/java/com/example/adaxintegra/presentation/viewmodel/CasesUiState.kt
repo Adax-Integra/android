@@ -12,4 +12,5 @@ data class CasesUiState(
     val limit: Int = 20,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val isRefreshing: Boolean = false,
 )

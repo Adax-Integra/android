@@ -1,13 +1,12 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -46,19 +45,24 @@ import androidx.compose.ui.unit.sp
 import com.example.adaxintegra.domain.entities.Case
 import com.example.adaxintegra.presentation.viewmodel.CasesUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CasesScreen(
     uiState: CasesUiState,
     onBackClick: () -> Unit,
+    onCaseClick: (String) -> Unit,
     onSearchChange: (String) -> Unit,
     onUrgencyChange: (String) -> Unit,
     onClearFilters: () -> Unit,
     onRetry: () -> Unit,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pendingUrgency by rememberSaveable { mutableStateOf("Todas") }
@@ -68,8 +72,17 @@ fun CasesScreen(
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 0.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -87,6 +100,7 @@ fun CasesScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +108,10 @@ fun CasesScreen(
                 OutlinedTextField(
                     value = uiState.search,
                     onValueChange = onSearchChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                     placeholder = {
                         Text(
                             text = "Buscar...",
@@ -125,6 +140,7 @@ fun CasesScreen(
                     Text("Filtrar")
                 }
             }
+
             if (uiState.search.isNotEmpty() || selectedUrgency != "Todas") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,11 +151,13 @@ fun CasesScreen(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
+
                     TextButton(onClick = onClearFilters) {
                         Text("Limpiar")
                     }
                 }
             }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -151,6 +169,7 @@ fun CasesScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(50),
@@ -162,10 +181,14 @@ fun CasesScreen(
                     )
                 }
             }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+
+            PullToRefreshBox(
+                isRefreshing = uiState.isLoading,
+                onRefresh = onRefresh,
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 when {
@@ -175,6 +198,9 @@ fun CasesScreen(
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -190,17 +216,26 @@ fun CasesScreen(
                     }
 
                     uiState.cases.isEmpty() -> {
-                        Text(
-                            text = if (
-                                uiState.search.isNotBlank() ||
-                                selectedUrgency != "Todas"
-                            ) {
-                                "No hay casos que coincidan con tu busqueda y filtro."
-                            } else {
-                                "No hay casos disponibles"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                text =
+                                    if (
+                                        uiState.search.isNotBlank() ||
+                                        selectedUrgency != "Todas"
+                                    ) {
+                                        "No hay casos que coincidan con tu busqueda y filtro."
+                                    } else {
+                                        "No hay casos disponibles"
+                                    },
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
                     }
 
                     else -> {
@@ -212,38 +247,35 @@ fun CasesScreen(
                                 items = uiState.cases,
                                 key = { it.caseId },
                             ) { case ->
-                                CaseCard(case = case)
+                                CaseCard(
+                                    case = case,
+                                    modifier =
+                                        Modifier.clickable {
+                                            onCaseClick(case.caseId)
+                                        },
+                                )
                             }
                         }
                     }
                 }
             }
 
-            if (!uiState.isLoading && uiState.error == null && uiState.total > uiState.limit) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        onClick = onPreviousPage,
-                        enabled = uiState.page > 1,
-                    ) {
-                        Text("Anterior")
-                    }
+            if (
+                !uiState.isLoading &&
+                uiState.error == null &&
+                uiState.total > uiState.limit
+            ) {
+                val canGoBack = uiState.page > 1
+                val canGoNext =
+                    uiState.page.toLong() * uiState.limit < uiState.total
 
-                    Text(
-                        text = "Página ${uiState.page}",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
-                    TextButton(
-                        onClick = onNextPage,
-                        enabled = uiState.page.toLong() * uiState.limit < uiState.total,
-                    ) {
-                        Text("Siguiente")
-                    }
-                }
+                PageSwitcher(
+                    page = uiState.page,
+                    canGoBack = canGoBack,
+                    canGoNext = canGoNext,
+                    onPreviousPage = onPreviousPage,
+                    onNextPage = onNextPage,
+                )
             }
         }
     }
@@ -258,29 +290,37 @@ fun CasesScreen(
                 ) {
                     listOf("Todas", "Alta", "Media", "Baja", "Sin evaluar").forEach { urgency ->
                         Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .selectable(
-                                    selected = pendingUrgency == urgency,
-                                    onClick = { pendingUrgency = urgency },
-                                    role = Role.RadioButton,
-                                )
-                                .padding(vertical = 10.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = pendingUrgency == urgency,
+                                        onClick = { pendingUrgency = urgency },
+                                        role = Role.RadioButton,
+                                    )
+                                    .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            RadioButton(selected = pendingUrgency == urgency, onClick = null)
+                            RadioButton(
+                                selected = pendingUrgency == urgency,
+                                onClick = null,
+                            )
+
                             Text(urgency)
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    onUrgencyChange(
-                        if (pendingUrgency == "Todas") "" else pendingUrgency,
-                    )
-                    showFilters = false
-                }) {
+                TextButton(
+                    onClick = {
+                        onUrgencyChange(
+                            if (pendingUrgency == "Todas") "" else pendingUrgency,
+                        )
+                        showFilters = false
+                    },
+                ) {
                     Text("Aplicar")
                 }
             },
@@ -294,23 +334,33 @@ fun CasesScreen(
 }
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, widthDp = 360, heightDp = 804)
+@Preview(
+    name = "Casos con paginación",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 804,
+)
 @Composable
 private fun CasesScreenPreview() {
     val mockCases = Case.getMockData()
+
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(
             uiState = CasesUiState(
                 cases = mockCases,
-                total = mockCases.size,
+                total = 45,
+                page = 2,
+                limit = 20,
             ),
             onBackClick = {},
+            onCaseClick = {},
             onSearchChange = {},
             onUrgencyChange = {},
             onClearFilters = {},
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
+            onRefresh = {},
         )
     }
 }

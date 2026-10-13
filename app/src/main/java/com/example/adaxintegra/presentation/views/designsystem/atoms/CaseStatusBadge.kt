@@ -31,6 +31,7 @@ fun CaseStatusBadge(
             style = AppTextStyle.LabelSmall,
             color = color,
             fontWeight = FontWeight.Bold,
+            maxLines = 1,
         )
     }
 }

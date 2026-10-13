@@ -42,6 +42,8 @@ fun AppButton(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Purple,
                     contentColor = Color.White,
+                    disabledContainerColor = Purple.copy(alpha = 0.4f),
+                    disabledContentColor = Color.White.copy(alpha = 0.8f),
                 ),
             ) {
                 if (isLoading) {

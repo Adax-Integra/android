@@ -22,31 +22,50 @@ class CaseProgressViewModel
         private val _uiState = MutableStateFlow(CaseProgressUiState())
         val uiState: StateFlow<CaseProgressUiState> = _uiState.asStateFlow()
 
-        fun loadCase(caseId: String) {
+    fun refresh(caseId: String) {
+        val state = _uiState.value
+        if (state.isRefreshing || state.isLoading) return
+        loadCase(caseId, isRefresh = true)
+    }
+
+        fun loadCase(caseId: String, isRefresh: Boolean = false) {
+            if (isRefresh) {
+                _uiState.update { it.copy(isRefreshing = true) }
+            }
             viewModelScope.launch {
                 getCaseByIdUseCase(caseId).collect { result ->
                     _uiState.update { state ->
                         when (result) {
                             is Result.Loading -> {
-                                state.copy(
-                                    isLoading = true,
-                                    error = null,
-                                )
+                                if (isRefresh) {
+                                    state
+                                } else {
+                                    state.copy(
+                                        isLoading = true,
+                                        error = null,
+                                    )
+                                }
                             }
 
                             is Result.Success -> {
                                 state.copy(
                                     case = result.data,
                                     isLoading = false,
+                                    isRefreshing = false,
                                     error = null,
                                 )
                             }
 
                             is Result.Error -> {
-                                state.copy(
-                                    error = mensajeDeError(result.exception),
-                                    isLoading = false,
-                                )
+                                if (isRefresh) {
+                                    state.copy(isRefreshing = false)
+                                } else {
+                                    state.copy(
+                                        error = mensajeDeError(result.exception),
+                                        isLoading = false,
+                                        isRefreshing = false,
+                                    )
+                                }
                             }
                         }
                     }

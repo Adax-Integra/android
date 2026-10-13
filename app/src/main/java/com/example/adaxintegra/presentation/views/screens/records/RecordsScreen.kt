@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,14 +20,18 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,9 +54,13 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.PillBadge
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -64,7 +75,8 @@ fun RecordsScreen(
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onRegisterRecordClick: () -> Unit
+    onRegisterRecordClick: () -> Unit,
+    viewModel: RecordsViewModel = hiltViewModel()
 ) {
     val spacing = Spacing()
 
@@ -103,8 +115,14 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = spacing.medium,
+                    end = spacing.medium,
+                    top = spacing.medium,
+                    bottom = 0.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -147,11 +165,34 @@ fun RecordsScreen(
                 }
             }
 
-            AppButton(
-                text = "Registrar nuevo expediente",
+            Button(
                 onClick = onRegisterRecordClick,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(Spacing().extraSmall))
+
+                    Text(
+                        text = "Registrar expediente",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
 
             if (hasCriteria) {
                 Row(
@@ -192,21 +233,30 @@ fun RecordsScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.refresh() },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = uiState.error
@@ -223,8 +273,11 @@ fun RecordsScreen(
 
                     uiState.records.isEmpty() -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
                         ) {
                             Text(
                                 text = when {
@@ -274,31 +327,17 @@ fun RecordsScreen(
                 (uiState.page > 1 || uiState.total > uiState.limit)
 
             if (showPagination) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        onClick = onPreviousPage,
-                        enabled = uiState.page > 1,
-                    ) {
-                        Text(text = "Anterior")
-                    }
+                val canGoBack = uiState.page > 1
+                val canGoNext = uiState.error == null &&
+                    uiState.page.toLong() * uiState.limit < uiState.total
 
-                    Text(
-                        text = "Página ${uiState.page}",
-                        style = AppTextStyle.BodySmall,
-                    )
-
-                    TextButton(
-                        onClick = onNextPage,
-                        enabled = uiState.error == null &&
-                            uiState.page.toLong() * uiState.limit < uiState.total,
-                    ) {
-                        Text(text = "Siguiente")
-                    }
-                }
+                PageSwitcher(
+                    page = uiState.page,
+                    canGoBack = canGoBack,
+                    canGoNext = canGoNext,
+                    onPreviousPage = onPreviousPage,
+                    onNextPage = onNextPage,
+                )
             }
         }
     }
@@ -439,7 +478,9 @@ private fun RecordsScreenPreview() {
         RecordsScreen(
             uiState = RecordsUiState(
                 records = records,
-                total = records.size,
+                total = 25,
+                page = 2,
+                limit = 10,
             ),
             onBackClick = {},
             onSearchChange = {},

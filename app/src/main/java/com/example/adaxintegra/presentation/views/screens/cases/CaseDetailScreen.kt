@@ -1,8 +1,8 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +22,6 @@ import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
-import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
@@ -45,6 +44,7 @@ fun CaseDetailScreen(
     viewModel: CaseDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showCloseDialog by remember { mutableStateOf(false) }
 
     // reloads the selected case whenever its identifier changes
     LaunchedEffect(caseId) {
@@ -54,35 +54,42 @@ fun CaseDetailScreen(
     val case = uiState.case
 
     // normalizes the raw backend state before displaying it in V-11
-    val normalizedState = case?.state?.lowercase()
+    val normalizedState = case?.state?.trim()?.lowercase()
     val status = CaseStatusUi.from(normalizedState)
 
     // Open is handled locally to avoid modifying the shared CaseStatusUi model
     val statusText =
         when (normalizedState) {
             "open" -> "Abierto"
+            "cerrado" -> "Cerrado"
             else -> status?.displayText ?: case?.state ?: "Sin estado"
         }
 
     val statusColor =
         when (normalizedState) {
             "open" -> Color(0xFF34C759)
+            "cerrado" -> CaseStatusUi.CLOSED.color
             else -> status?.color ?: IconGrey
         }
 
     // controls V-11 actions according to the current backend state
-    val isCaseClosed = normalizedState == "closed"
+    val isCaseClosed = normalizedState in setOf("closed", "cerrado")
 
     ScreenTemplate(
         title = "Detalle del caso",
-        subtitle = case?.caseNumber ?: caseId,
+        subtitle = "",
         onBack = onBack,
         isLoading = uiState.isLoading,
         error = uiState.error,
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = { viewModel.refresh(caseId) }
     ) {
         if (case != null) {
             CaseDetailContent(
-                caseNumber = case.caseNumber ?: case.caseId,
+                caseNumber =
+                    case.caseNumber
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "Sin número de caso",
                 statusText = statusText,
                 statusColor = statusColor,
                 createdAt = DateFormatter.dateTime(case.createdAt),
@@ -108,12 +115,27 @@ fun CaseDetailScreen(
                 isCaseClosed = isCaseClosed,
                 onBack = onBack,
                 onEdit = onEdit,
-                onCloseCase = {
-                    viewModel.closeCase(caseId)
-                    onCloseCase()
+                onRequestClose = {
+                    showCloseDialog = true
                 },
             )
         }
+    }
+
+    // displays the V-11 confirmation interface before requesting the closure
+    if (showCloseDialog) {
+        CaseCloseDialog(
+            onConfirm = {
+                showCloseDialog = false
+
+                // closes the case through the existing V-11 backend flow
+                viewModel.closeCase(caseId)
+                onCloseCase()
+            },
+            onDismiss = {
+                showCloseDialog = false
+            },
+        )
     }
 }
 
@@ -138,10 +160,8 @@ private fun CaseDetailContent(
     isCaseClosed: Boolean,
     onBack: () -> Unit,
     onEdit: () -> Unit,
-    onCloseCase: () -> Unit,
+    onRequestClose: () -> Unit,
 ) {
-    var showCloseDialog by remember { mutableStateOf(false) }
-
     LazyColumn(
         modifier =
             Modifier
@@ -208,45 +228,20 @@ private fun CaseDetailContent(
 
         // actions defined by the V-11 case detail acceptance criteria
         item {
-            Column(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 // close action is available only while the selected case remains open
                 if (!isCaseClosed) {
                     AppButton(
                         text = "Cerrar caso",
-                        onClick = {
-                            showCloseDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
+                        onClick = onRequestClose,
+                        modifier = Modifier.weight(1f),
                     )
                 }
-
-                // cancel always returns to the previous screen
-                AppButton(
-                    text = "Cancelar",
-                    onClick = onBack,
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = ButtonVariant.Outlined,
-                )
             }
         }
-    }
-
-    // displays the V-11 confirmation interface before requesting the closure
-    if (showCloseDialog) {
-        CaseCloseDialog(
-            onConfirm = {
-                showCloseDialog = false
-
-                // backend closure will be connected through this callback
-                onCloseCase()
-            },
-            onDismiss = {
-                showCloseDialog = false
-            },
-        )
     }
 }
 
@@ -291,7 +286,7 @@ private fun OpenCaseDetailScreenPreview() {
 
                 onBack = {},
                 onEdit = {},
-                onCloseCase = {},
+                onRequestClose = {},
             )
         }
     }
@@ -335,7 +330,7 @@ private fun ClosedCaseDetailScreenPreview() {
 
                 onBack = {},
                 onEdit = {},
-                onCloseCase = {},
+                onRequestClose = {},
             )
         }
     }

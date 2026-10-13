@@ -14,26 +14,26 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.ui.theme.White
 
-// search bar
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    placeholderText: String = "Buscar por nombre o caso...",
+    placeholder: String = "Buscar por nombre o caso...",
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text(text = placeholderText, fontWeight = FontWeight.Normal) },
+        placeholder = { Text(text = placeholder, fontWeight = FontWeight.Normal) },
         leadingIcon = { AppIcon(imageVector = AppIcons.Search, contentDescription = null) },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors =
-        OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = White,
-            unfocusedContainerColor = White,
-        ),
-        modifier = Modifier.fillMaxWidth(),
+            OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = White,
+                unfocusedContainerColor = White,
+            ),
+        modifier = modifier.fillMaxWidth(),
     )
 }

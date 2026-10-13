@@ -27,7 +27,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AdaxIntegraTheme {
-                AppNavigation()
+                AppNavigation(
+                    deepLinkUri = intent?.data
+                )
             }
         }
     }
