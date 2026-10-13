@@ -18,7 +18,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -174,19 +173,7 @@ fun CaseCard(
                         )
                     }
 
-                    // Pill with the state of the case
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = stateUi.bgColor,
-                    ) {
-                        Text(
-                            text = case.state.ifBlank { "Sin estado" },
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = stateUi.textColor,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+
                 }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -232,14 +219,7 @@ fun CaseCard(
                     }
                 }
 
-                // Section of the last modification
-                Text(
-                    text = "Última modificación: ${case.updatedAt?.substringBefore('T') ?: "Sin registro"}",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                )
+
             }
         }
     }
