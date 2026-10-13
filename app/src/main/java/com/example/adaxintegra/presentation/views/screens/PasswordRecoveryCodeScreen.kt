@@ -63,7 +63,7 @@ fun PasswordRecoveryCodeScreen(
 
     val limitReached = uiState.sendCount >= uiState.maxSends
     val canResend = uiState.cooldownSeconds == 0 &&
-        !uiState.isResending && uiState.sendCount < uiState.maxSends
+        uiState.sendCount < uiState.maxSends
 
     ScreenTemplate(
         title = "Recuperar contraseña",

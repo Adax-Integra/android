@@ -95,7 +95,7 @@ class ResetPasswordViewModel
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Contraseña actualizada",
+                            successMessage = "Contraseña actualizada, redirigiendo a login...",
                             errorMessage = null,
                         )
                     }
