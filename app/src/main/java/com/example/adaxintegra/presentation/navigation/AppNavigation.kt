@@ -58,16 +58,31 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.res.painterResource
+import com.example.adaxintegra.R
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
-    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
@@ -136,19 +151,6 @@ fun AppNavigation(
 
     val navController = rememberNavController()
 
-    //handle Supabase password recovery deep link
-    LaunchedEffect(deepLinkUri) {
-        if (
-            deepLinkUri?.scheme == "adax" &&
-            deepLinkUri.host == "auth" &&
-            deepLinkUri.path == "/callback"
-        ) {
-            navController.navigate("resetPassword") {
-                launchSingleTop = true
-            }
-        }
-    }
-
     val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
 
     LaunchedEffect(hasValidSession, isExternal) {
@@ -180,9 +182,10 @@ fun AppNavigation(
                     currentRoute != "login" &&
                     currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
-                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
-                    !currentRoute.startsWith("pendingVerification") -> "login"
+                    !currentRoute.startsWith("pendingVerification") &&
+                    !currentRoute.startsWith("recoveryCode") &&
+                    !currentRoute.startsWith("resetPassword") -> "login"
 
                 else -> null
             }
@@ -206,7 +209,9 @@ fun AppNavigation(
                 currentRoute != "login" &&
                 currentRoute != "register" &&
                 currentRoute != "verificationSuccess" &&
-                !currentRoute.startsWith("pendingVerification")
+                !currentRoute.startsWith("pendingVerification") &&
+                !currentRoute.startsWith("recoveryCode") &&
+                !currentRoute.startsWith("resetPassword")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -289,29 +294,51 @@ fun AppNavigation(
 
             //forgot password screen
             composable("forgotPassword") {
-
                 ForgotPasswordScreen(
                     onBack = {
-                        navController.popBackStack()
+                        navController.popBackStack() },
+                    onCodeRequested = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("recoveryCode/$encodedEmail") {
+                            launchSingleTop = true
+                        }
                     },
-                    viewModel = hiltViewModel()
+                )
+            }
+
+            //code verification
+            composable("recoveryCode/{email}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                PasswordRecoveryCodeScreen(
+                    email = email,
+                    onBack = { navController.popBackStack() },
+                    onCodeEntered = { enteredEmail, code ->
+                        val encodedEmail = URLEncoder.encode(enteredEmail, "UTF-8")
+                        navController.navigate("resetPassword/$encodedEmail/$code") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 
             //reset password screen
-            composable("resetPassword") { entry ->
+            composable("resetPassword/{email}/{code}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                val code = entry.arguments?.getString("code").orEmpty()
 
                 ResetPasswordScreen(
-                    onBack = {
-                        navController.popBackStack()
+                    email = email,
+                    code = code,
+                    onBack = { navController.popBackStack() },
+                    //expired or too many attempts: go back to the first screen for a new code
+                    onNeedNewCode = {
+                        navController.popBackStack("forgotPassword", inclusive = false)
                     },
                     onResetPasswordSuccess = {
                         navController.navigate("login") {
-                            popUpTo("login") {
-                                inclusive = true
-                            }
+                            popUpTo("login") { inclusive = true }
                         }
-                    }
+                    },
                 )
             }
 
@@ -387,7 +414,7 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        HomeScreen(role = role ?: "sin rol")
+                        InternalHomeScreen()
                     }
                 }
             }
