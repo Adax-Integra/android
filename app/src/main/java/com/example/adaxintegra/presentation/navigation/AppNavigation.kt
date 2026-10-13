@@ -62,12 +62,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.res.painterResource
 import com.example.adaxintegra.R
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
-    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
@@ -136,19 +136,6 @@ fun AppNavigation(
 
     val navController = rememberNavController()
 
-    //handle Supabase password recovery deep link
-    LaunchedEffect(deepLinkUri) {
-        if (
-            deepLinkUri?.scheme == "adax" &&
-            deepLinkUri.host == "auth" &&
-            deepLinkUri.path == "/callback"
-        ) {
-            navController.navigate("resetPassword") {
-                launchSingleTop = true
-            }
-        }
-    }
-
     val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
 
     LaunchedEffect(hasValidSession, isExternal) {
@@ -180,9 +167,10 @@ fun AppNavigation(
                     currentRoute != "login" &&
                     currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
-                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
-                    !currentRoute.startsWith("pendingVerification") -> "login"
+                    !currentRoute.startsWith("pendingVerification") &&
+                    !currentRoute.startsWith("recoveryCode") &&
+                    !currentRoute.startsWith("resetPassword") -> "login"
 
                 else -> null
             }
@@ -206,7 +194,9 @@ fun AppNavigation(
                 currentRoute != "login" &&
                 currentRoute != "register" &&
                 currentRoute != "verificationSuccess" &&
-                !currentRoute.startsWith("pendingVerification")
+                !currentRoute.startsWith("pendingVerification") &&
+                !currentRoute.startsWith("recoveryCode") &&
+                !currentRoute.startsWith("resetPassword")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -289,30 +279,53 @@ fun AppNavigation(
 
             //forgot password screen
             composable("forgotPassword") {
-
                 ForgotPasswordScreen(
                     onBack = {
                         navController.popBackStack() },
-                    viewModel = hiltViewModel()
+                    onCodeRequested = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("recoveryCode/$encodedEmail") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
+            //code verification
+            composable("recoveryCode/{email}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                PasswordRecoveryCodeScreen(
+                    email = email,
+                    onBack = { navController.popBackStack() },
+                    onCodeEntered = { enteredEmail, code ->
+                        val encodedEmail = URLEncoder.encode(enteredEmail, "UTF-8")
+                        navController.navigate("resetPassword/$encodedEmail/$code") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 
             //reset password screen
-            composable("resetPassword") { entry ->
+            composable("resetPassword/{email}/{code}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                val code = entry.arguments?.getString("code").orEmpty()
 
-                    ResetPasswordScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onResetPasswordSuccess = {
-                            navController.navigate("login") {
-                                popUpTo("login") {
-                                    inclusive = true
-                                }
-                            }
+                ResetPasswordScreen(
+                    email = email,
+                    code = code,
+                    onBack = { navController.popBackStack() },
+                    //expired or too many attempts: go back to the first screen for a new code
+                    onNeedNewCode = {
+                        navController.popBackStack("forgotPassword", inclusive = false)
+                    },
+                    onResetPasswordSuccess = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
                         }
-                    )
-                }
+                    },
+                )
+            }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
