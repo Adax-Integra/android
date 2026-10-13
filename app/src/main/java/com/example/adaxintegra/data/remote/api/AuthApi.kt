@@ -51,6 +51,7 @@ interface AuthApi {
         @Body request: ChangePasswordRequestDto,
     ): ChangePasswordResponseDto
 
+    //g-05 api endpoints
     @POST("api/password-recovery/forgot-password")
     suspend fun forgotPassword(
         @Body request: ForgotPasswordRequestDto,

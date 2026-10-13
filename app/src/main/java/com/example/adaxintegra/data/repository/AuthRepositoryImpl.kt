@@ -16,8 +16,6 @@ import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.UserSession
 import com.example.adaxintegra.domain.repository.AuthRepository
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +29,7 @@ import javax.inject.Singleton
 
 /*
  * Auth against the Node backend (G-01, G-02, G-09, G-12) with the session saved
- * on the device (G-15). Supabase Auth is only used by G-05 until it moves to codes.
+ * on the device (G-15).
  */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
@@ -81,41 +79,45 @@ class AuthRepositoryImpl @Inject constructor(
         _session.value = null
     }
 
-    // G-05 (unchanged): still uses Supabase Auth
+    //g-05 password recovery flow
     override suspend fun forgotPassword(
         email: String,
     ): Result<Unit> {
         return try {
-            val response = api.forgotPassword(ForgotPasswordRequestDto(email))
+            val response = api.forgotPassword(ForgotPasswordRequestDto(email.trim()))
 
             if (!response.success) {
-                throw IllegalStateException("No se pudo enviar el correo")
+                throw AuthError.Unknown("forgot-password returned success=false")
             }
 
             Result.Success(Unit)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
-            Result.Error(exception)
+            Result.Error(exception.toAuthError())
         }
     }
 
     override suspend fun resetPassword(
-        token: String,
+        email: String,
+        code: String,
         newPassword: String,
     ): Result<Unit> {
         return try {
-            val response = api.resetPassword(ResetPasswordRequestDto(token, newPassword))
+            val response = api.resetPassword(ResetPasswordRequestDto(
+                email = email.trim(),
+                code = code.trim(),
+                newPassword = newPassword))
 
             if (!response.success) {
-                throw IllegalStateException("No se pudo actualizar la contraseña.")
+                throw AuthError.Unknown("reset-password returned success=false")
             }
 
             Result.Success(Unit)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
-            Result.Error(exception)
+            Result.Error(exception.toAuthError())
         }
     }
 

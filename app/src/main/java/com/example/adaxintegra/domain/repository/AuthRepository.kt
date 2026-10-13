@@ -28,7 +28,8 @@ interface  AuthRepository {
     ): Result<Unit>
 
     suspend fun resetPassword(
-        token: String,
+        email: String,
+        code: String,
         newPassword: String
     ): Result<Unit>
 
