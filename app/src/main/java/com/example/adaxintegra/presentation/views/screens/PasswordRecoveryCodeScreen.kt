@@ -67,7 +67,6 @@ fun PasswordRecoveryCodeScreen(
 
     ScreenTemplate(
         title = "Recuperar contraseña",
-        subtitle = "Se envió un código de 6 dígitos.",
         onBack = onBack,
     ) {
         Column(
@@ -77,6 +76,15 @@ fun PasswordRecoveryCodeScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Se envió un código de 6 dígitos.",
+                style = AppTextStyle.BodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
             //top card indicating what email code was sent to
@@ -171,9 +179,9 @@ fun PasswordRecoveryCodeScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 //continue to verify code input
                 AppButton(
@@ -181,7 +189,7 @@ fun PasswordRecoveryCodeScreen(
                     onClick = viewModel::onContinueClick,
                     variant = ButtonVariant.Primary,
                     enabled = uiState.otpCode.length == 6,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 //resend code
@@ -191,7 +199,7 @@ fun PasswordRecoveryCodeScreen(
                     variant = ButtonVariant.Outlined,
                     enabled = canResend,
                     isLoading = uiState.isResending,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
