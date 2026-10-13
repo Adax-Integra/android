@@ -14,6 +14,9 @@ interface CaseRepository {
         limit: Int = 20,
     ): CasePage
 
+    // NV-04: open cases that have gone the longest without changes
+    suspend fun getStaleCases(limit: Int = 5): CasePage
+
     suspend fun getCasesFromUser(userId: String): List<Case>
 
     suspend fun getExternalUserCases(userId: String): List<Case>

@@ -46,6 +46,13 @@ interface CaseApi {
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
 
+    // NV-04: open cases that have gone the longest without changes (internal and admin only)
+    @GET("api/cases/stale")
+    suspend fun getStaleCases(
+        @Header("Authorization") authorization: String,
+        @Query("limit") limit: Int = 5,
+    ): CaseListResponseDto
+
     @GET("api/internal-users/{userId}/allCases")
     suspend fun getCasesFromUser(
         @Path("userId") userId: String,
