@@ -24,15 +24,17 @@ import java.util.Calendar
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ReportSelectRange(
-    onStartDateSelected: (Calendar) -> Unit = {},
-    onEndDateSelected: (Calendar) -> Unit = {},
-    onGenerateReportClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     uiState: ReportSelectRangeUiState = ReportSelectRangeUiState(),
+    onStartDateSelected: (Calendar) -> Unit = {},
+    onEndDateSelected: (Calendar) -> Unit = {},
+    onChipSelected: (String) -> Unit = {},
+    onGenerateReportClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
 ) {
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
+    var selectedChip by remember { mutableStateOf("") }
 
     ScreenTemplate(
         title = "Reportes",
@@ -40,8 +42,9 @@ fun ReportSelectRange(
         error = uiState.error,
         isLoading = uiState.isLoading,
         onBack = onBackClick,
+        modifier = modifier,
     ) {
-        Column() {
+        Column {
 
             Text(
                 text = "Usa un rango de fechas o selecciona la fecha de inicio y de fin",
@@ -52,8 +55,11 @@ fun ReportSelectRange(
 
             RowOfChips(
                 chips = listOf("Mes anterior", "Mes actual", "Trimestre previo"),
-                selectedChip = "Mes anterior",
-                onChipSelected = {},
+                selectedChip = selectedChip,
+                onChipSelected = { chip ->
+                    selectedChip = chip
+                    onChipSelected(chip)
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -63,7 +69,7 @@ fun ReportSelectRange(
                 label = "Inicio del reporte",
                 value = uiState.startDate,
                 errorMessage = uiState.startDateError,
-                onClick = { showStartDatePicker = true }
+                onClick = { showStartDatePicker = true },
             )
 
             Spacer(modifier = Modifier.height(16.dp))

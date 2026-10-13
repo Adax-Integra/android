@@ -17,6 +17,24 @@ class ReportsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ReportSelectRangeUiState())
     val uiState = _uiState.asStateFlow()
 
+    fun setStartDate(calendar: Calendar) {
+        _uiState.update {
+            it.copy(
+                startDate = calendar,
+                startDateError = null,
+            )
+        }
+    }
+
+    fun setEndDate(calendar: Calendar) {
+        _uiState.update {
+            it.copy(
+                endDate = calendar,
+                endDateError = null,
+            )
+        }
+    }
+
     // When selecting the chip of This month, it will set the start date to the first day of the
     // current month and the end date to the current date.
     fun chipThisMonthSelected() {
