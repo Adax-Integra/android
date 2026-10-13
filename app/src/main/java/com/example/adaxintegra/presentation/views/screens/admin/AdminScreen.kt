@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
-import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
@@ -49,21 +49,22 @@ fun AdminScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            ProfileOption(
+
+            MenuOptionCard(
                 title = "Gestion de colaboradoras",
                 subtitle = "Administra y crea las cuentas de los colaboradores de la aplicación.",
                 icon = AppIcons.People,
                 onClick = onManageUsersClick,
             )
 
-            ProfileOption(
+            MenuOptionCard(
                 title = "Gestionar expedientes",
                 subtitle = "Administra y crea las cuentas de las usuarias externas.",
                 icon = AppIcons.Profile,
                 onClick = onManageExpedientsClick,
             )
 
-            ProfileOption(
+            MenuOptionCard(
                 title = "Bitácora de cambios",
                 subtitle = "Consulta el historial de actividades e incidencias en el sistema.",
                 icon = AppIcons.History,

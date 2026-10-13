@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordMenuOptionCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
 @Suppress("ktlint:standard:function-naming")
@@ -43,14 +43,14 @@ fun RecordsMenuScreen(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        ProfileOption(
+        MenuOptionCard(
             title = "Todos los Casos",
             subtitle = "Consulta los casos por urgencia",
             onClick = onAllCasesClick,
             icon = AppIcons.Folder,
         )
 
-        ProfileOption(
+        MenuOptionCard(
             title = "Todos los expedientes",
             subtitle = "Consulta todos los expedientes",
             onClick = onAllRecordsClick,
