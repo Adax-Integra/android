@@ -37,7 +37,7 @@ import java.util.Date
 fun CurrentCaseCard(
     currentCase: Case?,
     onCaseClick: (String) -> Unit,
-    onRegisterCaseClick: () -> Unit,
+    onRegisterCaseClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     error: String? = null,
@@ -87,11 +87,13 @@ fun CurrentCaseCard(
                 )
 
                 //NV-01: same entry point as "Mis Casos", so R-02 is one tap from the home
-                AppButton(
-                    text = "+ Nuevo caso",
-                    onClick = onRegisterCaseClick,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                if (onRegisterCaseClick != null) {
+                    AppButton(
+                        text = "+ Nuevo caso",
+                        onClick = onRegisterCaseClick,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             else -> {

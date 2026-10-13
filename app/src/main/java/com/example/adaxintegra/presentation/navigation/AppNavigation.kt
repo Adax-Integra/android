@@ -43,6 +43,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
@@ -386,7 +387,7 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        HomeScreen(role = role ?: "sin rol")
+                        InternalHomeScreen()
                     }
                 }
             }
