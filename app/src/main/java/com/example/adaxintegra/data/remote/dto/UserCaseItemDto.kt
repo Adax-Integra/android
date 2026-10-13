@@ -17,6 +17,8 @@ data class UserCaseItemDto(
     val caseNumber: String?,
     @SerializedName("state")
     val state: String?,
+    @SerializedName("urgency")
+    val urgency: String?,
     @SerializedName("userName")
     val userName: String?,
     @SerializedName(value = "written_description", alternate = ["writtenDescription"])

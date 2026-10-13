@@ -45,6 +45,7 @@ fun UserCaseItemDto.toDomain(): Case = Case(
     helpList = helps?.map { Helps(description = it) } ?: emptyList(),
     internsAssigned = assignedUsers?.mapNotNull { it.name } ?: emptyList(),
     userName = userName,
+    urgency = urgency,
 )
 
 //R-02: form data -> request body
