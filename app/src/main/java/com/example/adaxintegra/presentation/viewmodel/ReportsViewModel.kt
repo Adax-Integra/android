@@ -22,6 +22,7 @@ class ReportsViewModel @Inject constructor(
             it.copy(
                 startDate = calendar,
                 startDateError = null,
+                selectedChip = null,
             )
         }
     }
@@ -31,6 +32,7 @@ class ReportsViewModel @Inject constructor(
             it.copy(
                 endDate = calendar,
                 endDateError = null,
+                selectedChip = null,
             )
         }
     }
@@ -43,7 +45,8 @@ class ReportsViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 startDate = firstOfMonth,
-                endDate = endOfMonth
+                endDate = endOfMonth,
+                selectedChip = "Mes actual",
             )
         }
     }
@@ -62,7 +65,8 @@ class ReportsViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                selectedChip = "Mes anterior",
             )
         }
     }
@@ -113,7 +117,8 @@ class ReportsViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                selectedChip = "Trimestre previo",
             )
         }
     }

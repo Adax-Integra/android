@@ -8,6 +8,7 @@ data class ReportSelectRangeUiState (
     val endDate: Calendar? = null,
     val startDateError: String? = null,
     val endDateError: String? = null,
+    val selectedChip: String? = null,
     val profile: ProfileView? = null,
     val isLoading: Boolean = false,
     val error: String? = null,

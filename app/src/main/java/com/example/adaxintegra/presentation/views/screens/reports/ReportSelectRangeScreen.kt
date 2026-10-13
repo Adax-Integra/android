@@ -1,9 +1,13 @@
 package com.example.adaxintegra.presentation.views.screens.reports
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +38,6 @@ fun ReportSelectRange(
 ) {
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
-    var selectedChip by remember { mutableStateOf("") }
 
     ScreenTemplate(
         title = "Reportes",
@@ -44,25 +47,25 @@ fun ReportSelectRange(
         onBack = onBackClick,
         modifier = modifier,
     ) {
-        Column {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
 
             Text(
                 text = "Usa un rango de fechas o selecciona la fecha de inicio y de fin",
                 style = AppTextStyle.BodyMedium,
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             RowOfChips(
                 chips = listOf("Mes anterior", "Mes actual", "Trimestre previo"),
-                selectedChip = selectedChip,
-                onChipSelected = { chip ->
-                    selectedChip = chip
-                    onChipSelected(chip)
-                },
+                selectedChip = uiState.selectedChip ?: "",
+                onChipSelected = onChipSelected,
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Start Date Field
             DateField(
@@ -72,7 +75,6 @@ fun ReportSelectRange(
                 onClick = { showStartDatePicker = true },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
 
             // End Date Field
             DateField(
@@ -81,8 +83,6 @@ fun ReportSelectRange(
                 errorMessage = uiState.endDateError,
                 onClick = { showEndDatePicker = true },
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             AppButton(
                 text = "Generar Reporte",
