@@ -1,11 +1,9 @@
 package com.example.adaxintegra.data.repository
 
-import android.content.Context
 import android.os.Environment
 import com.example.adaxintegra.data.remote.api.ReportApi
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.ReportRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -16,7 +14,6 @@ import javax.inject.Singleton
 class ReportRepositoryImpl @Inject constructor(
     private val reportApi: ReportApi,
     private val authRepository: AuthRepository,
-    @ApplicationContext private val context: Context,
 ) : ReportRepository {
 
     private fun authorizationHeader(): String {
@@ -38,9 +35,10 @@ class ReportRepositoryImpl @Inject constructor(
 
             val fileName = "reporte_${startDate}_${endDate}.csv"
 
-            // We try to save the fie in the downloads folder
-            val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                ?: throw IllegalStateException("No se pudo acceder a la carpeta de descargas.")
+            // Tells where the file will be saved
+            // We save it in the public Downloads directory so the user can easily find it
+            val downloadsDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
             val file = File(downloadsDir, fileName)
 
