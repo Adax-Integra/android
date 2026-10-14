@@ -402,7 +402,13 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        InternalHomeScreen()
+                        InternalHomeScreen(
+                            onCaseClick = { caseId ->
+                                navController.navigate("caseDetail/$caseId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
                     }
                 }
             }

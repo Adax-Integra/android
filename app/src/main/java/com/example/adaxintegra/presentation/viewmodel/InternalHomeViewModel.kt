@@ -26,17 +26,19 @@ class InternalHomeViewModel @Inject constructor(
 
     private var loadJob: Job? = null
 
-    // Called by the screen on every entry, so a case updated elsewhere leaves the list.
+    // Called by the screen on every entry, so a csae updated elsewhere leaves the list
     fun loadStaleCases() {
-        // Cancel the previous request so older results cannot replace new ones.
+        // Cancel the previous request so older results cannot replace new ones
         loadJob?.cancel()
 
         loadJob = viewModelScope.launch {
             getStaleCasesUseCase(limit = STALE_CASES_LIMIT).collect { result ->
                 when (result) {
                     is Result.Loading -> {
+                        // The pull indicator is already visible while refreshing,
+                        // so the loading spinner is only shown on a normal load
                         _uiState.update {
-                            it.copy(isLoading = true, error = null)
+                            it.copy(isLoading = !it.isRefreshing, error = null)
                         }
                     }
 
@@ -45,6 +47,7 @@ class InternalHomeViewModel @Inject constructor(
                             it.copy(
                                 staleCases = result.data,
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = null,
                             )
                         }
@@ -54,6 +57,7 @@ class InternalHomeViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = errorMessage(result.exception),
                             )
                         }
@@ -61,6 +65,18 @@ class InternalHomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // Pull to refresh: reloads the list without hiding the current cases
+    fun refresh() {
+        val state = _uiState.value
+
+        if (state.isLoading || state.isRefreshing) {
+            return
+        }
+
+        _uiState.update { it.copy(isRefreshing = true) }
+        loadStaleCases()
     }
 
     private fun errorMessage(e: Throwable): String = when {

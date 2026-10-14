@@ -6,5 +6,7 @@ import com.example.adaxintegra.domain.entities.Case
 data class InternalHomeUiState(
     val staleCases: List<Case> = emptyList(),
     val isLoading: Boolean = false,
+    // True while the user pulls the screen down to reload it
+    val isRefreshing: Boolean = false,
     val error: String? = null,
 )
