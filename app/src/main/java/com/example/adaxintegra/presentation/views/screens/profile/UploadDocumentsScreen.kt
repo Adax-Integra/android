@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,13 +31,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.UploadDocumentFile
 import com.example.adaxintegra.presentation.viewmodel.UploadDocumentsViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.DocumentUploadCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.ui.theme.Purple
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -46,6 +53,11 @@ fun UploadDocumentsScreen(
     val context = LocalContext.current
     val viewModel: UploadDocumentsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
+
+    var isPreparing by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf("") }
 
     var identityUri by remember { mutableStateOf<Uri?>(null) }
     var addressUri by remember { mutableStateOf<Uri?>(null) }
@@ -216,6 +228,69 @@ fun UploadDocumentsScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        AppButton(
+            text = "Enviar documentos",
+            onClick = {
+                val selectedIdentity = identityUri
+                val selectedAddress = addressUri
+
+                if (
+                    !isPreparing &&
+                    !uiState.isLoading &&
+                    (selectedIdentity != null || selectedAddress != null)
+                ) {
+                    isPreparing = true
+                    uploadError = ""
+
+                    scope.launch {
+                        try {
+                            val identityFile = withContext(Dispatchers.IO) {
+                                selectedIdentity?.let {
+                                    readDocumentFile(context, it)
+                                }
+                            }
+
+                            val addressFile = withContext(Dispatchers.IO) {
+                                selectedAddress?.let {
+                                    readDocumentFile(context, it)
+                                }
+                            }
+
+                            viewModel.uploadDocuments(
+                                identityDocument = identityFile,
+                                proofOfAddress = addressFile,
+                            )
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: IllegalArgumentException) {
+                            uploadError = e.message
+                                ?: "No se pudo validar el documento."
+                        } catch (e: Exception) {
+                            uploadError = "No se pudieron leer los documentos."
+                        } finally {
+                            isPreparing = false
+                        }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = (identityUri != null || addressUri != null) &&
+                !isPreparing && !uiState.isLoading,
+            isLoading = isPreparing || uiState.isLoading,
+        )
+
+        if (uploadError.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = uploadError,
+                style = AppTextStyle.BodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
         if (uiState.isLoading) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -322,4 +397,34 @@ private fun getDocumentName(
             null
         }
     } ?: "Documento seleccionado"
+}
+
+private fun readDocumentFile(
+    context: Context,
+    uri: Uri,
+): UploadDocumentFile {
+    val error = validateDocument(context, uri)
+
+    if (error.isNotEmpty()) {
+        throw IllegalArgumentException(error)
+    }
+
+    val fileName = getDocumentName(context, uri)
+
+    val mimeType = context.contentResolver.getType(uri)
+        ?: throw IllegalArgumentException("Formato desconocido")
+
+    val bytes = context.contentResolver.openInputStream(uri)?.use {
+        it.readBytes()
+    } ?: throw IllegalArgumentException("No se pudo leer el archivo")
+
+    if (bytes.size > 4 * 1024 * 1024) {
+        throw IllegalArgumentException("El archivo supera los 4 MB")
+    }
+
+    return UploadDocumentFile(
+        fileName = fileName,
+        mimeType = mimeType,
+        bytes = bytes,
+    )
 }
