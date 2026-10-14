@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,6 +40,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.DocumentUploadCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
+import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.Purple
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +55,6 @@ fun UploadDocumentsScreen(
     val context = LocalContext.current
     val viewModel: UploadDocumentsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     val scope = rememberCoroutineScope()
 
     var isPreparing by remember { mutableStateOf(false) }
@@ -93,6 +94,98 @@ fun UploadDocumentsScreen(
         }
     }
 
+    UploadDocumentsContent(
+        uiState = uiState,
+        identityName = identityUri?.let {
+            getDocumentName(context, it)
+        },
+        addressName = addressUri?.let {
+            getDocumentName(context, it)
+        },
+        identityError = identityError,
+        addressError = addressError,
+        uploadError = uploadError,
+        isPreparing = isPreparing,
+        onBack = onBack,
+        onIdentityClick = {
+            identityPicker.launch(
+                arrayOf(
+                    "application/pdf",
+                    "image/png",
+                    "image/jpeg",
+                ),
+            )
+        },
+        onAddressClick = {
+            addressPicker.launch(
+                arrayOf(
+                    "application/pdf",
+                    "image/png",
+                    "image/jpeg",
+                ),
+            )
+        },
+        onSubmit = {
+            val selectedIdentity = identityUri
+            val selectedAddress = addressUri
+
+            if (
+                !isPreparing &&
+                !uiState.isLoading &&
+                (selectedIdentity != null || selectedAddress != null)
+            ) {
+                isPreparing = true
+                uploadError = ""
+
+                scope.launch {
+                    try {
+                        val identityFile = withContext(Dispatchers.IO) {
+                            selectedIdentity?.let {
+                                readDocumentFile(context, it)
+                            }
+                        }
+
+                        val addressFile = withContext(Dispatchers.IO) {
+                            selectedAddress?.let {
+                                readDocumentFile(context, it)
+                            }
+                        }
+
+                        viewModel.uploadDocuments(
+                            identityDocument = identityFile,
+                            proofOfAddress = addressFile,
+                        )
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: IllegalArgumentException) {
+                        uploadError = e.message
+                            ?: "No se pudo validar el documento."
+                    } catch (e: Exception) {
+                        uploadError = "No se pudieron leer los documentos."
+                    } finally {
+                        isPreparing = false
+                    }
+                }
+            }
+        },
+    )
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Composable
+private fun UploadDocumentsContent(
+    uiState: UploadDocumentsUiState,
+    identityName: String?,
+    addressName: String?,
+    identityError: String,
+    addressError: String,
+    uploadError: String,
+    isPreparing: Boolean,
+    onBack: () -> Unit,
+    onIdentityClick: () -> Unit,
+    onAddressClick: () -> Unit,
+    onSubmit: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -116,22 +209,14 @@ fun UploadDocumentsScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         DocumentUploadCard(
-            onClick = {
-                identityPicker.launch(
-                    arrayOf(
-                        "application/pdf",
-                        "image/png",
-                        "image/jpeg",
-                    ),
-                )
-            },
+            onClick = onIdentityClick,
         )
 
-        if (identityUri != null) {
+        if (identityName != null) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = getDocumentName(context, identityUri!!),
+                text = identityName,
                 style = AppTextStyle.BodySmall,
                 color = Purple,
             )
@@ -177,22 +262,14 @@ fun UploadDocumentsScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         DocumentUploadCard(
-            onClick = {
-                addressPicker.launch(
-                    arrayOf(
-                        "application/pdf",
-                        "image/png",
-                        "image/jpeg",
-                    ),
-                )
-            },
+            onClick = onAddressClick,
         )
 
-        if (addressUri != null) {
+        if (addressName != null) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = getDocumentName(context, addressUri!!),
+                text = addressName,
                 style = AppTextStyle.BodySmall,
                 color = Purple,
             )
@@ -232,51 +309,9 @@ fun UploadDocumentsScreen(
 
         AppButton(
             text = "Enviar documentos",
-            onClick = {
-                val selectedIdentity = identityUri
-                val selectedAddress = addressUri
-
-                if (
-                    !isPreparing &&
-                    !uiState.isLoading &&
-                    (selectedIdentity != null || selectedAddress != null)
-                ) {
-                    isPreparing = true
-                    uploadError = ""
-
-                    scope.launch {
-                        try {
-                            val identityFile = withContext(Dispatchers.IO) {
-                                selectedIdentity?.let {
-                                    readDocumentFile(context, it)
-                                }
-                            }
-
-                            val addressFile = withContext(Dispatchers.IO) {
-                                selectedAddress?.let {
-                                    readDocumentFile(context, it)
-                                }
-                            }
-
-                            viewModel.uploadDocuments(
-                                identityDocument = identityFile,
-                                proofOfAddress = addressFile,
-                            )
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (e: IllegalArgumentException) {
-                            uploadError = e.message
-                                ?: "No se pudo validar el documento."
-                        } catch (e: Exception) {
-                            uploadError = "No se pudieron leer los documentos."
-                        } finally {
-                            isPreparing = false
-                        }
-                    }
-                }
-            },
+            onClick = onSubmit,
             modifier = Modifier.fillMaxWidth(),
-            enabled = (identityUri != null || addressUri != null) &&
+            enabled = (identityName != null || addressName != null) &&
                 !isPreparing && !uiState.isLoading,
             isLoading = isPreparing || uiState.isLoading,
         )
@@ -427,4 +462,29 @@ private fun readDocumentFile(
         mimeType = mimeType,
         bytes = bytes,
     )
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 804,
+)
+@Composable
+private fun UploadDocumentsScreenPreview() {
+    AdaxIntegraTheme {
+        UploadDocumentsContent(
+            uiState = UploadDocumentsUiState(),
+            identityName = "Identificacion_ejemplo.pdf",
+            addressName = null,
+            identityError = "",
+            addressError = "",
+            uploadError = "",
+            isPreparing = false,
+            onBack = {},
+            onIdentityClick = {},
+            onAddressClick = {},
+            onSubmit = {},
+        )
+    }
 }
