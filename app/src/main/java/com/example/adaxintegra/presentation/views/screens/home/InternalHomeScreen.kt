@@ -1,9 +1,9 @@
 package com.example.adaxintegra.presentation.views.screens.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,41 +21,46 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.adaxintegra.domain.entities.Case
+import com.example.adaxintegra.domain.entities.Record
 import com.example.adaxintegra.presentation.viewmodel.InternalHomeUiState
 import com.example.adaxintegra.presentation.viewmodel.InternalHomeViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
-import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
-import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 
 // NV-04: home of the internal and admin users, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun InternalHomeScreen(
-    onCaseClick: (String) -> Unit,
+    onRecordClick: (String) -> Unit,
+    onSeeAllRecordsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: InternalHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Reloaded on every entry, so a case updated in its detail leaves the list
+    // Reloaded on every entry, so a record updated elsewhere moves to the top
     LaunchedEffect(Unit) {
-        viewModel.loadStaleCases()
+        viewModel.loadHome()
     }
 
     InternalHomeContent(
         uiState = uiState,
-        onCaseClick = onCaseClick,
-        onRetry = viewModel::loadStaleCases,
+        onRecordClick = onRecordClick,
+        onSeeAllRecordsClick = onSeeAllRecordsClick,
+        onRetry = viewModel::loadRecentRecords,
         onRefresh = viewModel::refresh,
         modifier = modifier,
     )
@@ -64,7 +71,8 @@ fun InternalHomeScreen(
 @Composable
 fun InternalHomeContent(
     uiState: InternalHomeUiState,
-    onCaseClick: (String) -> Unit,
+    onRecordClick: (String) -> Unit,
+    onSeeAllRecordsClick: () -> Unit,
     onRetry: () -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
@@ -72,6 +80,13 @@ fun InternalHomeContent(
     val spacing = Spacing()
     val context = LocalContext.current
     val errorMessage = uiState.error
+
+    // Shows the name when it is available, a generic greeting otherwise
+    val greeting = if (uiState.userName.isNullOrBlank()) {
+        "¡Hola!"
+    } else {
+        "¡Hola, ${uiState.userName}!"
+    }
 
     PullToRefreshBox(
         isRefreshing = uiState.isRefreshing,
@@ -87,10 +102,34 @@ fun InternalHomeContent(
         ) {
             Spacer(modifier = Modifier.height(spacing.small))
 
-            // NV-04: the default message is meant for the external users, the internal users get their own
-            HomeHeader(message = "Bienvenida a tu espacio de trabajo")
+            // NV-04: the design places the app logo at the top center
+            AdaxLogo(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                size = 100.dp,
+            )
 
-            SectionTitle(text = "Expedientes sin modificar")
+            Text(
+                text = greeting,
+                style = AppTextStyle.HeadLineLarge,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SectionTitle(
+                    text = "Expedientes recientes",
+                    modifier = Modifier.weight(1f),
+                )
+
+                TextButton(onClick = onSeeAllRecordsClick) {
+                    Text(
+                        text = "Ver todos",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
 
             when {
                 uiState.isLoading -> {
@@ -123,22 +162,20 @@ fun InternalHomeContent(
                     }
                 }
 
-                uiState.staleCases.isEmpty() -> {
+                uiState.recentRecords.isEmpty() -> {
                     Text(
-                        text = "No hay expedientes abiertos pendientes de revisión.",
+                        text = "Todavía no hay expedientes registrados.",
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                     )
                 }
 
                 else -> {
-                    // NV-04: the list has at most 5 cases, so a simple loop is enough inside the scroll
-                    uiState.staleCases.forEach { case ->
-                        CaseCard(
-                            case = case,
-                            modifier = Modifier.clickable {
-                                onCaseClick(case.caseId)
-                            },
+                    // NV-04: the list has at most 3 records, so a simple loop is enough inside the scroll
+                    uiState.recentRecords.forEach { record ->
+                        RecordCard(
+                            record = record,
+                            onClick = { onRecordClick(record.userId) },
                         )
                     }
                 }
@@ -166,9 +203,30 @@ fun InternalHomeContent(
 fun InternalHomeContentPreview() {
     InternalHomeContent(
         uiState = InternalHomeUiState(
-            staleCases = Case.getMockData().take(2),
+            userName = "Jimena",
+            recentRecords = listOf(
+                Record(
+                    recordId = "1",
+                    userId = "user-1",
+                    name = "Denisse Maldonado",
+                    recordNumber = "EXP-2026-0052",
+                    status = "SIN_EMPEZAR",
+                    activeCasesCount = 2,
+                    updatedAt = "2026-10-12T10:00:00",
+                ),
+                Record(
+                    recordId = "2",
+                    userId = "user-2",
+                    name = "Sofía Méndez",
+                    recordNumber = "EXP-2026-0051",
+                    status = "EN_REVISION",
+                    activeCasesCount = 0,
+                    updatedAt = "2026-10-11T09:30:00",
+                ),
+            ),
         ),
-        onCaseClick = {},
+        onRecordClick = {},
+        onSeeAllRecordsClick = {},
         onRetry = {},
         onRefresh = {},
     )

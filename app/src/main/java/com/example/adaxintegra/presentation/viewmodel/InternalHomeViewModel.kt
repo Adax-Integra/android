@@ -3,7 +3,9 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
-import com.example.adaxintegra.domain.usecases.GetStaleCasesUseCase
+import com.example.adaxintegra.domain.repository.AuthRepository
+import com.example.adaxintegra.domain.usecases.GetProfileByUserIdUseCase
+import com.example.adaxintegra.domain.usecases.GetRecordsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,25 +16,59 @@ import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-// NV-04: number of stale cases shown in the internal home
-private const val STALE_CASES_LIMIT = 5
+// NV-04: number of recent records shown in the internal home
+private const val RECENT_RECORDS_LIMIT = 3
 
 @HiltViewModel
 class InternalHomeViewModel @Inject constructor(
-    private val getStaleCasesUseCase: GetStaleCasesUseCase,
+    private val getRecordsUseCase: GetRecordsUseCase,
+    private val getProfileByUserIdUseCase: GetProfileByUserIdUseCase,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(InternalHomeUiState())
     val uiState = _uiState.asStateFlow()
 
-    private var loadJob: Job? = null
+    private var recordsJob: Job? = null
+    private var nameJob: Job? = null
 
-    // Called by the screen on every entry, so a csae updated elsewhere leaves the list
-    fun loadStaleCases() {
+    // Called by the screen on every entry, so a record updated elsewhere moves to the top
+    fun loadHome() {
+        loadUserName()
+        loadRecentRecords()
+    }
+
+    // The greeting falls back to "¡Hola!" when the name cannot be read,
+    // so a failure here does not show an error on the screen
+    private fun loadUserName() {
+        // The name does not change while the user is signed in, so it is read only once
+        if (_uiState.value.userName != null) {
+            return
+        }
+
+        val userId = authRepository.session.value?.userId
+
+        if (userId.isNullOrBlank()) {
+            return
+        }
+
+        nameJob?.cancel()
+
+        nameJob = viewModelScope.launch {
+            getProfileByUserIdUseCase(userId).collect { result ->
+                if (result is Result.Success) {
+                    _uiState.update { it.copy(userName = result.data.name) }
+                }
+            }
+        }
+    }
+
+    fun loadRecentRecords() {
         // Cancel the previous request so older results cannot replace new ones
-        loadJob?.cancel()
+        recordsJob?.cancel()
 
-        loadJob = viewModelScope.launch {
-            getStaleCasesUseCase(limit = STALE_CASES_LIMIT).collect { result ->
+        recordsJob = viewModelScope.launch {
+            // The backend already sorts the records by their last update, newest first
+            getRecordsUseCase(page = 1).collect { result ->
                 when (result) {
                     is Result.Loading -> {
                         // The pull indicator is already visible while refreshing,
@@ -45,7 +81,7 @@ class InternalHomeViewModel @Inject constructor(
                     is Result.Success -> {
                         _uiState.update {
                             it.copy(
-                                staleCases = result.data,
+                                recentRecords = result.data.records.take(RECENT_RECORDS_LIMIT),
                                 isLoading = false,
                                 isRefreshing = false,
                                 error = null,
@@ -67,7 +103,7 @@ class InternalHomeViewModel @Inject constructor(
         }
     }
 
-    // Pull to refresh: reloads the list without hiding the current cases
+    // Pull to refresh: reloads the list without hiding the current records
     fun refresh() {
         val state = _uiState.value
 
@@ -76,7 +112,7 @@ class InternalHomeViewModel @Inject constructor(
         }
 
         _uiState.update { it.copy(isRefreshing = true) }
-        loadStaleCases()
+        loadRecentRecords()
     }
 
     private fun errorMessage(e: Throwable): String = when {

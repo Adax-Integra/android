@@ -74,26 +74,6 @@ constructor(
         )
     }
 
-    // NV-04: the backend already returns them from the newest change to the oldest
-    override suspend fun getStaleCases(limit: Int): CasePage {
-        val response = api.getStaleCases(
-            authorization = authorizationHeader(),
-            limit = limit,
-        )
-
-        if (!response.success) {
-            throw IllegalStateException("Unable to retrieve stale cases.")
-        }
-        val data = response.data
-
-        return CasePage(
-            cases = data.cases.map { it.toDomain() },
-            total = data.total,
-            page = data.page,
-            limit = data.limit,
-        )
-    }
-
     override suspend fun getCasesFromUser(userId: String): List<Case> {
         val response = api.getCasesFromUser(
             userId = userId,

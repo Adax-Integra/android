@@ -403,8 +403,14 @@ fun AppNavigation(
                         )
                     } else {
                         InternalHomeScreen(
-                            onCaseClick = { caseId ->
-                                navController.navigate("caseDetail/$caseId") {
+                            onRecordClick = { userId ->
+                                // V-10 loads the cases belonging to the selected owner
+                                navController.navigate("recordFromUser/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllRecordsClick = {
+                                navController.navigate("allRecords") {
                                     launchSingleTop = true
                                 }
                             },
