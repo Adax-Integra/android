@@ -26,6 +26,7 @@ class ReportsViewModel @Inject constructor(
             it.copy(
                 startDate = calendar,
                 startDateError = null,
+                endDateError = null,
                 selectedChip = null,
                 error = null,
                 downloadedFile = null,
@@ -64,6 +65,16 @@ class ReportsViewModel @Inject constructor(
             if (startDate.after(endDate)) {
                 _uiState.update {
                     it.copy(endDateError = "La fecha final debe ser posterior a la inicial")
+                }
+                return
+            }
+
+            // Check that the range is not greater than 1 year
+            val diffInMillis = endDate.timeInMillis - startDate.timeInMillis
+            val oneYearInMillis = 366L * 24 * 60 * 60 * 1000L
+            if (diffInMillis > oneYearInMillis) {
+                _uiState.update {
+                    it.copy(endDateError = "El rango del reporte no puede ser mayor a un año")
                 }
                 return
             }
