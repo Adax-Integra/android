@@ -39,6 +39,7 @@ import com.example.adaxintegra.presentation.viewmodel.ReportsViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
@@ -56,9 +57,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
-import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
-import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
@@ -463,7 +463,7 @@ fun AppNavigation(
                             }
                         },
                         onGenerateReportClick = {
-                            // Report generation logic can be connected here when ready
+                            reportsViewModel.downloadReport()
                         },
                     )
                 } else {

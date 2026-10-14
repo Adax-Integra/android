@@ -189,7 +189,8 @@ fun InternalHomeContent(
             SectionTitle(text = "Podcast")
 
             PodcastCard(
-                onClick = { HomeLinks.openPodcast(context) },
+                onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
+                onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
             )
 
             Spacer(modifier = Modifier.height(spacing.large))

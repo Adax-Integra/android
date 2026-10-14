@@ -21,6 +21,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
@@ -36,7 +37,7 @@ fun ExternalHomeScreen(
     val spacing = Spacing()
     val context = LocalContext.current
 
-    //Reloaded on every entry, so a case registered in R-02 shows up here
+    // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
         viewModel.loadCases()
     }
@@ -75,13 +76,23 @@ fun ExternalHomeScreen(
 
             SectionTitle(text = "Eventos")
 
-            //NV-01: there is no events endpoint yet, the section stays empty as in iOS
+            // NV-01: there is no events endpoint yet, the section stays empty as in iOS
             Spacer(modifier = Modifier.height(spacing.extraLarge))
 
             SectionTitle(text = "Podcast")
 
             PodcastCard(
-                onClick = { HomeLinks.openPodcast(context) },
+                onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
+                onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
+            )
+
+            SectionTitle(text = "Redes sociales")
+
+            SocialMediaCard(
+                onFacebookClick = { HomeLinks.open(context, HomeLinks.FACEBOOK_URL) },
+                onInstagramClick = { HomeLinks.open(context, HomeLinks.INSTAGRAM_URL) },
+                onXClick = { HomeLinks.open(context, HomeLinks.X_URL) },
+                onTikTokClick = { HomeLinks.open(context, HomeLinks.TIKTOK_URL) },
             )
 
             Spacer(modifier = Modifier.height(spacing.large))

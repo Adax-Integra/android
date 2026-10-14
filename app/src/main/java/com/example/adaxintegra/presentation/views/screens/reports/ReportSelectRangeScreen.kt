@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
@@ -87,8 +88,45 @@ fun ReportSelectRange(
             AppButton(
                 text = "Generar Reporte",
                 onClick = onGenerateReportClick,
+                enabled = uiState.downloadedFile == null,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+
+            // The button aonly appear after the file is downloaded
+            if (uiState.downloadedFile != null) {
+                val context = LocalContext.current
+                Text(
+                    text = "¡Reporte descargado con éxito!",
+                    style = AppTextStyle.HeadLineLarge,
+                    textAlign = TextAlign.Center,
+                )
+                AppButton(
+                    text = "Abrir Archivo CSV",
+                    onClick = {
+                        try {
+                            val uri = androidx.core.content.FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.fileprovider",
+                                uiState.downloadedFile
+                            )
+                            val intent =
+                                android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, "text/csv")
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(
+                                context,
+                                "Error al abrir archivo: ${e.localizedMessage}",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         // Opens the date picker for the start date
