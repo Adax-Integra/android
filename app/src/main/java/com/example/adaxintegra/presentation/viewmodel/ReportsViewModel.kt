@@ -71,7 +71,8 @@ class ReportsViewModel @Inject constructor(
             val endDateStr = dateFormat.format(endDate.time)
 
             viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true, error = null) }
+                // Reset file before starting new download
+                _uiState.update { it.copy(isLoading = true, error = null, downloadedFile = null) }
 
                 try {
                     val file = downloadReportUseCase(startDateStr, endDateStr)

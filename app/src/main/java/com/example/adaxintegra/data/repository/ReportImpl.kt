@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.repository
 
 import android.content.Context
+import android.os.Environment
 import com.example.adaxintegra.data.remote.api.ReportApi
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.ReportRepository
@@ -35,13 +36,14 @@ class ReportRepositoryImpl @Inject constructor(
                 endDate = endDate,
             )
 
-            // What the file will be named
             val fileName = "reporte_${startDate}_${endDate}.csv"
-            // Tells where the file will be saved
-            // It will be a temporary saved so we use the cacheDir
-            val file = File(context.cacheDir, fileName)
 
-            // Writes the file to temporary storage
+            // We try to save the fie in the downloads folder
+            val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                ?: throw IllegalStateException("No se pudo acceder a la carpeta de descargas.")
+
+            val file = File(downloadsDir, fileName)
+
             responseBody.byteStream().use { inputStream ->
                 file.outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
