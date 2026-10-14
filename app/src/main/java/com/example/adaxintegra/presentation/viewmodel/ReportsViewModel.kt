@@ -103,7 +103,7 @@ class ReportsViewModel @Inject constructor(
 
             if (startDate.after(endDate)) {
                 _uiState.update {
-                    it.copy(endDateError = "La fecha final debe ser posterior a la inicial")
+                    it.copy(endDateError = "La fecha final debe ser después a la inicial")
                 }
                 return
             }
