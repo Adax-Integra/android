@@ -48,8 +48,6 @@ fun RecordFromUserContent(
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
 ) {
-    // Right now the name doesn't get through correctly because it is a hard coded UserID
-    // When implementing V-05 it should pass the name correctly
     val userName = uiState.cases.firstOrNull()?.name ?: "Usuario"
 
     ScreenTemplate(

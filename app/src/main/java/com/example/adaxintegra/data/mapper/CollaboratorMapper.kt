@@ -1,8 +1,10 @@
 package com.example.adaxintegra.data.mapper
 
 import com.example.adaxintegra.data.remote.dto.CollaboratorDto
+import com.example.adaxintegra.data.remote.dto.CollaboratorListItemDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorRequestDto
 import com.example.adaxintegra.domain.model.Collaborator
+import com.example.adaxintegra.domain.model.CollaboratorSummary
 import com.example.adaxintegra.domain.model.NewCollaborator
 
 // G-03: form data -> request body
@@ -21,4 +23,13 @@ fun CollaboratorDto.toDomain(): Collaborator = Collaborator(
     lastName = lastName ?: "",
     email = email ?: "",
     phone = phone,
+)
+
+// G-06: one item of the collaborators list -> domain model
+fun CollaboratorListItemDto.toDomain(): CollaboratorSummary = CollaboratorSummary(
+    userId = userId ?: "",
+    name = name ?: "",
+    lastName = lastName ?: "",
+    email = if (email.isNullOrBlank()) null else email,
+    isActive = isActive ?: false,
 )
