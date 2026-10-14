@@ -62,6 +62,45 @@ class ReportsViewModel @Inject constructor(
         }
 
         if (startDate != null && endDate != null) {
+            // We get the current date
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            // We get the start date at the first time of the day
+            val startZero = (startDate.clone() as Calendar).apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            // We get the end date at the first time of the day
+            val endZero = (endDate.clone() as Calendar).apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            // If any date is after today, we send an error
+            if (startZero.after(today)) {
+                _uiState.update {
+                    it.copy(startDateError = "La fecha de inicio no puede ser en el futuro")
+                }
+                return
+            }
+
+            if (endZero.after(today)) {
+                _uiState.update {
+                    it.copy(endDateError = "La fecha de fin no puede ser en el futuro")
+                }
+                return
+            }
+
             if (startDate.after(endDate)) {
                 _uiState.update {
                     it.copy(endDateError = "La fecha final debe ser posterior a la inicial")
