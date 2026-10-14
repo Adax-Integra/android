@@ -28,6 +28,7 @@ class ReportsViewModel @Inject constructor(
                 startDateError = null,
                 selectedChip = null,
                 error = null,
+                downloadedFile = null,
             )
         }
     }
@@ -39,6 +40,7 @@ class ReportsViewModel @Inject constructor(
                 endDateError = null,
                 selectedChip = null,
                 error = null,
+                downloadedFile = null,
             )
         }
     }
@@ -109,6 +111,7 @@ class ReportsViewModel @Inject constructor(
                 error = null,
                 startDateError = null,
                 endDateError = null,
+                downloadedFile = null,
             )
         }
     }
@@ -132,6 +135,7 @@ class ReportsViewModel @Inject constructor(
                 error = null,
                 startDateError = null,
                 endDateError = null,
+                downloadedFile = null,
             )
         }
     }
@@ -181,6 +185,7 @@ class ReportsViewModel @Inject constructor(
                 error = null,
                 startDateError = null,
                 endDateError = null,
+                downloadedFile = null,
             )
         }
     }

@@ -14,4 +14,5 @@ data class ReportSelectRangeUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val downloadedFile: File? = null,
+    val downloadedSuccessfully: Boolean = false,
 )

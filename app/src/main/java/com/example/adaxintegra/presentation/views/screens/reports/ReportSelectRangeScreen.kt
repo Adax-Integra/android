@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
@@ -87,12 +88,19 @@ fun ReportSelectRange(
             AppButton(
                 text = "Generar Reporte",
                 onClick = onGenerateReportClick,
+                enabled = uiState.downloadedFile == null,
                 modifier = Modifier.fillMaxWidth(),
             )
 
 
+            // The button aonly appear after the file is downloaded
             if (uiState.downloadedFile != null) {
                 val context = LocalContext.current
+                Text(
+                    text = "¡Reporte descargado con éxito!",
+                    style = AppTextStyle.HeadLineLarge,
+                    textAlign = TextAlign.Center,
+                )
                 AppButton(
                     text = "Abrir Archivo CSV",
                     onClick = {
