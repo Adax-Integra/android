@@ -155,18 +155,15 @@ fun ProfileScreen(
                         }
                     }
                 }
-
-                //button stays outside the scroll area
-                if (profile != null) {
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    AppButton(
-                        text = "Cerrar sesión",
-                        onClick = { showLogoutConfirmation = true },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            AppButton(
+                text = "Cerrar sesión",
+                onClick = { showLogoutConfirmation = true },
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             //logout confirmation
             if (showLogoutConfirmation) {

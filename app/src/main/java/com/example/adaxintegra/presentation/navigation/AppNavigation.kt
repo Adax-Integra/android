@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.navigation
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +37,6 @@ import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
-import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
@@ -63,20 +61,6 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScr
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.TextButton
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.res.painterResource
-import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens

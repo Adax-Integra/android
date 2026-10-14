@@ -85,7 +85,8 @@ fun CaseCard(
     modifier: Modifier = Modifier,
 ) {
     val urgencyColor = getUrgencyColor(case.urgency)
-    val isClosed = case.state.trim().lowercase() != "abierto"
+    val isClosed = case.state.trim().lowercase() in
+        listOf("closed", "cerrado")
 
     val violenceLabel = if (case.violenceTypes.size > 1) "Violencias: " else "Violencia: "
     val internsLabel =
@@ -142,8 +143,10 @@ fun CaseCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            // If there is no caseNumber then it will instead show the caseId truncated to 12 chars
-                            text = (case.caseNumber ?: case.caseId).take(12),
+                            // Show the complete case number
+                            text = case.caseNumber
+                                ?.takeIf { it.isNotBlank() }
+                                ?: case.caseId.take(12),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
