@@ -35,6 +35,7 @@ import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
+import com.example.adaxintegra.presentation.viewmodel.ReportsViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
@@ -56,9 +57,11 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
 import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
@@ -280,7 +283,8 @@ fun AppNavigation(
             composable("forgotPassword") {
                 ForgotPasswordScreen(
                     onBack = {
-                        navController.popBackStack() },
+                        navController.popBackStack()
+                    },
                     onCodeRequested = { email ->
                         val encodedEmail = URLEncoder.encode(email, "UTF-8")
                         navController.navigate("recoveryCode/$encodedEmail") {
@@ -415,6 +419,39 @@ fun AppNavigation(
                             navController.navigate("allRecords") {
                                 launchSingleTop = true
                             }
+                        },
+                        onReportsClick = {
+                            navController.navigate("reportSelectRange") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("reportSelectRange") {
+                if (hasValidSession && canViewAllCases) {
+                    val reportsViewModel: ReportsViewModel = hiltViewModel()
+                    val reportsUiState by reportsViewModel.uiState.collectAsStateWithLifecycle()
+
+                    ReportSelectRange(
+                        uiState = reportsUiState,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onStartDateSelected = reportsViewModel::setStartDate,
+                        onEndDateSelected = reportsViewModel::setEndDate,
+                        onChipSelected = { chip ->
+                            when (chip) {
+                                "Mes anterior" -> reportsViewModel.chipPreviousMonthSelected()
+                                "Mes actual" -> reportsViewModel.chipThisMonthSelected()
+                                "Trimestre previo" -> reportsViewModel.chipPreviousTrimester()
+                            }
+                        },
+                        onGenerateReportClick = {
+                            // Report generation logic can be connected here when ready
                         },
                     )
                 } else {
