@@ -26,7 +26,7 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 // options for further details of profile information
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun ProfileOption(
+fun MenuOptionCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
@@ -85,17 +85,17 @@ fun ProfileOption(
 @Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true)
 @Composable
-private fun ProfileOptionPreview() {
+private fun MenuOptionPreview() {
     AdaxIntegraTheme {
         Column(modifier = Modifier.padding(16.dp)) {
-            ProfileOption(
+            MenuOptionCard(
                 icon = AppIcons.Profile,
                 title = "Datos Personales",
                 subtitle = "Nombre, teléfono, correo",
                 onClick = {},
             )
             Spacer(modifier = Modifier.padding(top = 12.dp))
-            ProfileOption(
+            MenuOptionCard(
                 icon = AppIcons.Lock,
                 title = "Seguridad",
                 subtitle = "Cambio de contraseña",

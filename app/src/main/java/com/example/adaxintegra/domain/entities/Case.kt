@@ -26,7 +26,7 @@ data class Case(
                 severity = 9,
                 urgency = "Alta",
                 updatedAt = "2026-09-21T10:00:00",
-                caseNumber = "CAS-26-0216",
+                caseNumber = "CAS-2026-0216",
                 internsAssigned = listOf(
                     "María Gómez",
                     "Lucía Martínez",
@@ -41,7 +41,7 @@ data class Case(
                 severity = 5,
                 urgency = "Media",
                 updatedAt = "2026-09-20T12:30:00",
-                caseNumber = "CAS-26-0001",
+                caseNumber = "CAS-2026-0001",
                 internsAssigned = emptyList()
             ),
             Case(
@@ -52,7 +52,7 @@ data class Case(
                 severity = 2,
                 urgency = "Baja",
                 updatedAt = "2026-09-18T09:15:00",
-                caseNumber = "CAS-26-5100",
+                caseNumber = "CAS-2026-5100",
                 internsAssigned = listOf(
                     "Carla Rodríguez",
                     "Ana García"

@@ -3,9 +3,7 @@ package com.example.adaxintegra.data.remote
 import com.example.adaxintegra.data.remote.dto.ApiErrorDto
 import com.example.adaxintegra.domain.common.AuthError
 import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
-import io.github.jan.supabase.auth.Auth
-import okio.IOException
+import java.io.IOException
 import retrofit2.HttpException
 
 private val gson = Gson()
@@ -21,7 +19,7 @@ fun Throwable.toAuthError(): AuthError = when (this){
             response()?.errorBody()?.string()?.let {
                 gson.fromJson(it, ApiErrorDto::class.java)
             }
-        } catch (_: JsonSyntaxException) {
+        } catch (_: Exception) {
             null
         }
 

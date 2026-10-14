@@ -22,13 +22,15 @@ interface  AuthRepository {
     // Clears the session from storage and memory
     suspend fun logout()
 
-    //G-05: no session is needed for this action (still on Supabase Auth)
+    //no session is needed for this action
     suspend fun forgotPassword(
-        email: String,
+        email: String
     ): Result<Unit>
 
     suspend fun resetPassword(
-        newPassword: String,
+        email: String,
+        code: String,
+        newPassword: String
     ): Result<Unit>
 
     // G-01: creates the account; the backend emails a 6 digit code.

@@ -3,8 +3,10 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
 
@@ -76,4 +79,13 @@ object AppIcons {
 
     val History: ImageVector
         get() = Icons.Default.History
+
+    val Reports: ImageVector
+        get() = Icons.Default.Description
+
+    val Calendar: ImageVector
+        get() = Icons.Default.CalendarMonth
+
+    val Email: ImageVector
+        get() = Icons.Outlined.MailOutline
 }

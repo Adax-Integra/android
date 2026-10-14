@@ -70,6 +70,7 @@ dependencies {
 
     // Supabase
     implementation(platform(libs.supabase.bom))
+    implementation(libs.protolite.well.known.types)
     implementation(libs.supabase.auth)
     implementation(libs.ktor.client.android)
 

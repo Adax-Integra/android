@@ -31,18 +31,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-
-            <!-- Deep Link Intent Filter para Supabase -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="adax"
-                    android:host="auth"
-                    android:pathPrefix="/callback" />
-            </intent-filter>
-
         </activity>
     </application>
 
