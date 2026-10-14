@@ -23,11 +23,21 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
 
-//NV-01: link the team left, the podcast card is the only way into it
+// NV-01: link the team left, the podcast card is the only way into it
 private const val PODCAST_URL =
     "https://open.spotify.com/show/5yaZdYjbR36lrDmaJ0WhVk?si=pbLJm3ifQIuItgKcnyN08Q&utm_source=copy-link"
+
+// NV-01: the same podcast as video
+private const val YOUTUBE_URL = "https://www.youtube.com/@AdaxDigitales"
+
+// NV-01: links to the profiles of the organization
+private const val FACEBOOK_URL = "https://www.facebook.com/ADAxDigitales/"
+private const val INSTAGRAM_URL = "https://www.instagram.com/adax_digitales_a.c._/"
+private const val X_URL = "https://x.com/ADAxDigitalesAC"
+private const val TIKTOK_URL = "https://www.tiktok.com/@adax_digitales"
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -42,7 +52,14 @@ fun ExternalHomeScreen(
     val spacing = Spacing()
     val context = LocalContext.current
 
-    //Reloaded on every entry, so a case registered in R-02 shows up here
+    // NV-01: the app of the network if it is installed, the browser otherwise
+    val openExternalLink: (String) -> Unit = { url ->
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+        }
+    }
+
+    // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
         viewModel.loadCases()
     }
@@ -81,18 +98,23 @@ fun ExternalHomeScreen(
 
             SectionTitle(text = "Eventos")
 
-            //NV-01: there is no events endpoint yet, the section stays empty as in iOS
+            // NV-01: there is no events endpoint yet, the section stays empty as in iOS
             Spacer(modifier = Modifier.height(spacing.extraLarge))
 
             SectionTitle(text = "Podcast")
 
             PodcastCard(
-                onClick = {
-                    //Spotify if it is installed, the browser otherwise
-                    runCatching {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, PODCAST_URL.toUri()))
-                    }
-                },
+                onSpotifyClick = { openExternalLink(PODCAST_URL) },
+                onYouTubeClick = { openExternalLink(YOUTUBE_URL) },
+            )
+
+            SectionTitle(text = "Redes sociales")
+
+            SocialMediaCard(
+                onFacebookClick = { openExternalLink(FACEBOOK_URL) },
+                onInstagramClick = { openExternalLink(INSTAGRAM_URL) },
+                onXClick = { openExternalLink(X_URL) },
+                onTikTokClick = { openExternalLink(TIKTOK_URL) },
             )
 
             Spacer(modifier = Modifier.height(spacing.large))
