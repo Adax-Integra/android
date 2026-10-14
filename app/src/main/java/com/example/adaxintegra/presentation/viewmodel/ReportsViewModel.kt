@@ -107,6 +107,8 @@ class ReportsViewModel @Inject constructor(
                 endDate = endOfMonth,
                 selectedChip = "Mes actual",
                 error = null,
+                startDateError = null,
+                endDateError = null,
             )
         }
     }
@@ -128,6 +130,8 @@ class ReportsViewModel @Inject constructor(
                 endDate = endDate,
                 selectedChip = "Mes anterior",
                 error = null,
+                startDateError = null,
+                endDateError = null,
             )
         }
     }
@@ -175,6 +179,8 @@ class ReportsViewModel @Inject constructor(
                 endDate = endDate,
                 selectedChip = "Trimestre previo",
                 error = null,
+                startDateError = null,
+                endDateError = null,
             )
         }
     }
