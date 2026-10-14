@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,10 +43,13 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.Documen
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.Purple
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val MAX_DOCUMENT_BYTES = 4 * 1024 * 1024
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -66,28 +70,36 @@ fun UploadDocumentsScreen(
     var identityError by remember { mutableStateOf("") }
     var addressError by remember { mutableStateOf("") }
 
+    val isBusy = isPreparing || uiState.isLoading
+
+    // Seleccionar documento de identidad
     val identityPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri != null) {
-            identityError = validateDocument(context, uri)
+            val error = validateDocument(context, uri)
+            identityError = error
 
-            if (identityError.isEmpty()) {
+            if (error.isEmpty()) {
                 identityUri = uri
+                uploadError = ""
             } else {
                 identityUri = null
             }
         }
     }
 
+    // Seleccionar comprobante de domicilio
     val addressPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri != null) {
-            addressError = validateDocument(context, uri)
+            val error = validateDocument(context, uri)
+            addressError = error
 
-            if (addressError.isEmpty()) {
+            if (error.isEmpty()) {
                 addressUri = uri
+                uploadError = ""
             } else {
                 addressUri = null
             }
@@ -107,31 +119,58 @@ fun UploadDocumentsScreen(
         uploadError = uploadError,
         isPreparing = isPreparing,
         onBack = onBack,
+
+        // Abrir selector de identidad
         onIdentityClick = {
-            identityPicker.launch(
-                arrayOf(
-                    "application/pdf",
-                    "image/png",
-                    "image/jpeg",
-                ),
-            )
+            if (!isBusy) {
+                identityPicker.launch(
+                    arrayOf(
+                        "application/pdf",
+                        "image/png",
+                        "image/jpeg",
+                    ),
+                )
+            }
         },
+
+        // Abrir selector de domicilio
         onAddressClick = {
-            addressPicker.launch(
-                arrayOf(
-                    "application/pdf",
-                    "image/png",
-                    "image/jpeg",
-                ),
-            )
+            if (!isBusy) {
+                addressPicker.launch(
+                    arrayOf(
+                        "application/pdf",
+                        "image/png",
+                        "image/jpeg",
+                    ),
+                )
+            }
         },
+
+        // Quitar identidad seleccionada
+        onRemoveIdentity = {
+            if (!isBusy) {
+                identityUri = null
+                identityError = ""
+                uploadError = ""
+            }
+        },
+
+        // Quitar comprobante seleccionado
+        onRemoveAddress = {
+            if (!isBusy) {
+                addressUri = null
+                addressError = ""
+                uploadError = ""
+            }
+        },
+
+        // Enviar documentos al ViewModel
         onSubmit = {
             val selectedIdentity = identityUri
             val selectedAddress = addressUri
 
             if (
-                !isPreparing &&
-                !uiState.isLoading &&
+                !isBusy &&
                 (selectedIdentity != null || selectedAddress != null)
             ) {
                 isPreparing = true
@@ -185,7 +224,11 @@ private fun UploadDocumentsContent(
     onIdentityClick: () -> Unit,
     onAddressClick: () -> Unit,
     onSubmit: () -> Unit,
+    onRemoveIdentity: () -> Unit,
+    onRemoveAddress: () -> Unit,
 ) {
+    val isBusy = isPreparing || uiState.isLoading
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -201,6 +244,8 @@ private fun UploadDocumentsContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // SECCION 1: IDENTIDAD
+
         Text(
             text = "Comprobante de identidad",
             style = AppTextStyle.LabelMedium,
@@ -212,17 +257,45 @@ private fun UploadDocumentsContent(
             onClick = onIdentityClick,
         )
 
+        // Documento de identidad seleccionado
         if (identityName != null) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = identityName,
-                style = AppTextStyle.BodySmall,
-                color = Purple,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = identityName,
+                        style = AppTextStyle.BodySmall,
+                        color = Purple,
+                    )
+                }
+
+                TextButton(
+                    onClick = onRemoveIdentity,
+                    enabled = !isBusy,
+                ) {
+                    Text(
+                        text = "Quitar",
+                        style = AppTextStyle.BodySmall,
+                        color = if (isBusy) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            Purple
+                        },
+                    )
+                }
+            }
         }
 
+        // Errores de identidad
         if (identityError.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = identityError,
                 style = AppTextStyle.BodySmall,
@@ -247,12 +320,14 @@ private fun UploadDocumentsContent(
 
             Text(
                 text = "Puedes usar tu INE, pasaporte o cualquier documento que compruebe tu identidad",
-                style = AppTextStyle.BodySmall,
-                color = Purple,
+                style = AppTextStyle.BodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // SECCION 2: DOMICILIO
 
         Text(
             text = "Comprobante de domicilio",
@@ -265,17 +340,45 @@ private fun UploadDocumentsContent(
             onClick = onAddressClick,
         )
 
+        // Comprobante de domicilio seleccionado
         if (addressName != null) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = addressName,
-                style = AppTextStyle.BodySmall,
-                color = Purple,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = addressName,
+                        style = AppTextStyle.BodySmall,
+                        color = Purple,
+                    )
+                }
+
+                TextButton(
+                    onClick = onRemoveAddress,
+                    enabled = !isBusy,
+                ) {
+                    Text(
+                        text = "Quitar",
+                        style = AppTextStyle.BodySmall,
+                        color = if (isBusy) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            Purple
+                        },
+                    )
+                }
+            }
         }
 
+        // Errores de domicilio
         if (addressError.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = addressError,
                 style = AppTextStyle.BodySmall,
@@ -300,22 +403,25 @@ private fun UploadDocumentsContent(
 
             Text(
                 text = "Usa un comprobante de domicilio de menos de 3 meses de antigüedad.",
-                style = AppTextStyle.BodySmall,
-                color = Purple,
+                style = AppTextStyle.BodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // BOTON DE ENVIO
 
         AppButton(
             text = "Enviar documentos",
             onClick = onSubmit,
             modifier = Modifier.fillMaxWidth(),
             enabled = (identityName != null || addressName != null) &&
-                !isPreparing && !uiState.isLoading,
-            isLoading = isPreparing || uiState.isLoading,
+                !isBusy,
+            isLoading = isBusy,
         )
 
+        // Errores al preparar los archivos
         if (uploadError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -326,26 +432,29 @@ private fun UploadDocumentsContent(
             )
         }
 
+        // Estado de carga
         if (uiState.isLoading) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Subiendo documentos...",
                 style = AppTextStyle.BodySmall,
-                color = Purple,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
-        if (uiState.errorMessage != null) {
+        // Errores del backend
+        uiState.errorMessage?.let { message ->
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = uiState.errorMessage ?: "",
+                text = message,
                 style = AppTextStyle.BodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
         }
 
+        // Confirmacion de envio
         if (uiState.isSuccess) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -360,6 +469,7 @@ private fun UploadDocumentsContent(
     }
 }
 
+// Validar tipo y tamaño del documento
 private fun validateDocument(
     context: Context,
     uri: Uri,
@@ -396,17 +506,14 @@ private fun validateDocument(
         }
     }
 
-    if (size == null) {
-        return "No se pudo comprobar el tamaño del archivo."
-    }
-
-    if (size > 4 * 1024 * 1024) {
+    if (size != null && size > MAX_DOCUMENT_BYTES) {
         return "El archivo supera el límite de 4 MB."
     }
 
     return ""
 }
 
+// Obtener el nombre visible del archivo
 private fun getDocumentName(
     context: Context,
     uri: Uri,
@@ -434,6 +541,7 @@ private fun getDocumentName(
     } ?: "Documento seleccionado"
 }
 
+// Leer el archivo real para enviarlo al backend
 private fun readDocumentFile(
     context: Context,
     uri: Uri,
@@ -447,15 +555,36 @@ private fun readDocumentFile(
     val fileName = getDocumentName(context, uri)
 
     val mimeType = context.contentResolver.getType(uri)
-        ?: throw IllegalArgumentException("Formato desconocido")
+        ?: throw IllegalArgumentException("Formato desconocido.")
 
-    val bytes = context.contentResolver.openInputStream(uri)?.use {
-        it.readBytes()
-    } ?: throw IllegalArgumentException("No se pudo leer el archivo")
+    val bytes = context.contentResolver.openInputStream(uri)?.use { input ->
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
 
-    if (bytes.size > 4 * 1024 * 1024) {
-        throw IllegalArgumentException("El archivo supera los 4 MB")
-    }
+        var totalBytes = 0
+
+        while (true) {
+            val bytesRead = input.read(buffer)
+
+            if (bytesRead == -1) {
+                break
+            }
+
+            totalBytes += bytesRead
+
+            if (totalBytes > MAX_DOCUMENT_BYTES) {
+                throw IllegalArgumentException(
+                    "El archivo supera el límite de 4 MB.",
+                )
+            }
+
+            output.write(buffer, 0, bytesRead)
+        }
+
+        output.toByteArray()
+    } ?: throw IllegalArgumentException(
+        "No se pudo leer el archivo.",
+    )
 
     return UploadDocumentFile(
         fileName = fileName,
@@ -464,6 +593,7 @@ private fun readDocumentFile(
     )
 }
 
+// Vista previa sin usar backend ni documentos personales
 @Suppress("ktlint:standard:function-naming")
 @Preview(
     showBackground = true,
@@ -475,7 +605,7 @@ private fun UploadDocumentsScreenPreview() {
     AdaxIntegraTheme {
         UploadDocumentsContent(
             uiState = UploadDocumentsUiState(),
-            identityName = "Identificacion_ejemplo.pdf",
+            identityName = null,
             addressName = null,
             identityError = "",
             addressError = "",
@@ -485,6 +615,8 @@ private fun UploadDocumentsScreenPreview() {
             onIdentityClick = {},
             onAddressClick = {},
             onSubmit = {},
+            onRemoveIdentity = {},
+            onRemoveAddress = {},
         )
     }
 }
