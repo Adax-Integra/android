@@ -342,7 +342,10 @@ fun CasesScreen(
 )
 @Composable
 private fun CasesScreenPreview() {
-    val mockCases = Case.getMockData()
+    // Preview only cases that belong to the priority listing.
+    val mockCases = Case.getMockData().filterNot {
+        it.state.trim().lowercase() in listOf("closed", "cerrado")
+    }
 
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(

@@ -1,0 +1,132 @@
+package com.example.adaxintegra.presentation.views.screens.reports
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.AppDatePickerDialog
+import com.example.adaxintegra.presentation.views.designsystem.molecules.DateField
+import com.example.adaxintegra.presentation.views.designsystem.organisms.RowOfChips
+import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
+import java.util.Calendar
+
+@Suppress("ktlint:standard:function-naming")
+@Composable
+fun ReportSelectRange(
+    modifier: Modifier = Modifier,
+    uiState: ReportSelectRangeUiState = ReportSelectRangeUiState(),
+    onStartDateSelected: (Calendar) -> Unit = {},
+    onEndDateSelected: (Calendar) -> Unit = {},
+    onChipSelected: (String) -> Unit = {},
+    onGenerateReportClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+) {
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showEndDatePicker by remember { mutableStateOf(false) }
+
+    ScreenTemplate(
+        title = "Reportes",
+        subtitle = "Obtén el reporte de los casos",
+        error = uiState.error,
+        isLoading = uiState.isLoading,
+        onBack = onBackClick,
+        modifier = modifier,
+    ) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+
+            Text(
+                text = "Usa un rango de fechas o selecciona la fecha de inicio y de fin",
+                style = AppTextStyle.BodyMedium,
+            )
+
+            RowOfChips(
+                chips = listOf("Mes anterior", "Mes actual", "Trimestre previo"),
+                selectedChip = uiState.selectedChip ?: "",
+                onChipSelected = onChipSelected,
+            )
+
+
+            // Start Date Field
+            DateField(
+                label = "Inicio del reporte",
+                value = uiState.startDate,
+                errorMessage = uiState.startDateError,
+                onClick = { showStartDatePicker = true },
+            )
+
+
+            // End Date Field
+            DateField(
+                label = "Fin del reporte",
+                value = uiState.endDate,
+                errorMessage = uiState.endDateError,
+                onClick = { showEndDatePicker = true },
+            )
+
+            AppButton(
+                text = "Generar Reporte",
+                onClick = onGenerateReportClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // Opens the date picker for the start date
+        if (showStartDatePicker) {
+            AppDatePickerDialog(
+                initialSelectedDateMillis = uiState.startDate?.timeInMillis,
+                onDateSelected = { millis ->
+                    if (millis != null) {
+                        val calendar = Calendar.getInstance().apply { timeInMillis = millis }
+                        onStartDateSelected(calendar)
+                    }
+                },
+                onDismiss = { showStartDatePicker = false },
+                title = "Selecciona la fecha de inicio",
+            )
+        }
+
+        // Opens the date picker for the end date
+        if (showEndDatePicker) {
+            AppDatePickerDialog(
+                initialSelectedDateMillis = uiState.endDate?.timeInMillis,
+                onDateSelected = { millis ->
+                    if (millis != null) {
+                        val calendar = Calendar.getInstance().apply { timeInMillis = millis }
+                        onEndDateSelected(calendar)
+                    }
+                },
+                onDismiss = { showEndDatePicker = false },
+                title = "Selecciona la fecha de fin",
+
+                )
+        }
+    }
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true)
+@Composable
+private fun ReportSelectRangePreview() {
+    ReportSelectRange()
+}

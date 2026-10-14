@@ -23,6 +23,7 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 fun RecordsMenuScreen(
     onAllCasesClick: () -> Unit,
     onAllRecordsClick: () -> Unit = {},
+    onReportsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -55,6 +56,13 @@ fun RecordsMenuScreen(
             subtitle = "Consulta todos los expedientes",
             onClick = onAllRecordsClick,
             icon = AppIcons.UserAttributes,
+        )
+
+        MenuOptionCard(
+            title = "Reportes",
+            subtitle = "Consulta los reportes de casos",
+            onClick = onReportsClick,
+            icon = AppIcons.Reports,
         )
     }
 }
