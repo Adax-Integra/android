@@ -74,7 +74,7 @@ constructor(
         )
     }
 
-    // NV-04: the backend already returns them from the oldest change to the newest
+    // NV-04: the backend already returns them from the newest change to the oldest
     override suspend fun getStaleCases(limit: Int): CasePage {
         val response = api.getStaleCases(
             authorization = authorizationHeader(),
