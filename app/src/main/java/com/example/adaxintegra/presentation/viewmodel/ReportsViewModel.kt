@@ -1,18 +1,22 @@
 package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.usecases.DownloadReportUseCase
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRangeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class ReportsViewModel @Inject constructor(
-    // TODO create the usecase
-    // private val getReportsUseCase: GetReportsUseCase
+    private val downloadReportUseCase: DownloadReportUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ReportSelectRangeUiState())
     val uiState = _uiState.asStateFlow()
@@ -23,6 +27,7 @@ class ReportsViewModel @Inject constructor(
                 startDate = calendar,
                 startDateError = null,
                 selectedChip = null,
+                error = null,
             )
         }
     }
@@ -33,7 +38,60 @@ class ReportsViewModel @Inject constructor(
                 endDate = calendar,
                 endDateError = null,
                 selectedChip = null,
+                error = null,
             )
+        }
+    }
+
+    fun downloadReport() {
+        val startDate = _uiState.value.startDate
+        val endDate = _uiState.value.endDate
+
+        if (startDate == null) {
+            _uiState.update {
+                it.copy(startDateError = "Selecciona una fecha de inicio")
+            }
+        }
+        if (endDate == null) {
+            _uiState.update {
+                it.copy(endDateError = "Selecciona una fecha de fin")
+            }
+        }
+
+        if (startDate != null && endDate != null) {
+            if (startDate.after(endDate)) {
+                _uiState.update {
+                    it.copy(endDateError = "La fecha final debe ser posterior a la inicial")
+                }
+                return
+            }
+
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val startDateStr = dateFormat.format(startDate.time)
+            val endDateStr = dateFormat.format(endDate.time)
+
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+
+                try {
+                    val file = downloadReportUseCase(startDateStr, endDateStr)
+
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            downloadedFile = file,
+                            error = null,
+                        )
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Error al descargar el reporte",
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -47,6 +105,7 @@ class ReportsViewModel @Inject constructor(
                 startDate = firstOfMonth,
                 endDate = endOfMonth,
                 selectedChip = "Mes actual",
+                error = null,
             )
         }
     }
@@ -67,6 +126,7 @@ class ReportsViewModel @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 selectedChip = "Mes anterior",
+                error = null,
             )
         }
     }
@@ -74,15 +134,12 @@ class ReportsViewModel @Inject constructor(
     // When selecting the chip of Previous trimester, it will set the range to the
     // previous completed trimester
     fun chipPreviousTrimester() {
-        // For this part we first get the current month
-        // With this we can get the previous complete trimester
         val now = Calendar.getInstance()
         val currMonth = now.get(Calendar.MONTH)
 
         val startDate = Calendar.getInstance()
         val endDate = Calendar.getInstance()
 
-        // If we are in the 1st trimester we get the 4th trimester of the previous year
         if (currMonth in 0..2) {
             val prevYear = now.get(Calendar.YEAR) - 1
             startDate.set(prevYear, Calendar.OCTOBER, 1)
@@ -90,7 +147,6 @@ class ReportsViewModel @Inject constructor(
             endDate.set(Calendar.DAY_OF_MONTH, endDate.getActualMaximum(Calendar.DAY_OF_MONTH))
         }
 
-        // If we are in the 2nd trimester we get the 1st trimester of the year
         if (currMonth in 3..5) {
             val currentYear = now.get(Calendar.YEAR)
             startDate.set(currentYear, Calendar.JANUARY, 1)
@@ -98,7 +154,6 @@ class ReportsViewModel @Inject constructor(
             endDate.set(Calendar.DAY_OF_MONTH, endDate.getActualMaximum(Calendar.DAY_OF_MONTH))
         }
 
-        // If we are in the 3rd trimester we get the 2nd trimester of the year
         if (currMonth in 6..8) {
             val currentYear = now.get(Calendar.YEAR)
             startDate.set(currentYear, Calendar.APRIL, 1)
@@ -106,7 +161,6 @@ class ReportsViewModel @Inject constructor(
             endDate.set(Calendar.DAY_OF_MONTH, endDate.getActualMaximum(Calendar.DAY_OF_MONTH))
         }
 
-        // If we are in the 4th trimester we get the 3rd trimester of the year
         if (currMonth in 9..11) {
             val currentYear = now.get(Calendar.YEAR)
             startDate.set(currentYear, Calendar.JULY, 1)
@@ -119,6 +173,7 @@ class ReportsViewModel @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 selectedChip = "Trimestre previo",
+                error = null,
             )
         }
     }

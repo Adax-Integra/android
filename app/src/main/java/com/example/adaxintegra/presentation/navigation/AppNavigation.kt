@@ -450,7 +450,7 @@ fun AppNavigation(
                             }
                         },
                         onGenerateReportClick = {
-                            // Report generation logic can be connected here when ready
+                            reportsViewModel.downloadReport()
                         },
                     )
                 } else {
