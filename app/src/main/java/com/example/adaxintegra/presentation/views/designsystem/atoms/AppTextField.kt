@@ -28,6 +28,8 @@ fun AppTextField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     isError: Boolean = false,
+    readOnly: Boolean = false,
+    enabled: Boolean = true,
 ) {
     OutlinedTextField(
         value = value,
@@ -50,6 +52,8 @@ fun AppTextField(
         singleLine = singleLine,
         minLines = minLines,
         isError = isError,
+        readOnly = readOnly,
+        enabled = enabled,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
