@@ -10,6 +10,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,7 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
+import com.example.adaxintegra.presentation.views.designsystem.organisms.EditProfileForm
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -29,19 +33,30 @@ fun EditProfileScreen(
     isExternal: Boolean,
     viewModel: EditProfileViewModel = hiltViewModel(),
 ) {
-    /*val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var isEditing by remember { mutableStateOf(false) }
+
     var name by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    var countryCode by remember { mutableStateOf("+52") }
+
     var country by remember { mutableStateOf("México") }
-    var state by remember { mutableStateOf("México") }
-    var municipality by remember { mutableStateOf("") }*/
+    var state by remember { mutableStateOf("Querétaro") }
+    var municipality by remember { mutableStateOf("") }
+
+    //temp values used to restore form on cancel
+    var originalName by remember { mutableStateOf("") }
+    var originalLastName by remember { mutableStateOf("") }
+    var originalPhone by remember { mutableStateOf("") }
+    var originalCountryCode by remember { mutableStateOf("+52") }
+    var originalCountry by remember { mutableStateOf("México") }
+    var originalState by remember { mutableStateOf("Querétaro") }
+    var originalMunicipality by remember { mutableStateOf("") }
 
     ScreenTemplate(
         title = "Tu Perfil",
         onBack = onBack,
-        /*trailingAction = {
+        trailingAction = {
             IconButton(
                 onClick = {
                     isEditing = !isEditing },
@@ -60,49 +75,37 @@ fun EditProfileScreen(
                     size = IconSize.LargeIcon,
                 )
             }
-        }*/
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            //pull to refresh
-
-            //cards with info that can be typed into when clicking edit button
-
-            //name
-           /* LabeledTextField(
-                label = "Nombre",
-                value = name,
-                onValueChange = { name = it },
-                enabled = isEditing,
-            )
-
-            //last name
-            LabeledTextField(
-                label = "Apellidos",
-                value = lastName,
-                onValueChange = { lastName = it },
-                enabled = isEditing,
-            )*/
-
-            //phone
-
-            //only shown to external
-            //country
-
-            //state
-
-            //municipality
-
-
-            //button to save changes only appears when clicking edit button
-
         }
+    ) {
+
+        EditProfileForm(
+            nameValue = TODO(),
+            onNameChange = TODO(),
+            lastnameValue = TODO(),
+            onLastnameChange = TODO(),
+            countryCode = TODO(),
+            onCountryCodeChange = TODO(),
+            phoneValue = TODO(),
+            onPhoneChange = TODO(),
+            isExternal = TODO(),
+            countryValue = TODO(),
+            onCountryChange = TODO(),
+            countryOptions = TODO(),
+            stateValue = TODO(),
+            onStateChange = TODO(),
+            stateOptions = TODO(),
+            municipalityValue = TODO(),
+            onMunicipalityChange = TODO(),
+            isLoading = TODO(),
+            isEditing = TODO(),
+            modifier = TODO(),
+            nameError = TODO(),
+            lastnameError = TODO(),
+            phoneError = TODO(),
+            countryError = TODO(),
+            stateError = TODO(),
+            municipalityError = TODO()
+        )
+
     }
 }

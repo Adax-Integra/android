@@ -61,6 +61,7 @@ import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScree
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditProfileScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
@@ -588,7 +589,10 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
-                    onPersonalDataClick = {},
+                    onPersonalDataClick = { navController.navigate("editProfile") {
+                        launchSingleTop = true
+                    }
+                                          },
                     onSecurityClick = {
                         navController.navigate("changePassword") {
                             launchSingleTop = true
@@ -610,6 +614,15 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
+                )
+            }
+
+            composable("editProfile") {
+                EditProfileScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    isExternal = TODO()
                 )
             }
 

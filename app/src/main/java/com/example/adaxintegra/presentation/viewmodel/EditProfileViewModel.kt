@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 class EditProfileViewModel @Inject constructor(
-    //private val getProfileByUserIdUseCase: GetProfileByUserIdUseCase,
+    //private val editProfileUseCase: EditProfileProfileUseCase,
 //private val authRepository: AuthRepository, // get session to get userId
 ) : ViewModel() {
 

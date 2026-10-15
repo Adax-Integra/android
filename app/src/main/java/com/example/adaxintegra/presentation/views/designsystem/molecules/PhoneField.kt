@@ -37,7 +37,9 @@ fun PhoneField(
     label: String = "Teléfono celular",
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
     errorMessage: String? = null,
+    placeholder: String,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -63,6 +65,7 @@ fun PhoneField(
                     CountryCodeSelector(
                         selectedCode = countryCode,
                         onCodeSelected = onCountryCodeChange,
+                        enabled = enabled,
                     )
                 }
             }
@@ -72,11 +75,12 @@ fun PhoneField(
             AppTextField(
                 value = phoneValue,
                 onValueChange = onPhoneChange,
-                placeholder = "Tu número aquí",
+                placeholder = placeholder,
                 keyboardOptions = keyboardOptions,
                 keyboardActions = keyboardActions,
                 isError = errorMessage != null,
                 modifier = Modifier.weight(1f),
+                enabled = enabled,
             )
         }
         if (errorMessage != null) {
@@ -101,6 +105,7 @@ private fun PhoneFieldPreview() {
             phoneValue = "4421234567",
             onPhoneChange = {},
             modifier = Modifier.padding(16.dp),
+            placeholder = "03248"
         )
     }
 }
