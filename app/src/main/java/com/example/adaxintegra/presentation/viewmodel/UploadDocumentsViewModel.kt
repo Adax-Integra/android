@@ -59,7 +59,11 @@ class UploadDocumentsViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isSuccess = false,
-                    errorMessage = "No se pudieron subir los documentos. Intenta de nuevo.",
+                    errorMessage = if (e is IllegalStateException) {
+                        e.message ?: "Error al subir documentos."
+                    } else {
+                        "Error de red o tiempo de espera al subir documentos."
+                    },
                 )
             }
         }
