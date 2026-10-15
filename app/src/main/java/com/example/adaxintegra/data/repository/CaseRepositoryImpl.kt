@@ -111,7 +111,7 @@ constructor(
         return created.toDomain()
     }
 
-    // Creates a case for an external user by an internal/admin user
+    // R-11: Creates a case for an external user by an internal/admin user
     override suspend fun createCaseForExternalUser(userId: String, newCase: NewCase): Case {
         val response = try {
             api.createCaseForExternalUser(

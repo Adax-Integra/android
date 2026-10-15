@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://localhost:3001/"
+    private const val BASE_URL = "https://adax-integra.duckdns.org"
 
     // Server testing: use "https://adax-integra.duckdns.org", enable networkSecurityConfig
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig

@@ -203,8 +203,8 @@ fun AppNavigation(
                     when {
                         // Keep the records tab selected throughout this flow.
                         currentRoute == "collaboratorCases" ||
-                        currentRoute == "allRecords" ||
-                        currentRoute.startsWith("recordFromUser") -> "records"
+                            currentRoute == "allRecords" ||
+                            currentRoute.startsWith("recordFromUser") -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
@@ -502,7 +502,7 @@ fun AppNavigation(
                         },
                         onRefresh = recordsViewModel::refresh,
 
-                    )
+                        )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
@@ -573,7 +573,7 @@ fun AppNavigation(
             }
 
             composable("createCase/{targetUserId}") { entry ->
-                if (hasValidSession && (isExternal || canViewAllCases)) {
+                if (hasValidSession && canViewAllCases) {
                     val targetUserId = entry.arguments?.getString("targetUserId")
                     CreateCaseScreen(
                         targetUserId = targetUserId,

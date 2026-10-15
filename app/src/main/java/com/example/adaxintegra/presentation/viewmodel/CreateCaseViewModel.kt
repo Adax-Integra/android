@@ -82,8 +82,13 @@ class CreateCaseViewModel @Inject constructor(
         }
 
         val session = authRepository.session.value
-        val isInternalUser = session?.role in listOf("internal", "admin") || !targetUserId.isNullOrBlank()
-        val userId = targetUserId?.ifBlank { null } ?: session?.userId
+        val isInternalUser = session?.role in listOf("internal", "admin")
+
+        val userId = if (isInternalUser) {
+            targetUserId?.ifBlank { null } ?: session?.userId
+        } else {
+            session?.userId
+        }
 
         if (userId.isNullOrBlank()) {
             _uiState.update { it.copy(generalError = "No hay una sesión activa.") }
@@ -155,8 +160,10 @@ class CreateCaseViewModel @Inject constructor(
             e is HttpException && e.code() == 403 -> "No tienes permiso para registrar este caso."
             e is HttpException && e.code() == 404 ->
                 "El usuario no tiene un expediente activo registrado."
+
             e is HttpException && e.code() == 409 ->
                 "El expediente del usuario ya alcanzó el número máximo de casos activos."
+
             e is HttpException && e.code() == 400 -> "Revisa los datos del caso."
             e is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
             else -> "Ocurrió un error al registrar el caso."

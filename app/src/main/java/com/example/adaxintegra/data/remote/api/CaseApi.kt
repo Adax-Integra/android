@@ -11,8 +11,8 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
-import retrofit2.http.Path
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 // retrieve backend data which will come in as a JSON
@@ -67,7 +67,7 @@ interface CaseApi {
         @Body request: CreateCaseRequestDto,
     ): CreateCaseResponseDto
 
-    // Creates a case for an external user by an internal/admin user
+    // R-11: Creates a case for an external user by an internal/admin user
     @POST("api/internal-users/external-users/{userId}/cases")
     suspend fun createCaseForExternalUser(
         @Path("userId") userId: String,
