@@ -28,10 +28,16 @@ fun ScreenTemplate(
     isRefreshing: Boolean = false,
     onRefresh: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    trailingAction: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        AppHeader(title = title, subtitle = subtitle, onBack = if (showBackButton) onBack else null)
+        AppHeader(
+            title = title,
+            subtitle = subtitle,
+            onBack = if (showBackButton) onBack else null,
+            trailingAction = trailingAction,
+            )
 
         when {
             isLoading -> {

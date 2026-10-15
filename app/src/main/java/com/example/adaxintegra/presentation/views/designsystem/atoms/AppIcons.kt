@@ -6,7 +6,9 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
@@ -88,4 +90,10 @@ object AppIcons {
 
     val Email: ImageVector
         get() = Icons.Outlined.MailOutline
+
+    val Edit: ImageVector
+        get() = Icons.Default.Edit
+
+    val Close: ImageVector
+        get() = Icons.Default.Close
 }
