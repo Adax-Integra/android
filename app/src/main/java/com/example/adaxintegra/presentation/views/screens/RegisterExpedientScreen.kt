@@ -36,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,14 +85,16 @@ fun RegisterExpedientScreen(
     viewModel: RegisterExpedientViewModel,
     userToken: String,
     onCancel: () -> Unit,
-    onSuccess: () -> Unit,
+    onSuccess: (createdUserId: String) -> Unit,
 ) {
     // Viewmodel state updates in screen
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Validates success in register
-    if (uiState.isSuccess) {
-        onSuccess()
+    LaunchedEffect(uiState.isSuccess, uiState.createdUserId) {
+        if (uiState.isSuccess) {
+            onSuccess(uiState.createdUserId.orEmpty())
+        }
     }
 
     if (uiState.showConfirmationDialog) {
@@ -116,8 +119,7 @@ fun RegisterExpedientScreen(
             modifier =
             Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
+                .padding(paddingValues),
         ) {
             when {
                 uiState.isLoadingCatalogs || uiState.isSubmitting -> {
@@ -232,8 +234,10 @@ fun PersonalDataStepContent(
             label = { Text("Apellidos *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("lastName"),
-            supportingText = uiState.personalDataErrors["lastName"]?.let { error ->
-                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            supportingText = {
+                uiState.personalDataErrors["lastName"]?.let { error ->
+                    Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal)
+                }
             },
         )
 
@@ -245,8 +249,10 @@ fun PersonalDataStepContent(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("email"),
-            supportingText = uiState.personalDataErrors["email"]?.let { error ->
-                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            supportingText = {
+                uiState.personalDataErrors["email"]?.let { error ->
+                    Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal)
+                }
             },
         )
 

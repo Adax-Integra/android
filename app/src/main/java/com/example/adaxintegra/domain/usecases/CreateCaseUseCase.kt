@@ -11,14 +11,18 @@ import javax.inject.Inject
 class CreateCaseUseCase @Inject constructor(
     private val caseRepository: CaseRepository,
 ) {
-    operator fun invoke (userId: String, newCase: NewCase):
-        Flow<Result<Case>> = flow{
+    operator fun invoke(userId: String, newCase: NewCase, isInternalUser: Boolean = false):
+        Flow<Result<Case>> = flow {
             emit(Result.Loading)
-            try{
-                val created = caseRepository.createCase(userId, newCase)
+            try {
+                val created = if (isInternalUser) {
+                    caseRepository.createCaseForExternalUser(userId, newCase)
+                } else {
+                    caseRepository.createCase(userId, newCase)
+                }
                 emit(Result.Success(created))
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 emit(Result.Error(e))
             }
-    }
+        }
 }

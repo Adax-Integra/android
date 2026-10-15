@@ -23,20 +23,49 @@ android {
     defaultConfig {
         applicationId = "com.adaxintegra"
         minSdk = 29
+
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        val supabaseUrl = (localProperties.getProperty("SUPABASE_URL") ?: "").trim()
-        val supabaseKey = (localProperties.getProperty("SUPABASE_ANON_KEY") ?: "").trim()
-        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseKey\"")
+    flavorDimensions += "env"
+
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                "\"${localProperties.getProperty("SUPABASE_URL_DEV", "")}\"",
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                "\"${localProperties.getProperty("SUPABASE_ANON_KEY_DEV", "")}\"",
+            )
+        }
+        create("prod") {
+            dimension = "env"
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                "\"${localProperties.getProperty("SUPABASE_URL_PROD", "")}\"",
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                "\"${localProperties.getProperty("SUPABASE_ANON_KEY_PROD", "")}\"",
+            )
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }

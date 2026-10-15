@@ -118,8 +118,8 @@ constructor(
 
             val result = registerExpedientUseCase(token, _uiState.value.personalData)
 
-            result.onSuccess {
-                _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }
+            result.onSuccess { userId ->
+                _uiState.update { it.copy(isSubmitting = false, isSuccess = true, createdUserId = userId) }
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(

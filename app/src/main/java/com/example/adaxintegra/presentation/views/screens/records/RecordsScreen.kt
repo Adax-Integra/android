@@ -59,8 +59,6 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordC
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -74,9 +72,9 @@ fun RecordsScreen(
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
     onRegisterRecordClick: () -> Unit,
-    viewModel: RecordsViewModel = hiltViewModel()
+    onRefresh: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val spacing = Spacing()
 
@@ -115,7 +113,6 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(
                     start = spacing.medium,
                     end = spacing.medium,
@@ -235,7 +232,7 @@ fun RecordsScreen(
 
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.refresh() },
+                onRefresh = onRefresh,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),

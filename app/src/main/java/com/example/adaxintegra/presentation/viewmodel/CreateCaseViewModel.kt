@@ -72,7 +72,7 @@ class CreateCaseViewModel @Inject constructor(
         _uiState.update { it.copy(successMessage = null) }
     }
 
-    fun save() {
+    fun save(targetUserId: String? = null) {
         val state = _uiState.value
         val errors = validate(state)
 
@@ -81,7 +81,14 @@ class CreateCaseViewModel @Inject constructor(
             return
         }
 
-        val userId = authRepository.session.value?.userId
+        val session = authRepository.session.value
+        val isInternalUser = session?.role in listOf("internal", "admin")
+
+        val userId = if (isInternalUser) {
+            targetUserId?.ifBlank { null } ?: session?.userId
+        } else {
+            session?.userId
+        }
 
         if (userId.isNullOrBlank()) {
             _uiState.update { it.copy(generalError = "No hay una sesión activa.") }
@@ -95,14 +102,13 @@ class CreateCaseViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            createCaseUseCase(userId, newCase).collect { result ->
+            createCaseUseCase(userId, newCase, isInternalUser = isInternalUser).collect { result ->
                 _uiState.update { current ->
                     when (result) {
                         is Result.Loading -> current.copy(isSaving = true, generalError = null)
 
                         is Result.Success -> CreateCaseUiState(
-                            successMessage = "Tu caso fue registrado correctamente. " +
-                                "Puedes seguirlo desde Mis Casos.",
+                            successMessage = "El caso fue registrado correctamente.",
                         )
 
                         is Result.Error -> errorState(current, result.exception)
@@ -152,9 +158,12 @@ class CreateCaseViewModel @Inject constructor(
         val message = when {
             e is HttpException && e.code() == 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
             e is HttpException && e.code() == 403 -> "No tienes permiso para registrar este caso."
-            // R-02 runs after R-01, so a missing record is not a form problem
             e is HttpException && e.code() == 404 ->
-                "No tienes un expediente registrado. Comunícate con la asociación."
+                "El usuario no tiene un expediente activo registrado."
+
+            e is HttpException && e.code() == 409 ->
+                "El expediente del usuario ya alcanzó el número máximo de casos activos."
+
             e is HttpException && e.code() == 400 -> "Revisa los datos del caso."
             e is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
             else -> "Ocurrió un error al registrar el caso."
