@@ -79,7 +79,7 @@ fun PasswordRecoveryCodeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Se envió un código de 6 dígitos.",
+                text = "Se envió un código de 6 dígitos al correo ingresado.",
                 style = AppTextStyle.BodyMedium,
                 color = Color.Gray,
                 modifier = Modifier.fillMaxWidth(),
@@ -135,7 +135,7 @@ fun PasswordRecoveryCodeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //card to input code with countdown timer
+            //card to input 6 digit code with countdown timer
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -177,6 +177,18 @@ fun PasswordRecoveryCodeScreen(
                 }
             }
 
+            uiState.errorMessage?.let { message ->
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodySmall,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Column(
@@ -210,17 +222,6 @@ fun PasswordRecoveryCodeScreen(
                     text = message,
                     style = AppTextStyle.BodyMedium,
                     color = Color(0xFF2E7D32),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            uiState.errorMessage?.let { message ->
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = message,
-                    style = AppTextStyle.BodyMedium,
-                    color = Color.Red,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )

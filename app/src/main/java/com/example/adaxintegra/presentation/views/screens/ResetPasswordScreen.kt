@@ -171,17 +171,6 @@ fun ResetPasswordScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            //these buttons appear only after code error
-            AppButton(
-                text = "Cambiar contraseña",
-                onClick = viewModel::onResetPasswordClick,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading,
-                isLoading = uiState.isLoading,
-            )
-
             uiState.successMessage?.let { message ->
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -199,7 +188,19 @@ fun ResetPasswordScreen(
                     color = Color.Red,
                 )
             }
-            //wrong code: go back and type it again
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            //options appear when backend rejects code
+            AppButton(
+                text = "Cambiar contraseña",
+                onClick = viewModel::onResetPasswordClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
+                isLoading = uiState.isLoading,
+            )
+
+
             if (uiState.showFixCode) {
                 Spacer(modifier = Modifier.height(16.dp))
                 AppButton(
@@ -210,7 +211,6 @@ fun ResetPasswordScreen(
                 )
             }
 
-            //expired or too many attempts: start again
             if (uiState.showNewCode) {
                 Spacer(modifier = Modifier.height(16.dp))
                 AppButton(
