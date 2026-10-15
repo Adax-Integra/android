@@ -148,6 +148,12 @@ class ReportsViewModel @Inject constructor(
         }
     }
 
+    fun clearDownloadedFile() {
+        _uiState.update {
+            it.copy(downloadedFile = null)
+        }
+    }
+
     // When selecting the chip of This month, it will set the start date to the first day of the
     // current month and the end date to the current date.
     fun chipThisMonthSelected() {

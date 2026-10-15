@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
@@ -23,6 +22,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AppDatePickerDialog
 import com.example.adaxintegra.presentation.views.designsystem.molecules.DateField
 import com.example.adaxintegra.presentation.views.designsystem.organisms.RowOfChips
+import com.example.adaxintegra.presentation.views.designsystem.organisms.SuccessDialog
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import java.util.Calendar
 
@@ -35,6 +35,7 @@ fun ReportSelectRange(
     onEndDateSelected: (Calendar) -> Unit = {},
     onChipSelected: (String) -> Unit = {},
     onGenerateReportClick: () -> Unit = {},
+    onClearDownloadedFile: () -> Unit = {},
     onBackClick: () -> Unit = {},
 ) {
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -96,14 +97,11 @@ fun ReportSelectRange(
             // The button aonly appear after the file is downloaded
             if (uiState.downloadedFile != null) {
                 val context = LocalContext.current
-                Text(
-                    text = "¡Reporte descargado con éxito!",
-                    style = AppTextStyle.HeadLineLarge,
-                    textAlign = TextAlign.Center,
-                )
-                AppButton(
-                    text = "Abrir Archivo CSV",
-                    onClick = {
+                SuccessDialog(
+                    title = "¡Reporte descargado con éxito!",
+                    message = "El reporte se generó correctamente.",
+                    confirmText = "Abrir Archivo CSV",
+                    onConfirm = {
                         try {
                             val uri = androidx.core.content.FileProvider.getUriForFile(
                                 context,
@@ -123,8 +121,8 @@ fun ReportSelectRange(
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
+                        onClearDownloadedFile()
+                    }
                 )
             }
         }
