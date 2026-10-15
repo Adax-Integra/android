@@ -59,6 +59,7 @@ class ResetPasswordViewModel
 
     fun onResetPasswordClick() {
         val state = _uiState.value
+        if (state.isLoading) return
 
         //password field validation
         val error = when {

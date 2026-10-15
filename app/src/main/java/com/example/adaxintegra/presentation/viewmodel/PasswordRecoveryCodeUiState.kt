@@ -9,6 +9,7 @@ data class PasswordRecoveryCodeUiState(
     val isResending: Boolean = false,
     val successMessage: String? = null,
     val errorMessage: String? = null,
+    val isValidating: Boolean = false
 )
 
 //reset password screen receives these values

@@ -10,13 +10,14 @@ class ExpedientRepositoryImpl @Inject constructor(
     private val api: ExpedientApi,
 ) : ExpedientRepository {
 
-    override suspend fun registerExpedient(token: String, form: PersonalDataForm): Result<Unit> = try {
+    override suspend fun registerExpedient(token: String, form: PersonalDataForm): Result<String> = try {
         val response = api.registerExpedient(
             authorization = "Bearer $token",
             request = form.toDto(),
         )
-        if (response.success) {
-            Result.success(Unit)
+        val userId = response.data?.userId
+        if (response.success && !userId.isNullOrBlank()) {
+            Result.success(userId)
         } else {
             Result.failure(Exception("No se pudo completar el registro del expediente."))
         }
