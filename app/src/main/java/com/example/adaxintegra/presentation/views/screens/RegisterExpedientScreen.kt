@@ -116,8 +116,7 @@ fun RegisterExpedientScreen(
             modifier =
             Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
+                .padding(paddingValues),
         ) {
             when {
                 uiState.isLoadingCatalogs || uiState.isSubmitting -> {
@@ -232,8 +231,10 @@ fun PersonalDataStepContent(
             label = { Text("Apellidos *", style = AppTextStyle.BodySmall, fontWeight = FontWeight.Normal) },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("lastName"),
-            supportingText = uiState.personalDataErrors["lastName"]?.let { error ->
-                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            supportingText = {
+                uiState.personalDataErrors["lastName"]?.let { error ->
+                    Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal)
+                }
             },
         )
 
@@ -245,8 +246,10 @@ fun PersonalDataStepContent(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.personalDataErrors.containsKey("email"),
-            supportingText = uiState.personalDataErrors["email"]?.let { error ->
-                { Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            supportingText = {
+                uiState.personalDataErrors["email"]?.let { error ->
+                    Text(error, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal)
+                }
             },
         )
 

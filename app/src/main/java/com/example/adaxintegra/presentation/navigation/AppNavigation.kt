@@ -64,7 +64,6 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
-import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -501,7 +500,8 @@ fun AppNavigation(
                             navController.navigate("registerExpedient") {
                                 launchSingleTop = true
                             }
-                        }
+                        },
+                        onRefresh = recordsViewModel::refresh,
 
                     )
                 } else {

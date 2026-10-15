@@ -26,6 +26,7 @@ import javax.inject.Singleton
 object NetworkModule {
     private const val BASE_URL = "https://adax-integra.duckdns.org"
 
+    // Server testing: use "https://adax-integra.duckdns.org", enable networkSecurityConfig
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
     // in AndroidManifest and run "adb reverse tcp:3001 tcp:3001".
     @Provides
