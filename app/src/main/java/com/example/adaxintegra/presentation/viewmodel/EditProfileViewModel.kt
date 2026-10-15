@@ -12,6 +12,17 @@ class EditProfileViewModel @Inject constructor(
 //private val authRepository: AuthRepository, // get session to get userId
 ) : ViewModel() {
 
-   // private val _uiState = MutableStateFlow(EditProfileUiState(isLoading = true))
-   // val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
+   private val _uiState = MutableStateFlow(EditProfileUiState(
+       isLoading = true,
+       name = TODO(),
+       lastName = TODO(),
+       urgency = TODO(),
+       country = TODO(),
+       state = TODO(),
+       municipality = TODO(),
+       isEditing = TODO(),
+       error = TODO(),
+       isRefreshing = TODO()
+   ))
+   val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
     }
