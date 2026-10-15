@@ -1,40 +1,53 @@
 package com.example.adaxintegra.presentation.navigation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
-import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
+import android.net.Uri
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
-import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
-import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
-import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
-import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
+import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -45,29 +58,15 @@ import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.CreateEventScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
-import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.TextButton
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.res.painterResource
-import com.example.adaxintegra.R
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -142,19 +141,6 @@ fun AppNavigation(
 
     val navController = rememberNavController()
 
-    //handle Supabase password recovery deep link
-    LaunchedEffect(deepLinkUri) {
-        if (
-            deepLinkUri?.scheme == "adax" &&
-            deepLinkUri.host == "auth" &&
-            deepLinkUri.path == "/callback"
-        ) {
-            navController.navigate("resetPassword") {
-                launchSingleTop = true
-            }
-        }
-    }
-
     val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
 
     LaunchedEffect(hasValidSession, isExternal) {
@@ -186,9 +172,10 @@ fun AppNavigation(
                     currentRoute != "login" &&
                     currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
-                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
-                    !currentRoute.startsWith("pendingVerification") -> "login"
+                    !currentRoute.startsWith("pendingVerification") &&
+                    !currentRoute.startsWith("recoveryCode") &&
+                    !currentRoute.startsWith("resetPassword") -> "login"
 
                 else -> null
             }
@@ -230,7 +217,9 @@ fun AppNavigation(
                 currentRoute != "login" &&
                 currentRoute != "register" &&
                 currentRoute != "verificationSuccess" &&
-                !currentRoute.startsWith("pendingVerification")
+                !currentRoute.startsWith("pendingVerification") &&
+                !currentRoute.startsWith("recoveryCode") &&
+                !currentRoute.startsWith("resetPassword")
             ) {
                 val selectedRoute =
                     when (currentRoute) {
@@ -313,30 +302,27 @@ fun AppNavigation(
 
             //forgot password screen
             composable("forgotPassword") {
-
                 ForgotPasswordScreen(
                     onBack = {
-                        navController.popBackStack() },
-                    viewModel = hiltViewModel()
+                        navController.popBackStack()
+                    },
+                    viewModel = hiltViewModel(),
                 )
             }
 
             //reset password screen
-            composable("resetPassword") { entry ->
-
-                    ResetPasswordScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onResetPasswordSuccess = {
-                            navController.navigate("login") {
-                                popUpTo("login") {
-                                    inclusive = true
-                                }
-                            }
+            composable("resetPassword") {
+                ResetPasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onResetPasswordSuccess = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
                         }
-                    )
-                }
+                    },
+                )
+            }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
@@ -712,7 +698,8 @@ fun AppNavigation(
                     val registerViewModel: RegisterExpedientViewModel = hiltViewModel()
                     RegisterExpedientScreen(
                         viewModel = registerViewModel,
-                        userToken = session?.token ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
+                        userToken = session?.token
+                            ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
                         onCancel = {
                             navController.popBackStack()
                         },
