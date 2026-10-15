@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.usecases.ValidateRecoveryCodeUseCase
 import com.example.adaxintegra.presentation.mapper.toAuthMessage
 import kotlinx.coroutines.delay
 
 @HiltViewModel
 class PasswordRecoveryCodeViewModel @Inject constructor(
+    private val validateRecoveryCodeUseCase: ValidateRecoveryCodeUseCase,
     private val sendRecoveryEmailUseCase: SendRecoveryEmailUseCase,
 ) : ViewModel() {
 
@@ -43,20 +45,61 @@ class PasswordRecoveryCodeViewModel @Inject constructor(
         }
     }
 
-    //backend will check code and new password (validators)
+    //backend will check code
     fun onContinueClick() {
         val state = _uiState.value
 
         if (state.otpCode.length != 6) {
-            _uiState.update { it.copy(errorMessage = "Ingresa el código completo de 6 dígitos.") }
+            _uiState.update {
+                it.copy(
+                    errorMessage = "Ingresa el código completo de 6 dígitos."
+                )
+            }
             return
         }
 
+        //add validation state
+        if (state.isValidating) return
+
         viewModelScope.launch {
-            _events.send(PasswordRecoveryCodeEvent.CodeEntered(
-                state.email,
-                state.otpCode)
-            )
+            _uiState.update {
+                it.copy(
+                    isValidating = true,
+                    errorMessage = null,
+                    successMessage = null
+                )
+            }
+
+            when (
+                val result = validateRecoveryCodeUseCase(
+                    email = state.email,
+                    code = state.otpCode
+                )
+            ) {
+                is Result.Success -> {
+                    _uiState.update {
+                        it.copy(isValidating = false)
+                    }
+
+                    _events.send(
+                        PasswordRecoveryCodeEvent.CodeEntered(
+                            email = state.email,
+                            code = state.otpCode
+                        )
+                    )
+                }
+
+                is Result.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isValidating = false,
+                            errorMessage = result.exception.toAuthMessage()
+                        )
+                    }
+                }
+
+                is Result.Loading -> Unit
+            }
         }
     }
 

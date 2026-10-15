@@ -27,6 +27,11 @@ interface  AuthRepository {
         email: String
     ): Result<Unit>
 
+    suspend fun validateRecoveryCode(
+        email: String,
+        code: String
+    ): Result<Unit>
+
     suspend fun resetPassword(
         email: String,
         code: String,
