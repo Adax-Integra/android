@@ -469,6 +469,9 @@ fun AppNavigation(
                         onGenerateReportClick = {
                             reportsViewModel.downloadReport()
                         },
+                        onClearDownloadedFile = {
+                            reportsViewModel.clearDownloadedFile()
+                        }
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
