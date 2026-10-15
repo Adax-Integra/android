@@ -2,7 +2,9 @@ package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.entities.Case
 import com.example.adaxintegra.presentation.viewmodel.CasesFromUserUiState
 import com.example.adaxintegra.presentation.viewmodel.CasesFromUserViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
@@ -27,6 +30,7 @@ fun RecordFromUser(
     viewModel: CasesFromUserViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
+    onCreateCaseClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -38,6 +42,7 @@ fun RecordFromUser(
         uiState = uiState,
         onBackClick = onBackClick,
         onCaseClick = onCaseClick,
+        onCreateCaseClick = onCreateCaseClick,
     )
 }
 
@@ -47,6 +52,7 @@ fun RecordFromUserContent(
     uiState: CasesFromUserUiState,
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
+    onCreateCaseClick: () -> Unit = {},
 ) {
     val userName = uiState.cases.firstOrNull()?.name ?: "Usuario"
 
@@ -56,20 +62,33 @@ fun RecordFromUserContent(
         isLoading = uiState.isLoading,
         onBack = onBackClick,
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            items(
-                items = uiState.cases,
-                key = { it.caseId },
-            ) { case ->
-                CaseCard(
-                    case = case,
-                    modifier = Modifier.clickable { onCaseClick(case.caseId) },
-                )
+            AppButton(
+                text = "Registrar nuevo caso",
+                onClick = onCreateCaseClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                items(
+                    items = uiState.cases,
+                    key = { it.caseId },
+                ) { case ->
+                    CaseCard(
+                        case = case,
+                        modifier = Modifier.clickable { onCaseClick(case.caseId) },
+                    )
+                }
             }
         }
     }

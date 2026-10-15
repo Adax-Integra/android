@@ -36,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,14 +85,16 @@ fun RegisterExpedientScreen(
     viewModel: RegisterExpedientViewModel,
     userToken: String,
     onCancel: () -> Unit,
-    onSuccess: () -> Unit,
+    onSuccess: (createdUserId: String) -> Unit,
 ) {
     // Viewmodel state updates in screen
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Validates success in register
-    if (uiState.isSuccess) {
-        onSuccess()
+    LaunchedEffect(uiState.isSuccess, uiState.createdUserId) {
+        if (uiState.isSuccess) {
+            onSuccess(uiState.createdUserId.orEmpty())
+        }
     }
 
     if (uiState.showConfirmationDialog) {

@@ -72,7 +72,7 @@ class CreateCaseViewModel @Inject constructor(
         _uiState.update { it.copy(successMessage = null) }
     }
 
-    fun save() {
+    fun save(targetUserId: String? = null) {
         val state = _uiState.value
         val errors = validate(state)
 
@@ -81,7 +81,7 @@ class CreateCaseViewModel @Inject constructor(
             return
         }
 
-        val userId = authRepository.session.value?.userId
+        val userId = targetUserId?.ifBlank { null } ?: authRepository.session.value?.userId
 
         if (userId.isNullOrBlank()) {
             _uiState.update { it.copy(generalError = "No hay una sesión activa.") }
@@ -101,8 +101,7 @@ class CreateCaseViewModel @Inject constructor(
                         is Result.Loading -> current.copy(isSaving = true, generalError = null)
 
                         is Result.Success -> CreateCaseUiState(
-                            successMessage = "Tu caso fue registrado correctamente. " +
-                                "Puedes seguirlo desde Mis Casos.",
+                            successMessage = "El caso fue registrado correctamente.",
                         )
 
                         is Result.Error -> errorState(current, result.exception)
