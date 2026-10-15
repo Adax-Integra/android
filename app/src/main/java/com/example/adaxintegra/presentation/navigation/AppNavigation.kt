@@ -27,18 +27,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
+import android.net.Uri
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
-import android.net.Uri
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
@@ -72,7 +73,6 @@ import androidx.compose.material.icons.filled.Add
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
-    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
@@ -306,15 +306,41 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
-                    viewModel = hiltViewModel(),
+                    onCodeRequested = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("recoveryCode/$encodedEmail") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
+            //code verification
+            composable("recoveryCode/{email}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                PasswordRecoveryCodeScreen(
+                    email = email,
+                    onBack = { navController.popBackStack() },
+                    onCodeEntered = { enteredEmail, code ->
+                        val encodedEmail = URLEncoder.encode(enteredEmail, "UTF-8")
+                        navController.navigate("resetPassword/$encodedEmail/$code") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 
             //reset password screen
-            composable("resetPassword") {
+            composable("resetPassword/{email}/{code}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                val code = entry.arguments?.getString("code").orEmpty()
+
                 ResetPasswordScreen(
-                    onBack = {
-                        navController.popBackStack()
+                    email = email,
+                    code = code,
+                    onBack = { navController.popBackStack() },
+                    onNeedNewCode = {
+                        navController.popBackStack("forgotPassword", inclusive = false)
                     },
                     onResetPasswordSuccess = {
                         navController.navigate("login") {
@@ -396,7 +422,19 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        InternalHomeScreen()
+                        InternalHomeScreen(
+                            onRecordClick = { userId ->
+                                // V-10 loads the cases belonging to the selected owner
+                                navController.navigate("recordFromUser/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllRecordsClick = {
+                                navController.navigate("allRecords") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
                     }
                 }
             }

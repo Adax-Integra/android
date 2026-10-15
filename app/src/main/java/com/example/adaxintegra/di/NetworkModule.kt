@@ -4,11 +4,12 @@ import com.example.adaxintegra.data.remote.api.ActivityLogApi
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
-import com.example.adaxintegra.data.remote.api.ExpedientApi
 import com.example.adaxintegra.data.remote.api.EventApi
+import com.example.adaxintegra.data.remote.api.ExpedientApi
 import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
+import com.example.adaxintegra.data.remote.api.ReportApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -88,4 +89,9 @@ object NetworkModule {
     @Singleton
     fun provideEventApi(retrofit: Retrofit): EventApi =
         retrofit.create(EventApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(retrofit: Retrofit): ReportApi =
+        retrofit.create(ReportApi::class.java)
 }

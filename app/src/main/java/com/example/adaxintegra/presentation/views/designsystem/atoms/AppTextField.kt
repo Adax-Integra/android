@@ -29,11 +29,13 @@ fun AppTextField(
     minLines: Int = 1,
     isError: Boolean = false,
     readOnly: Boolean = false,
+    enabled: Boolean = true,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         readOnly = readOnly,
+        enabled = enabled,
         placeholder = placeholder?.let {
             {
                 Text(

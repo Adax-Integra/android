@@ -33,7 +33,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileOption
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 
 @Suppress("ktlint:standard:function-naming")
 // profile screen, reached through bottom nav bar option
@@ -116,7 +116,7 @@ fun ProfileScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 // options for further details
-                                ProfileOption(
+                                MenuOptionCard(
                                     icon = AppIcons.Profile,
                                     title = "Datos Personales",
                                     subtitle = "Nombre, teléfono, correo",
@@ -125,7 +125,7 @@ fun ProfileScreen(
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                ProfileOption(
+                                MenuOptionCard(
                                     icon = AppIcons.Lock,
                                     title = "Seguridad",
                                     subtitle = "Cambio de contraseña",
@@ -155,18 +155,15 @@ fun ProfileScreen(
                         }
                     }
                 }
-
-                //button stays outside the scroll area
-                if (profile != null) {
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    AppButton(
-                        text = "Cerrar sesión",
-                        onClick = { showLogoutConfirmation = true },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            AppButton(
+                text = "Cerrar sesión",
+                onClick = { showLogoutConfirmation = true },
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             //logout confirmation
             if (showLogoutConfirmation) {

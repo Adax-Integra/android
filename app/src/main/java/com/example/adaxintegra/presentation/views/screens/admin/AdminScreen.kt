@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
-import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordMenuOptionCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
@@ -49,25 +49,26 @@ fun AdminScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            RecordMenuOptionCard(
+
+            MenuOptionCard(
                 title = "Gestion de colaboradoras",
-                description = "Administra y crea las cuentas de los colaboradores de la aplicación.",
+                subtitle = "Administra y crea las cuentas de los colaboradores de la aplicación.",
                 icon = AppIcons.People,
-                nextScreen = onManageUsersClick,
+                onClick = onManageUsersClick,
             )
 
-            RecordMenuOptionCard(
+            MenuOptionCard(
                 title = "Gestionar expedientes",
-                description = "Administra y crea las cuentas de las usuarias externas.",
+                subtitle = "Administra y crea las cuentas de las usuarias externas.",
                 icon = AppIcons.Profile,
-                nextScreen = onManageExpedientsClick,
+                onClick = onManageExpedientsClick,
             )
 
-            RecordMenuOptionCard(
+            MenuOptionCard(
                 title = "Bitácora de cambios",
-                description = "Consulta el historial de actividades e incidencias en el sistema.",
+                subtitle = "Consulta el historial de actividades e incidencias en el sistema.",
                 icon = AppIcons.History,
-                nextScreen = onAuditLogClick,
+                onClick = onAuditLogClick,
             )
         }
     }
