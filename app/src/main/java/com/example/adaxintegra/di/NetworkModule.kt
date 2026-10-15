@@ -8,6 +8,7 @@ import com.example.adaxintegra.data.remote.api.ExpedientApi
 import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
+import com.example.adaxintegra.data.remote.api.ReportApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -82,4 +83,8 @@ object NetworkModule {
     @Singleton
     fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi =
         retrofit.create(PrivacyPolicyApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(retrofit: Retrofit): ReportApi = retrofit.create(ReportApi::class.java)
 }
