@@ -328,7 +328,8 @@ fun CreateEventScreen(
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { _ ->
+    ) { uri ->
+        uri?.let { viewModel.onImageSelected(it) }
     }
 
     val spacing = Spacing()
@@ -527,7 +528,7 @@ fun CreateEventScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Agregar imagen",
+                            text = if (uiState.imageUri != null) "Imagen seleccionada ✓" else "Agregar imagen",
                             style = AppTextStyle.BodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary,

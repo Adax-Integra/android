@@ -1,5 +1,7 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import android.net.Uri
+
 data class CreateEventUiState(
     val title: String = "",
     val startDate: String = "",
@@ -16,6 +18,7 @@ data class CreateEventUiState(
     val phone: String = "",
     val description: String = "",
     val notes: String = "",
+    val imageUri: Uri? = null,
     val isSaving: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,

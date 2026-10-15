@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
@@ -37,6 +38,7 @@ class CreateEventViewModel @Inject constructor(
     fun onPhoneChange(v: String) = _uiState.update { it.copy(phone = v, error = null) }
     fun onDescriptionChange(v: String) = _uiState.update { it.copy(description = v, error = null) }
     fun onNotesChange(v: String) = _uiState.update { it.copy(notes = v, error = null) }
+    fun onImageSelected(uri: Uri?) = _uiState.update { it.copy(imageUri = uri, error = null) }
 
     fun dismissSuccess() = _uiState.update { it.copy(successMessage = null) }
 
@@ -80,7 +82,7 @@ class CreateEventViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            createEventUseCase(token, newEvent).collect { result ->
+            createEventUseCase(token, newEvent, state.imageUri).collect { result ->
                 when (result) {
                     is Result.Loading -> _uiState.update { it.copy(isSaving = true, error = null) }
                     is Result.Success -> {
@@ -90,7 +92,7 @@ class CreateEventViewModel @Inject constructor(
                     }
                     is Result.Error -> {
                         _uiState.update {
-                            it.copy(isSaving = false, error = "Ocurrió un error al registrar el evento. Inténtalo de nuevo.")
+                            it.copy(isSaving = false, error = "Ocurrió un error al registrar el evento o subir la imagen. Inténtalo de nuevo.")
                         }
                     }
                 }
