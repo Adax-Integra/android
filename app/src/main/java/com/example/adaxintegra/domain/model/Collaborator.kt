@@ -26,3 +26,15 @@ data class CollaboratorSummary(
     val email: String?,
     val isActive: Boolean,
 )
+
+// G-10: detail of one collaborator that the admin consults
+data class CollaboratorDetail(
+    val userId: String,
+    val name: String,
+    val lastName: String,
+    val email: String?,
+    val phone: String?,
+    val role: String?,
+    val createdAt: String?,
+    val isActive: Boolean,
+)
