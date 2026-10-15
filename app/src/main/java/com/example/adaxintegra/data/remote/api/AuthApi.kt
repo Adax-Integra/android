@@ -61,4 +61,10 @@ interface AuthApi {
     suspend fun resetPassword(
         @Body request: ResetPasswordRequestDto,
     ): ResetPasswordResponseDto
+
+    // Revokes the token used by the current device.
+    @POST("api/auth/logout")
+    suspend fun logout(
+        @Header("Authorization") authorization: String,
+    ): MessageResponseDto
 }

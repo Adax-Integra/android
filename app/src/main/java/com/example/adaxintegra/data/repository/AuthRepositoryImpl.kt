@@ -26,6 +26,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
+import retrofit2.HttpException
 
 /*
  * Auth against the Node backend (G-01, G-02, G-09, G-12) with the session saved
@@ -74,7 +75,24 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        // Clear storage first so the session cannot return after reopening.
+        val token = _session.value?.token
+
+        if (!token.isNullOrBlank()) {
+            try {
+                val response = api.logout("Bearer $token")
+
+                if (!response.success) {
+                    throw IllegalStateException("Unable to revoke the token.")
+                }
+            } catch (exception: HttpException) {
+                // An unauthorized token no longer grants access.
+                if (exception.code() != 401) {
+                    throw exception
+                }
+            }
+        }
+
+        // Clear local data after revocation or an unauthorized response.
         sessionPreferences.clear()
         _session.value = null
     }
