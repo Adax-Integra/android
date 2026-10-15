@@ -35,6 +35,7 @@ data class CollaboratorDetail(
     val email: String?,
     val phone: String?,
     val role: String?,
-    val createdAt: String?,
+    val office: String?,
+    val joinedAt: String?,
     val isActive: Boolean,
 )

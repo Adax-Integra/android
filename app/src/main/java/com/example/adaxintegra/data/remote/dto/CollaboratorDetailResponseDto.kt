@@ -16,8 +16,12 @@ data class CollaboratorDetailDto(
     val phone: String?,
     @SerializedName("role")
     val role: String?,
-    @SerializedName("created_at")
-    val createdAt: String?,
+    // Office where the collaborator works, null when it was never assigned
+    @SerializedName("office")
+    val office: String?,
+    // Date the account was created, only the date part (YYYY-MM-DD)
+    @SerializedName("joined_at")
+    val joinedAt: String?,
     @SerializedName("is_active")
     val isActive: Boolean?,
 )

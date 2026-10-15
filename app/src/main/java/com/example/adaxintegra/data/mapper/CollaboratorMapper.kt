@@ -45,6 +45,7 @@ fun CollaboratorDetailDto.toDomain(): CollaboratorDetail = CollaboratorDetail(
     email = if (email.isNullOrBlank()) null else email,
     phone = if (phone.isNullOrBlank()) null else phone,
     role = if (role.isNullOrBlank()) null else role,
-    createdAt = if (createdAt.isNullOrBlank()) null else createdAt,
+    office = if (office.isNullOrBlank()) null else office,
+    joinedAt = if (joinedAt.isNullOrBlank()) null else joinedAt,
     isActive = isActive ?: false,
 )

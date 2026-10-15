@@ -50,7 +50,8 @@ private val MONTHS = listOf(
     "jul", "ago", "sep", "oct", "nov", "dic",
 )
 
-// Splits "2024-07-15T18:00:00Z" into [2024, 07, 15], null if the date is not valid
+// Splits "2024-07-15" into [2024, 07, 15], null if the date is not valid.
+// Also accepts a full date with time, only the part before "T" is used
 private fun dateParts(date: String?): List<String>? {
     if (date.isNullOrBlank()) {
         return null
@@ -106,7 +107,7 @@ fun CollaboratorDetailContent(
 ) {
     val spacing = Spacing()
     val fullName = "${collaborator.name} ${collaborator.lastName}".trim()
-    val sinceText = formatMonthYear(collaborator.createdAt)
+    val sinceText = formatMonthYear(collaborator.joinedAt)
     val statusColor = if (collaborator.isActive) ActiveColor else InactiveColor
     val statusText = if (collaborator.isActive) "Activa" else "Inactiva"
     val statusDescription = if (collaborator.isActive) {
@@ -195,7 +196,9 @@ fun CollaboratorDetailContent(
         DetailSection(title = "Datos organizacionales") {
             InfoRow(label = "Rol", value = roleText(collaborator.role))
             HorizontalDivider()
-            InfoRow(label = "Ingreso", value = formatDate(collaborator.createdAt))
+            InfoRow(label = "Sede", value = collaborator.office ?: "Sin asignar")
+            HorizontalDivider()
+            InfoRow(label = "Ingreso", value = formatDate(collaborator.joinedAt))
         }
 
         DetailSection(title = "Estatus en la organización") {
@@ -375,7 +378,8 @@ fun CollaboratorDetailContentPreview() {
                 email = "celine.hernandez@adax.org",
                 phone = "+524421110000",
                 role = "internal",
-                createdAt = "2024-07-15T18:00:00.000Z",
+                office = "Querétaro, Qro.",
+                joinedAt = "2024-07-15",
                 isActive = false,
             ),
             onCopy = {},
