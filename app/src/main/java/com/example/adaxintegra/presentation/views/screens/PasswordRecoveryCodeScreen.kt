@@ -183,12 +183,13 @@ fun PasswordRecoveryCodeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                //continue to verify code input
+                //continue if 6 digit code is verified
                 AppButton(
                     text = "Continuar",
                     onClick = viewModel::onContinueClick,
                     variant = ButtonVariant.Primary,
-                    enabled = uiState.otpCode.length == 6,
+                    enabled = uiState.otpCode.length == 6 && !uiState.isValidating,
+                    isLoading = uiState.isValidating,
                     modifier = Modifier.fillMaxWidth(),
                 )
 

@@ -5,10 +5,11 @@ data class PasswordRecoveryCodeUiState(
     val otpCode: String = "",
     val cooldownSeconds: Int = 60,
     val sendCount: Int = 1,
-    val maxSends: Int = 5,
+    val maxSends: Int = 3,
     val isResending: Boolean = false,
     val successMessage: String? = null,
     val errorMessage: String? = null,
+    val isValidating: Boolean = false
 )
 
 //reset password screen receives these values

@@ -7,11 +7,13 @@ import com.example.adaxintegra.data.remote.dto.ForgotPasswordResponseDto
 import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.LoginResponseDto
 import com.example.adaxintegra.data.remote.dto.MessageResponseDto
+import com.example.adaxintegra.data.remote.dto.PasswordRecoveryResponseDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterResponseDto
 import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordResponseDto
+import com.example.adaxintegra.data.remote.dto.ValidateCodeRequestDto
 import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
 
 import retrofit2.http.Body
@@ -55,10 +57,15 @@ interface AuthApi {
     @POST("api/password-recovery/forgot-password")
     suspend fun forgotPassword(
         @Body request: ForgotPasswordRequestDto,
-    ): ForgotPasswordResponseDto
+    ): PasswordRecoveryResponseDto
+
+    @POST("api/password-recovery/validate-code")
+    suspend fun validateRecoveryCode(
+        @Body request: ValidateCodeRequestDto,
+    ): PasswordRecoveryResponseDto
 
     @POST("api/password-recovery/reset-password")
     suspend fun resetPassword(
         @Body request: ResetPasswordRequestDto,
-    ): ResetPasswordResponseDto
+    ): PasswordRecoveryResponseDto
 }

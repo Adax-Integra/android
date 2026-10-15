@@ -176,10 +176,9 @@ fun ResetPasswordScreen(
             //these buttons appear only after code error
             AppButton(
                 text = "Cambiar contraseña",
-                onClick = {
-                    viewModel.onResetPasswordClick()
-                },
+                onClick = viewModel::onResetPasswordClick,
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
                 isLoading = uiState.isLoading,
             )
 
