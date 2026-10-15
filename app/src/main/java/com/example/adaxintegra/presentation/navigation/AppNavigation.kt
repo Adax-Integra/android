@@ -58,13 +58,17 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.home.CreateEventScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
-import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -188,6 +192,24 @@ fun AppNavigation(
     }
 
     Scaffold(
+        floatingActionButton = {
+            if (hasValidSession && currentRoute == "home" && (isInternal || isAdmin)) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("createEvent") {
+                            launchSingleTop = true
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Registrar evento",
+                    )
+                }
+            }
+        },
         bottomBar = {
             if (
                 hasValidSession &&
@@ -724,6 +746,21 @@ fun AppNavigation(
                 if (hasValidSession && isAdmin) {
                     ActivityLogScreen(
                         onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("createEvent") {
+                if (hasValidSession && canViewAllCases) {
+                    CreateEventScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onEventCreated = {
                             navController.popBackStack()
                         },
                     )
