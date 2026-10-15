@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.screens.home
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
@@ -25,19 +23,6 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHea
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
-
-// NV-01: link the team left, the podcast card is the only way into it
-private const val PODCAST_URL =
-    "https://open.spotify.com/show/5yaZdYjbR36lrDmaJ0WhVk?si=pbLJm3ifQIuItgKcnyN08Q&utm_source=copy-link"
-
-// NV-01: the same podcast as video
-private const val YOUTUBE_URL = "https://www.youtube.com/@AdaxDigitales"
-
-// NV-01: links to the profiles of the organization
-private const val FACEBOOK_URL = "https://www.facebook.com/ADAxDigitales/"
-private const val INSTAGRAM_URL = "https://www.instagram.com/adax_digitales_a.c._/"
-private const val X_URL = "https://x.com/ADAxDigitalesAC"
-private const val TIKTOK_URL = "https://www.tiktok.com/@adax_digitales"
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -51,13 +36,6 @@ fun ExternalHomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
     val context = LocalContext.current
-
-    // NV-01: the app of the network if it is installed, the browser otherwise
-    val openExternalLink: (String) -> Unit = { url ->
-        runCatching {
-            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-        }
-    }
 
     // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
@@ -104,17 +82,17 @@ fun ExternalHomeScreen(
             SectionTitle(text = "Podcast")
 
             PodcastCard(
-                onSpotifyClick = { openExternalLink(PODCAST_URL) },
-                onYouTubeClick = { openExternalLink(YOUTUBE_URL) },
+                onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
+                onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
             )
 
             SectionTitle(text = "Redes sociales")
 
             SocialMediaCard(
-                onFacebookClick = { openExternalLink(FACEBOOK_URL) },
-                onInstagramClick = { openExternalLink(INSTAGRAM_URL) },
-                onXClick = { openExternalLink(X_URL) },
-                onTikTokClick = { openExternalLink(TIKTOK_URL) },
+                onFacebookClick = { HomeLinks.open(context, HomeLinks.FACEBOOK_URL) },
+                onInstagramClick = { HomeLinks.open(context, HomeLinks.INSTAGRAM_URL) },
+                onXClick = { HomeLinks.open(context, HomeLinks.X_URL) },
+                onTikTokClick = { HomeLinks.open(context, HomeLinks.TIKTOK_URL) },
             )
 
             Spacer(modifier = Modifier.height(spacing.large))
