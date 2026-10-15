@@ -111,6 +111,27 @@ constructor(
         return created.toDomain()
     }
 
+    // Creates a case for an external user by an internal/admin user
+    override suspend fun createCaseForExternalUser(userId: String, newCase: NewCase): Case {
+        val response = try {
+            api.createCaseForExternalUser(
+                userId = userId,
+                authorization = authorizationHeader(),
+                request = newCase.toRequestDto(),
+            )
+        } catch (e: HttpException) {
+            throw fieldValidationException(e) ?: e
+        }
+
+        val created = response.data
+
+        if (!response.success || created == null) {
+            throw IllegalStateException("Unable to create the case.")
+        }
+
+        return created.toDomain()
+    }
+
     // Reads { success, error, errors: { campo: motivo } } out of a 400 answer
     private fun fieldValidationException(e: HttpException): FieldValidationException? {
         // 400 is the only status that carries one reason per field

@@ -66,4 +66,12 @@ interface CaseApi {
         @Header("Authorization") authorization: String,
         @Body request: CreateCaseRequestDto,
     ): CreateCaseResponseDto
+
+    // Creates a case for an external user by an internal/admin user
+    @POST("api/internal-users/external-users/{userId}/cases")
+    suspend fun createCaseForExternalUser(
+        @Path("userId") userId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: CreateCaseRequestDto,
+    ): CreateCaseResponseDto
 }
