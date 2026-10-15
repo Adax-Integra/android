@@ -590,6 +590,14 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onPersonalDataClick = {},
+                    onUploadDocumentsClick = {
+                        if (hasValidSession && isExternal) {
+                            navController.navigate("uploadDocuments") {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    isExternal = isExternal,
                     onSecurityClick = {
                         navController.navigate("changePassword") {
                             launchSingleTop = true
