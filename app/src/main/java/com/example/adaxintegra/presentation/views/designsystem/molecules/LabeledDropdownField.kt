@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.ui.theme.Purple
 
 //Label + closed list of options (no free text), like the SÍ/No of R-02
 // Unlike AutoCompleteOutlinedTextField the value can only come from the list
@@ -45,7 +46,7 @@ fun LabeledDropdownField(
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (error != null) MaterialTheme.colorScheme.error else Purple,
             fontWeight = FontWeight.Medium,
         )
 
