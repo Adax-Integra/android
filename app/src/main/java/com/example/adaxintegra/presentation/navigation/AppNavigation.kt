@@ -49,6 +49,7 @@ import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
+import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -209,7 +210,10 @@ fun AppNavigation(
                             -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
-                        "collaborators" -> "admin"
+                        // G-10: the collaborator detail keeps the admin tab selected
+                        "collaborators",
+                        "collaboratorDetail/{userId}",
+                            -> "admin"
 
                         // V-06: activity log is opened from the admin section
                         "activityLog" -> "admin"
@@ -631,9 +635,35 @@ fun AppNavigation(
                         onBack = {
                             navController.popBackStack()
                         },
+                        onCollaboratorClick = { userId ->
+                            navController.navigate("collaboratorDetail/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
             }
+
+            // G-10: admin consults the detail of one collaborator
+            composable("collaboratorDetail/{userId}") { entry ->
+                if (hasValidSession && isAdmin) {
+                    val userId = entry.arguments?.getString("userId")
+
+                    if (!userId.isNullOrBlank()) {
+                        CollaboratorDetailScreen(
+                            userId = userId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la colaboradora")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
             // V-11: internal/admin case detail screen
             composable("caseDetail/{caseId}") { entry ->
                 if (hasValidSession && canViewAllCases) {
