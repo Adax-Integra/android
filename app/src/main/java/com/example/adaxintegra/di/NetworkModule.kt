@@ -4,6 +4,7 @@ import com.example.adaxintegra.data.remote.api.ActivityLogApi
 import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
+import com.example.adaxintegra.data.remote.api.EventApi
 import com.example.adaxintegra.data.remote.api.ExpedientApi
 import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
@@ -24,7 +25,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://dev-api.adaxdigitales.com"
+    private const val BASE_URL = "https://dev-api.adaxdigitales.com/"
 
     // Server testing: use "https://dev-api.adaxdigitales.com", enable networkSecurityConfig
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
@@ -87,5 +88,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideReportApi(retrofit: Retrofit): ReportApi = retrofit.create(ReportApi::class.java)
+    fun provideEventApi(retrofit: Retrofit): EventApi =
+        retrofit.create(EventApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(retrofit: Retrofit): ReportApi =
+        retrofit.create(ReportApi::class.java)
 }

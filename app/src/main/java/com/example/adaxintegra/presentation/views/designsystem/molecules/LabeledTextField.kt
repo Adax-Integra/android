@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextField
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.ui.theme.Purple
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -30,12 +31,13 @@ fun LabeledTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     errorMessage: String? = null,
+    readOnly: Boolean = false,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = if (errorMessage != null) Color.Red else Color.Gray,
+            color = if (errorMessage != null) Color.Red else Purple,
             fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -49,6 +51,7 @@ fun LabeledTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             isError = errorMessage != null,
+            readOnly = readOnly,
         )
         if (errorMessage != null) {
             Spacer(modifier = Modifier.height(4.dp))

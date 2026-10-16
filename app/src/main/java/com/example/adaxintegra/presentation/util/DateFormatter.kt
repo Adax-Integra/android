@@ -21,6 +21,14 @@ object DateFormatter {
         return SimpleDateFormat("dd/MM/yyyy", locale).format(date)
     }
 
+    // ex. "22/09/2026" from UTC millis (DatePicker)
+    fun dayFromUtcMillis(millis: Long?): String {
+        if (millis == null) return ""
+        return SimpleDateFormat("dd/MM/yyyy", locale).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+        }.format(Date(millis))
+    }
+
     // ex. "13:45"
     fun time(date: Date?): String {
         if (date == null) return ""

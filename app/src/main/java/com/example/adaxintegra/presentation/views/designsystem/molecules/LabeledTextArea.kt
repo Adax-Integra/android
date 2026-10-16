@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextField
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.ui.theme.Purple
 
 //Long free text with its label, its error and how much room is left,
 // so the user sees the limit before the backend rejects the text
@@ -34,7 +35,7 @@ fun LabeledTextArea(
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = Purple,
             fontWeight = FontWeight.Medium,
         )
 

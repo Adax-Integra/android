@@ -66,6 +66,7 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -202,30 +203,31 @@ fun AppNavigation(
                 !currentRoute.startsWith("resetPassword")
             ) {
                 val selectedRoute =
-                    when {
+                    when (currentRoute) {
                         // Keep the records tab selected throughout this flow.
-                        currentRoute == "collaboratorCases" ||
-                            currentRoute == "allRecords" ||
-                            currentRoute.startsWith("recordFromUser") -> "records"
+                        "collaboratorCases",
+                        "allRecords",
+                        "recordFromUser/{userId}",
+                            -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
+                        "collaborators" -> "admin"
+
                         // V-06: activity log is opened from the admin section
                         // G-10: the collaborator detail keeps the admin tab selected
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
                             currentRoute.startsWith("collaboratorDetail") -> "admin"
 
-                        currentRoute.startsWith("case/") -> {
+                        "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
                         }
 
                         // V-11 belongs to the internal/admin records flow
-                        currentRoute.startsWith("caseDetail") -> "records"
+                        "caseDetail/{caseId}" -> "records"
 
-                        // R-02 is opened from the external user's case list or after expedient registration
-                        currentRoute.startsWith("createCase") -> {
-                            if (isExternal) "cases" else "records"
-                        }
+                        // R-02 is opened from the external user's case list
+                        "createCase" -> "cases"
 
                         else -> currentRoute
                     }
@@ -504,10 +506,9 @@ fun AppNavigation(
                             navController.navigate("registerExpedient") {
                                 launchSingleTop = true
                             }
-                        },
-                        onRefresh = recordsViewModel::refresh,
+                        }
 
-                        )
+                    )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
@@ -525,11 +526,6 @@ fun AppNavigation(
                             },
                             onCaseClick = { caseId ->
                                 navController.navigate("caseDetail/$caseId") {
-                                    launchSingleTop = true
-                                }
-                            },
-                            onCreateCaseClick = {
-                                navController.navigate("createCase/$userId") {
                                     launchSingleTop = true
                                 }
                             },
@@ -561,27 +557,10 @@ fun AppNavigation(
                 }
             }
 
-            // R-02: registers a new case (for external user or created by internal/admin)
+            // R-02: the external user registers a new case
             composable("createCase") {
-                if (hasValidSession && (isExternal || canViewAllCases)) {
+                if (hasValidSession && isExternal) {
                     CreateCaseScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onCaseCreated = {
-                            navController.popBackStack()
-                        },
-                    )
-                } else {
-                    Text("No tienes permiso para acceder a esta pantalla.")
-                }
-            }
-
-            composable("createCase/{targetUserId}") { entry ->
-                if (hasValidSession && canViewAllCases) {
-                    val targetUserId = entry.arguments?.getString("targetUserId")
-                    CreateCaseScreen(
-                        targetUserId = targetUserId,
                         onBack = {
                             navController.popBackStack()
                         },
@@ -818,14 +797,8 @@ fun AppNavigation(
                         onCancel = {
                             navController.popBackStack()
                         },
-                        onSuccess = { createdUserId ->
-                            if (createdUserId.isNotBlank()) {
-                                navController.navigate("createCase/$createdUserId") {
-                                    popUpTo("registerExpedient") { inclusive = true }
-                                }
-                            } else {
-                                navController.popBackStack()
-                            }
+                        onSuccess = {
+                            navController.popBackStack()
                         }
                     )
                 } else {
