@@ -27,7 +27,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
-import android.net.Uri
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
@@ -36,6 +35,7 @@ import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
+import com.example.adaxintegra.presentation.viewmodel.ReportsViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
@@ -58,16 +58,13 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
-import com.example.adaxintegra.presentation.views.screens.home.CreateEventScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -191,24 +188,6 @@ fun AppNavigation(
     }
 
     Scaffold(
-        floatingActionButton = {
-            if (hasValidSession && currentRoute == "home" && (isInternal || isAdmin)) {
-                FloatingActionButton(
-                    onClick = {
-                        navController.navigate("createEvent") {
-                            launchSingleTop = true
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Registrar evento",
-                    )
-                }
-            }
-        },
         bottomBar = {
             if (
                 hasValidSession &&
@@ -339,6 +318,7 @@ fun AppNavigation(
                     email = email,
                     code = code,
                     onBack = { navController.popBackStack() },
+                    //expired or too many attempts: go back to the first screen for a new code
                     onNeedNewCode = {
                         navController.popBackStack("forgotPassword", inclusive = false)
                     },
@@ -452,6 +432,42 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onReportsClick = {
+                            navController.navigate("reportSelectRange") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("reportSelectRange") {
+                if (hasValidSession && canViewAllCases) {
+                    val reportsViewModel: ReportsViewModel = hiltViewModel()
+                    val reportsUiState by reportsViewModel.uiState.collectAsStateWithLifecycle()
+
+                    ReportSelectRange(
+                        uiState = reportsUiState,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onStartDateSelected = reportsViewModel::setStartDate,
+                        onEndDateSelected = reportsViewModel::setEndDate,
+                        onChipSelected = { chip ->
+                            when (chip) {
+                                "Mes anterior" -> reportsViewModel.chipPreviousMonthSelected()
+                                "Mes actual" -> reportsViewModel.chipThisMonthSelected()
+                                "Trimestre previo" -> reportsViewModel.chipPreviousTrimester()
+                            }
+                        },
+                        onGenerateReportClick = {
+                            reportsViewModel.downloadReport()
+                        },
+                        onClearDownloadedFile = {
+                            reportsViewModel.clearDownloadedFile()
+                        }
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -708,21 +724,6 @@ fun AppNavigation(
                 if (hasValidSession && isAdmin) {
                     ActivityLogScreen(
                         onBack = {
-                            navController.popBackStack()
-                        },
-                    )
-                } else {
-                    Text("No tienes permiso para acceder a esta pantalla.")
-                }
-            }
-
-            composable("createEvent") {
-                if (hasValidSession && canViewAllCases) {
-                    CreateEventScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onEventCreated = {
                             navController.popBackStack()
                         },
                     )

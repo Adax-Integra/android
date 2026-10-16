@@ -11,6 +11,7 @@ import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
+import com.example.adaxintegra.data.remote.dto.ValidateCodeRequestDto
 import com.example.adaxintegra.data.remote.toAuthError
 import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
@@ -88,6 +89,27 @@ class AuthRepositoryImpl @Inject constructor(
 
             if (!response.success) {
                 throw AuthError.Unknown("forgot-password returned success=false")
+            }
+
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception.toAuthError())
+        }
+    }
+
+    override suspend fun validateRecoveryCode(
+        email: String,
+        code: String,
+    ): Result<Unit> {
+        return try {
+            val response = api.validateRecoveryCode(ValidateCodeRequestDto(
+                email = email.trim(),
+                code = code.trim()))
+
+            if (!response.success) {
+                throw AuthError.Unknown("validate-code returned success=false")
             }
 
             Result.Success(Unit)
