@@ -4,6 +4,7 @@ import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
 import com.example.adaxintegra.domain.model.Collaborator
+import com.example.adaxintegra.domain.model.CollaboratorDetail
 import com.example.adaxintegra.domain.model.CollaboratorSummary
 import com.example.adaxintegra.domain.model.NewCollaborator
 import com.example.adaxintegra.domain.repository.AuthRepository
@@ -13,6 +14,7 @@ import javax.inject.Singleton
 
 // G-03: sends the new collaborator to the backend
 // G-06: lists collaborator accounts in the backend
+// G-10: gets the detail of one collaborator
 @Singleton
 class CollaboratorRepositoryImpl @Inject constructor(
     private val api: CollaboratorApi,
@@ -40,5 +42,11 @@ class CollaboratorRepositoryImpl @Inject constructor(
         val items = response.data ?: emptyList()
         return items.map { it.toDomain() }
     }
-}
 
+    // G-10: a missing collaborator answers 404, Retrofit throws it as an HttpException
+    override suspend fun getCollaboratorDetail(userId: String): CollaboratorDetail {
+        val response = api.getCollaboratorDetail(authorizationHeader(), userId)
+        val detail = response.data ?: throw IllegalStateException("Empty response from server")
+        return detail.toDomain()
+    }
+}

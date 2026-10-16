@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
@@ -92,4 +93,8 @@ object AppIcons {
 
     val Email: ImageVector
         get() = Icons.Outlined.MailOutline
+
+    // G-10: phone of the collaborator in her detail
+    val Phone: ImageVector
+        get() = Icons.Default.Phone
 }
