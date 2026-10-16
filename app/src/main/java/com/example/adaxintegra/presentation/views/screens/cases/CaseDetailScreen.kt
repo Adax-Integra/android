@@ -67,7 +67,7 @@ fun CaseDetailScreen(
 
     val statusColor =
         when (normalizedState) {
-            "open" -> Color(0xFF34C759)
+            "open" -> CaseStatusUi.OPEN.color
             "cerrado" -> CaseStatusUi.CLOSED.color
             else -> status?.color ?: IconGrey
         }
