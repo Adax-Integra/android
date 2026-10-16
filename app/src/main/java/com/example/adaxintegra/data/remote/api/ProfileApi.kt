@@ -1,8 +1,12 @@
 package com.example.adaxintegra.data.remote.api
 
+import com.example.adaxintegra.data.remote.dto.EditableProfileResponseDto
 import com.example.adaxintegra.data.remote.dto.ProfileResponseDto
+import com.example.adaxintegra.data.remote.dto.UpdateProfileResponseDto
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.Path
 
 //simply calling for userId to find correct profile to display
@@ -13,10 +17,17 @@ interface ProfileApi {
         @Header("Authorization") authorization: String
     ): ProfileResponseDto
 
-    //edit profile updates database
-    /*@PATCH("api/profile/{userId}")
-    suspend fun getProfile(
+    //edit profile endpoints
+    @GET("api/profile/{userId}/edit")
+    suspend fun getEditableProfile(
         @Path("userId") userId: String,
         @Header("Authorization") authorization: String
-    ): ProfileResponseDto*/
+    ): EditableProfileResponseDto
+
+    @PATCH("api/profile/{userId}")
+    suspend fun updateProfile(
+        @Path("userId") userId: String,
+        @Header("Authorization") authorization: String,
+        @Body fields: Map<String, String>
+    ): UpdateProfileResponseDto
 }

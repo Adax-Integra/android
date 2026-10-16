@@ -2,6 +2,7 @@ package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.remote.api.ProfileApi
+import com.example.adaxintegra.domain.model.EditableProfile
 import com.example.adaxintegra.domain.model.ProfileView
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.ProfileRepository
@@ -31,5 +32,19 @@ class ProfileRepositoryImpl @Inject constructor(
             userId = userId,
             authorization  = authorizationHeader())
         return response.data.toDomain()
+    }
+
+    override suspend fun getEditableProfile(userId: String): EditableProfile {
+        val response = api.getEditableProfile(
+            userId = userId,
+            authorization  = authorizationHeader())
+        return response.data.toDomain()
+    }
+
+    override suspend fun updateProfile(userId: String, fields: Map<String, String>) {
+        api.updateProfile(
+            userId = userId,
+            authorization = authorizationHeader(),
+            fields = fields)
     }
 }
