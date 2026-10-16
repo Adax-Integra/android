@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,6 +23,7 @@ import com.example.adaxintegra.presentation.viewmodel.CasesFromUserUiState
 import com.example.adaxintegra.presentation.viewmodel.CasesFromUserViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
@@ -31,6 +34,7 @@ fun RecordFromUser(
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
     onCreateCaseClick: () -> Unit = {},
+    onDocumentsClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -43,6 +47,7 @@ fun RecordFromUser(
         onBackClick = onBackClick,
         onCaseClick = onCaseClick,
         onCreateCaseClick = onCreateCaseClick,
+        onDocumentsClick = onDocumentsClick,
     )
 }
 
@@ -53,6 +58,7 @@ fun RecordFromUserContent(
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
     onCreateCaseClick: () -> Unit = {},
+    onDocumentsClick: () -> Unit = {},
 ) {
     val userName = uiState.cases.firstOrNull()?.name ?: "Usuario"
 
@@ -68,6 +74,14 @@ fun RecordFromUserContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            // V-13: identity documents the external user uploaded in R-06
+            MenuOptionCard(
+                icon = Icons.Outlined.Badge,
+                title = "Documentos",
+                subtitle = "INE y comprobante de domicilio",
+                onClick = onDocumentsClick,
+            )
+
             AppButton(
                 text = "Registrar nuevo caso",
                 onClick = onCreateCaseClick,

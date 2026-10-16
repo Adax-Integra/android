@@ -44,7 +44,6 @@ import com.example.adaxintegra.presentation.views.screens.PendingVerificationScr
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
-import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
@@ -61,6 +60,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
+import com.example.adaxintegra.presentation.views.screens.records.RecordDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
@@ -206,7 +207,8 @@ fun AppNavigation(
                         // Keep the records tab selected throughout this flow.
                         currentRoute == "collaboratorCases" ||
                             currentRoute == "allRecords" ||
-                            currentRoute.startsWith("recordFromUser") -> "records"
+                            currentRoute.startsWith("recordFromUser") ||
+                            currentRoute.startsWith("recordDocuments") -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
@@ -249,9 +251,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "session",
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
+            Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -282,7 +284,7 @@ fun AppNavigation(
                 )
             }
 
-            //forgot password screen
+            // forgot password screen
             composable("forgotPassword") {
                 ForgotPasswordScreen(
                     onBack = {
@@ -297,7 +299,7 @@ fun AppNavigation(
                 )
             }
 
-            //code verification
+            // code verification
             composable("recoveryCode/{email}") { entry ->
                 val email = entry.arguments?.getString("email").orEmpty()
                 PasswordRecoveryCodeScreen(
@@ -312,7 +314,7 @@ fun AppNavigation(
                 )
             }
 
-            //reset password screen
+            // reset password screen
             composable("resetPassword/{email}/{code}") { entry ->
                 val email = entry.arguments?.getString("email").orEmpty()
                 val code = entry.arguments?.getString("code").orEmpty()
@@ -321,7 +323,7 @@ fun AppNavigation(
                     email = email,
                     code = code,
                     onBack = { navController.popBackStack() },
-                    //expired or too many attempts: go back to the first screen for a new code
+                    // expired or too many attempts: go back to the first screen for a new code
                     onNeedNewCode = {
                         navController.popBackStack("forgotPassword", inclusive = false)
                     },
@@ -390,7 +392,7 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    //NV-01: the external user gets her own home, the rest keep the role probe
+                    // NV-01: the external user gets her own home, the rest keep the role probe
                     if (isExternal) {
                         ExternalHomeScreen(
                             onCaseClick = { caseId ->
@@ -470,7 +472,7 @@ fun AppNavigation(
                         },
                         onClearDownloadedFile = {
                             reportsViewModel.clearDownloadedFile()
-                        }
+                        },
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -507,7 +509,7 @@ fun AppNavigation(
                         },
                         onRefresh = recordsViewModel::refresh,
 
-                        )
+                    )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
@@ -532,6 +534,31 @@ fun AppNavigation(
                                 navController.navigate("createCase/$userId") {
                                     launchSingleTop = true
                                 }
+                            },
+                            onDocumentsClick = {
+                                navController.navigate("recordDocuments/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del usuario")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // V-13: documents of the external user inside her record
+            composable("recordDocuments/{userId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val userId = entry.arguments?.getString("userId")
+
+                    if (!userId.isNullOrBlank()) {
+                        RecordDocumentsScreen(
+                            userId = userId,
+                            onBackClick = {
+                                navController.popBackStack()
                             },
                         )
                     } else {
@@ -653,7 +680,6 @@ fun AppNavigation(
                 )
             }
 
-
             composable("uploadDocuments") {
                 if (hasValidSession && isExternal) {
                     UploadDocumentsScreen(
@@ -665,9 +691,6 @@ fun AppNavigation(
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
-
-
-
 
             composable("changePassword") {
                 ChangePasswordScreen(
@@ -826,7 +849,7 @@ fun AppNavigation(
                             } else {
                                 navController.popBackStack()
                             }
-                        }
+                        },
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
