@@ -100,7 +100,7 @@ class AppViewModel @Inject constructor(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (_: Exception) {
-                _logoutError.value = "No se pudo borrar la sesión guardada. Intenta nuevamente."
+                _logoutError.value = "No se pudo cerrar sesión. Intenta nuevamente."
             } finally {
                 isLoggingOut = false
             }
