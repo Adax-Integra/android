@@ -46,6 +46,7 @@ private fun initials(name: String, lastName: String): String {
 }
 
 // G-06: card of one collaborator (initials, name, email and status)
+// G-10: tapping the card opens the detail of the collaborator
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CollaboratorCard(
@@ -53,10 +54,12 @@ fun CollaboratorCard(
     lastName: String,
     email: String?,
     isActive: Boolean,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Theme colors so the card is readable in light and dark mode
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -118,7 +121,7 @@ fun CollaboratorCard(
 
             StatusBadge(isActive = isActive)
 
-            // Only visual for now: the detail of a collaborator is not part of G-06
+            // G-10: the arrow shows that the card opens the detail of the collaborator
             AppIcon(
                 imageVector = AppIcons.ChevronRight,
                 contentDescription = null,
