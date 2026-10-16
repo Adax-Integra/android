@@ -13,7 +13,6 @@ import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.ValidateCodeRequestDto
 import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
-
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -51,7 +50,7 @@ interface AuthApi {
         @Body request: ChangePasswordRequestDto,
     ): ChangePasswordResponseDto
 
-    //g-05 api endpoints
+    // g-05 api endpoints
     @POST("api/password-recovery/forgot-password")
     suspend fun forgotPassword(
         @Body request: ForgotPasswordRequestDto,
@@ -65,7 +64,7 @@ interface AuthApi {
     @POST("api/password-recovery/reset-password")
     suspend fun resetPassword(
         @Body request: ResetPasswordRequestDto,
-    ): ResetPasswordResponseDto
+    ): PasswordRecoveryResponseDto
 
     // Revokes the token used by the current device.
     @POST("api/auth/logout")
