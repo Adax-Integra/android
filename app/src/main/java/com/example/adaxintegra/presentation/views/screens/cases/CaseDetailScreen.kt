@@ -103,9 +103,6 @@ fun CaseDetailScreen(
                 hasLawyer = case.hasLawyer ?: false,
                 description = case.description,
 
-                // evidence stays hidden until its backend source is available
-                showEvidenceSection = false,
-
                 helpWanted = case.helpWanted,
 
                 // record information returned by the V-11 backend detail response
@@ -153,7 +150,6 @@ private fun CaseDetailContent(
     location: String?,
     hasLawyer: Boolean,
     description: String?,
-    showEvidenceSection: Boolean,
     helpWanted: String?,
     userName: String?,
     recordId: String?,
@@ -207,13 +203,6 @@ private fun CaseDetailContent(
                 CaseDescriptionCard(
                     description = description,
                 )
-            }
-        }
-
-        // evidence is prepared for V-11 but stays hidden until its source is integrated
-        if (showEvidenceSection) {
-            item {
-                CaseEvidenceCard()
             }
         }
 
@@ -273,9 +262,6 @@ private fun OpenCaseDetailScreenPreview() {
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
 
-                // preview-only value used to validate the Figma evidence section
-                showEvidenceSection = true,
-
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
@@ -319,7 +305,6 @@ private fun ClosedCaseDetailScreenPreview() {
                 hasLawyer = true,
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
-                showEvidenceSection = true,
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
