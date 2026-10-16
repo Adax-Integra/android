@@ -120,7 +120,7 @@ fun RegisterForm(
             onCountryCodeChange = onCountryCodeChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-            errorMessage = phoneError,,
+            errorMessage = phoneError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))

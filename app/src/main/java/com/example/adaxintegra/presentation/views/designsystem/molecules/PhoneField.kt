@@ -38,8 +38,8 @@ fun PhoneField(
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     enabled: Boolean = true,
+    placeholder: String? = null,
     errorMessage: String? = null,
-    placeholder: String,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(

@@ -12,4 +12,11 @@ interface ProfileApi {
         @Path("userId") userId: String,
         @Header("Authorization") authorization: String
     ): ProfileResponseDto
+
+    //edit profile updates database
+    /*@PATCH("api/profile/{userId}")
+    suspend fun getProfile(
+        @Path("userId") userId: String,
+        @Header("Authorization") authorization: String
+    ): ProfileResponseDto*/
 }
