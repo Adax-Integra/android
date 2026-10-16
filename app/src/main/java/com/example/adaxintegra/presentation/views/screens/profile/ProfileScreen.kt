@@ -35,6 +35,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
+import com.example.adaxintegra.ui.theme.LightOrange
 import com.example.adaxintegra.ui.theme.Orange
 
 @Suppress("ktlint:standard:function-naming")
@@ -172,12 +173,13 @@ fun ProfileScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
+                                // the background must be solid, a transparent one shows the card shadow
                                 MenuOptionCard(
                                     icon = AppIcons.Delete,
                                     title = "Desactivar cuenta",
                                     subtitle = "Esta acción no se puede deshacer",
                                     onClick = { showDeactivateConfirmation = true },
-                                    containerColor = Orange.copy(alpha = 0.12f),
+                                    containerColor = LightOrange,
                                     contentColor = Orange,
                                     subtitleColor = Orange,
                                 )
