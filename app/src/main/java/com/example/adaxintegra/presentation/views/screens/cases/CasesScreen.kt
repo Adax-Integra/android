@@ -280,7 +280,7 @@ fun CasesScreen(
             }
         }
     }
-(
+
     if (showFilters) {
         CaseFilterDialog(
             initialUrgency = uiState.urgency,
