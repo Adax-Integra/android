@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.navigation
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +38,6 @@ import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
 import com.example.adaxintegra.presentation.viewmodel.ReportsViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
-import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
@@ -61,7 +59,7 @@ import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScree
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
-import com.example.adaxintegra.presentation.views.screens.profile.EditProfileScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
@@ -618,11 +616,10 @@ fun AppNavigation(
             }
 
             composable("editProfile") {
-                EditProfileScreen(
+                EditableProfileScreen(
                     onBack = {
                         navController.popBackStack()
                     },
-                    isExternal = TODO()
                 )
             }
 
