@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import com.example.adaxintegra.presentation.util.clearFocusOnTap
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
@@ -32,7 +33,7 @@ fun ScreenTemplate(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize().clearFocusOnTap()) {
         AppHeader(title = title, subtitle = subtitle, onBack = if (showBackButton) onBack else null)
 
         when {
