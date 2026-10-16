@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
@@ -52,6 +53,9 @@ object AppIcons {
 
     val Lock: ImageVector
         get() = Icons.Default.Lock
+
+    val Delete: ImageVector
+        get() = Icons.Outlined.Delete
 
     val ChevronRight: ImageVector
         get() = Icons.Default.ChevronRight
