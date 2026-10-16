@@ -12,10 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
+import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -71,5 +73,14 @@ fun AdminScreen(
                 onClick = onAuditLogClick,
             )
         }
+    }
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview
+@Composable
+private fun AdminScreenPreview() {
+    AdaxIntegraTheme(dynamicColor = false) {
+        AdminScreen(onManageUsersClick = {}, onManageExpedientsClick = {})
     }
 }
