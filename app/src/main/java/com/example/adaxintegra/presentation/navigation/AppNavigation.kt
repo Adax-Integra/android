@@ -44,6 +44,7 @@ import com.example.adaxintegra.presentation.views.screens.PendingVerificationScr
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
+import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
@@ -624,6 +625,14 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onPersonalDataClick = {},
+                    onUploadDocumentsClick = {
+                        if (hasValidSession && isExternal) {
+                            navController.navigate("uploadDocuments") {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    isExternal = isExternal,
                     onSecurityClick = {
                         navController.navigate("changePassword") {
                             launchSingleTop = true
@@ -639,6 +648,22 @@ fun AppNavigation(
                     viewModel = hiltViewModel(),
                 )
             }
+
+
+            composable("uploadDocuments") {
+                if (hasValidSession && isExternal) {
+                    UploadDocumentsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+
+
 
             composable("changePassword") {
                 ChangePasswordScreen(
