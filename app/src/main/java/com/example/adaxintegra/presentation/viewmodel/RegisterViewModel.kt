@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.adaxintegra.domain.common.PasswordValidator
 
 /**
  * // G-09-Register: ViewModel managing user registration form input, per-field validations,
@@ -133,6 +134,9 @@ class RegisterViewModel @Inject constructor(
             hasError = true
         } else if (state.password.length < 8) {
             passwordErr = "La contraseña debe tener al menos 8 caracteres"
+            hasError = true
+        } else if (!PasswordValidator.hasSpecialCharacter(state.password)) {
+            passwordErr = "La contraseña debe contener al menos un carácter especial"
             hasError = true
         }
 
