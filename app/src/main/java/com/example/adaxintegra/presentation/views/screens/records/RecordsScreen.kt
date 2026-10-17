@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,10 +20,14 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -47,19 +54,18 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.PillBadge
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RecordsScreen(
     uiState: RecordsUiState,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onSearchChange: (String) -> Unit,
     onApplyFilters: (Boolean?, String?) -> Unit,
@@ -68,8 +74,8 @@ fun RecordsScreen(
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    onRegisterRecordClick: () -> Unit
+    onRegisterRecordClick: () -> Unit,
+    onRefresh: () -> Unit = {},
 ) {
     val spacing = Spacing()
 
@@ -157,11 +163,34 @@ fun RecordsScreen(
                 }
             }
 
-            AppButton(
-                text = "Registrar nuevo expediente",
+            Button(
                 onClick = onRegisterRecordClick,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(Spacing().extraSmall))
+
+                    Text(
+                        text = "Registrar expediente",
+                        style = AppTextStyle.LabelMedium,
+                    )
+                }
+            }
 
             if (hasCriteria) {
                 Row(
@@ -202,25 +231,33 @@ fun RecordsScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = onRefresh,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
                         ) {
                             Text(
-                                text = uiState.error
-                                    ?: "No se pudieron cargar los expedientes.",
+                                text = uiState.error,
                             )
 
                             AppButton(
@@ -233,8 +270,11 @@ fun RecordsScreen(
 
                     uiState.records.isEmpty() -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
                         ) {
                             Text(
                                 text = when {
@@ -288,63 +328,13 @@ fun RecordsScreen(
                 val canGoNext = uiState.error == null &&
                     uiState.page.toLong() * uiState.limit < uiState.total
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 0.dp,
-                    ),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(
-                            onClick = onPreviousPage,
-                            enabled = canGoBack,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Página anterior",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoBack) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-
-                        androidx.compose.material3.Text(
-                            text = "Página ${uiState.page}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-
-                        IconButton(
-                            onClick = onNextPage,
-                            enabled = canGoNext,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Página siguiente",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoNext) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-                    }
-                }
+                PageSwitcher(
+                    page = uiState.page,
+                    canGoBack = canGoBack,
+                    canGoNext = canGoNext,
+                    onPreviousPage = onPreviousPage,
+                    onNextPage = onNextPage,
+                )
             }
         }
     }
@@ -455,6 +445,7 @@ private fun RecordFilterOption(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true, widthDp = 360, heightDp = 804)
 @Composable
@@ -485,7 +476,7 @@ private fun RecordsScreenPreview() {
         RecordsScreen(
             uiState = RecordsUiState(
                 records = records,
-                total = 25,
+                total = 30,
                 page = 2,
                 limit = 10,
             ),

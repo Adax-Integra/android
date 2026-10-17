@@ -7,5 +7,5 @@ import jakarta.inject.Inject
 class RegisterExpedientUseCase @Inject constructor(
     private val repository: ExpedientRepository,
 ) {
-    suspend operator fun invoke(token: String, form: PersonalDataForm): Result<Unit> = repository.registerExpedient(token, form)
+    suspend operator fun invoke(token: String, form: PersonalDataForm): Result<String> = repository.registerExpedient(token, form)
 }

@@ -22,7 +22,6 @@ import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
-import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
@@ -68,7 +67,7 @@ fun CaseDetailScreen(
 
     val statusColor =
         when (normalizedState) {
-            "open" -> Color(0xFF34C759)
+            "open" -> CaseStatusUi.OPEN.color
             "cerrado" -> CaseStatusUi.CLOSED.color
             else -> status?.color ?: IconGrey
         }
@@ -82,6 +81,8 @@ fun CaseDetailScreen(
         onBack = onBack,
         isLoading = uiState.isLoading,
         error = uiState.error,
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = { viewModel.refresh(caseId) }
     ) {
         if (case != null) {
             CaseDetailContent(
@@ -239,14 +240,6 @@ private fun CaseDetailContent(
                         modifier = Modifier.weight(1f),
                     )
                 }
-
-                // cancel always returns to the previous screen
-                AppButton(
-                    text = "Cancelar",
-                    onClick = onBack,
-                    modifier = Modifier.weight(1f),
-                    variant = ButtonVariant.Outlined,
-                )
             }
         }
     }

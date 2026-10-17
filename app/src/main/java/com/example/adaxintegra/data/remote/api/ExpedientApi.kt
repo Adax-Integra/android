@@ -11,7 +11,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface ExpedientApi {
-    @POST("api/internal-users/register-external")
+    @POST("api/internal-users/external-users")
     suspend fun registerExpedient(
         @Header("Authorization") authorization: String,
         @Body request: RegisterExpedientRequestDto,

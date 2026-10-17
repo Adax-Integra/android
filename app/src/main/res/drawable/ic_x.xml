@@ -1,0 +1,10 @@
+<!-- NV-01: official X logo, built from the path of the official logo (viewBox 0 0 1200 1227) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24.54dp"
+    android:viewportWidth="1200"
+    android:viewportHeight="1227">
+    <path
+        android:fillColor="#000000"
+        android:pathData="M 714.163 519.284 L 1160.89 0 H 1055.03 L 667.137 450.887 L 357.328 0 H 0 L 468.492 681.821 L 0 1226.37 H 105.866 L 515.491 750.218 L 842.672 1226.37 H 1200 L 714.137 519.284 H 714.163 Z M 569.165 687.828 L 521.697 619.934 L 144.011 79.6944 H 306.615 L 611.412 515.685 L 658.88 583.579 L 1055.08 1150.3 H 892.476 L 569.165 687.854 V 687.828 Z" />
+</vector>

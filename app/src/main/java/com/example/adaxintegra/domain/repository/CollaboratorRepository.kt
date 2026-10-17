@@ -1,9 +1,17 @@
 package com.example.adaxintegra.domain.repository
 
 import com.example.adaxintegra.domain.model.Collaborator
+import com.example.adaxintegra.domain.model.CollaboratorDetail
+import com.example.adaxintegra.domain.model.CollaboratorSummary
 import com.example.adaxintegra.domain.model.NewCollaborator
 
 interface CollaboratorRepository {
     // G-03: returns the created collaborator or throws the error
     suspend fun createCollaborator(collaborator: NewCollaborator): Collaborator
+
+    // G-06: returns every internal account, newest first
+    suspend fun getCollaborators(): List<CollaboratorSummary>
+
+    // G-10: returns the detail of one collaborator, also when it is inactive
+    suspend fun getCollaboratorDetail(userId: String): CollaboratorDetail
 }

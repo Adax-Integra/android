@@ -65,8 +65,10 @@ fun AutoCompleteOutlinedTextField(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             isError = isError,
-            supportingText = errorMessage?.let {
-                { Text(text = it, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal) }
+            supportingText = {
+                errorMessage?.let {
+                    Text(text = it, style = AppTextStyle.LabelSmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Normal)
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
