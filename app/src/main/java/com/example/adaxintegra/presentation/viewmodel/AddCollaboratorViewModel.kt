@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
+import com.example.adaxintegra.domain.common.PasswordValidator
 
 // G-03: the admin adds a new collaborator account
 @HiltViewModel
@@ -135,6 +136,8 @@ class AddCollaboratorViewModel @Inject constructor(
             errors["password"] = "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres."
         } else if (state.password.length > MAX_PASSWORD_LENGTH) {
             errors["password"] = "La contraseña debe tener máximo $MAX_PASSWORD_LENGTH caracteres."
+        } else if (!PasswordValidator.hasSpecialCharacter(state.password)) {
+            errors["password"] = "La contraseña debe contener al menos un carácter especial."
         }
 
         if (state.phone.length != PHONE_LENGTH) {
