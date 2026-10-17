@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,10 +26,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseEvidenceCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHelpCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseRecordSummaryCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CheckboxesInDropdown
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.IconGrey
@@ -206,6 +207,9 @@ private fun CaseDetailContent(
             }
         }
 
+        // TODO this section is there the other dropdown for the violence types will be
+        // This is part of the R-07 and will be implemented in another PR
+
         // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
             item {
@@ -215,7 +219,34 @@ private fun CaseDetailContent(
             }
         }
 
-        // TODO section where the help types will live
+        // Section of R-08, assigning the help requested by the case
+        item {
+            // TEMP, mock options for the dropdown
+            val mockOptions = listOf(
+                "Primera opción",
+                "Segunda opción",
+                "Opción 3",
+                "Esta también es una opción",
+                "Así se verían multiples opciones de diferente tamaño",
+            )
+            val mockSelected = remember{
+                mutableStateListOf("Primera opción", "Opción 3")
+            }
+            CheckboxesInDropdown(
+                title = "Tipos de ayuda",
+                options = mockOptions,
+                selectedOptions = mockSelected.toSet(),
+                onOptionToggle = { option ->
+                    if (option in mockSelected) {
+                        mockSelected.remove(option)
+                    } else {
+                        mockSelected.add(option)
+                    }
+                },
+                saveButtonAction = {},
+                cancelButtonAction = {},
+            )
+        }
 
 
         // actions defined by the V-11 case detail acceptance criteria

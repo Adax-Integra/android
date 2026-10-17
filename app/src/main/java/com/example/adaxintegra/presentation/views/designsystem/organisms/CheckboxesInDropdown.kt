@@ -25,7 +25,7 @@ fun CheckboxesInDropdown(
     selectedOptions: Set<String>,
     onOptionToggle: (String) -> Unit,
     modifier: Modifier = Modifier,
-    initialExpanded: Boolean = true,
+    initialExpanded: Boolean = false,
     saveButtonText: String = "Guardar",
     saveButtonAction: () -> Unit,
     cancelButtonText: String = "Cancelar",

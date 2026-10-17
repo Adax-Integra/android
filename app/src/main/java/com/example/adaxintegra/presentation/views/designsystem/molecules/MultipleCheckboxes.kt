@@ -37,7 +37,7 @@ fun MultipleCheckboxes(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onOptionToggle(option) }
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
