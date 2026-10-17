@@ -61,7 +61,7 @@ class CasesFromUserViewModel @Inject constructor(
     fun updateStatus(recordId: String, newStatus: ExpedientStatus) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUpdatingStatus = true) }
-            val result = updateExpedientStatusUseCase(recordId, newStatus.label)
+            val result = updateExpedientStatusUseCase(recordId, newStatus.code)
             _uiState.update { state ->
                 if (result.isSuccess) {
                     state.copy(

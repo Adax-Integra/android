@@ -208,7 +208,7 @@ fun AppNavigation(
                         // Keep the records tab selected throughout this flow.
                         "collaboratorCases",
                         "allRecords",
-                        "recordFromUser/{userId}",
+                        "recordFromUser/{recordId}/{userId}",
                             -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
@@ -422,9 +422,9 @@ fun AppNavigation(
                         onRetry = recordsViewModel::retry,
                         onNextPage = recordsViewModel::nextPage,
                         onPreviousPage = recordsViewModel::previousPage,
-                        onRecordClick = { userId ->
+                        onRecordClick = { recordId, userId ->
                             // V-10 loads the cases belonging to the selected owner.
-                            navController.navigate("recordFromUser/$userId") {
+                            navController.navigate("recordFromUser/$recordId/$userId") {
                                 launchSingleTop = true
                             }
                         },
@@ -440,12 +440,14 @@ fun AppNavigation(
                 }
             }
 
-            composable("recordFromUser/{userId}") { entry ->
+            composable("recordFromUser/{recordId}/{userId}") { entry ->
                 if (hasValidSession && canViewAllCases) {
-                    val userId = entry.arguments?.getString("userId")
+                    val recordId = entry.arguments?.getString("recordId").orEmpty()
+                    val userId = entry.arguments?.getString("userId").orEmpty()
 
-                    if (!userId.isNullOrBlank()) {
+                    if (recordId.isNotBlank() && userId.isNotBlank()) {
                         RecordFromUser(
+                            recordId = recordId,
                             userId = userId,
                             onBackClick = {
                                 navController.popBackStack()
@@ -457,7 +459,7 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        Text("No se encontró el identificador del usuario")
+                        Text("No se encontró el identificador del expediente o usuario")
                     }
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")

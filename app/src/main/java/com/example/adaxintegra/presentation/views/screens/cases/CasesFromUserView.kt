@@ -47,6 +47,7 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RecordFromUser(
+    recordId: String,
     userId: String,
     viewModel: CasesFromUserViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
@@ -63,6 +64,7 @@ fun RecordFromUser(
         onBackClick = onBackClick,
         onCaseClick = onCaseClick,
         onStatusChange = { newStatus ->
+            // Usamos la variable 'userId' que recibe este Composable
             viewModel.updateStatus(recordId = userId, newStatus = newStatus)
         }
     )

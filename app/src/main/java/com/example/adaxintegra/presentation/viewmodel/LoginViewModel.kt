@@ -1,11 +1,13 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.LoginUseCase
 import com.example.adaxintegra.domain.usecases.ResendVerificationEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.auth.exception.AuthRestException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -54,6 +56,7 @@ class LoginViewModel @Inject constructor(
                         )
 
                         is Result.Error -> {
+                            Log.e("LOGIN_DEBUG", "Error real capturado:", result.exception)
                             val rawMsg = result.exception.message ?: result.exception.localizedMessage ?: ""
                             val isUnconfirmed = rawMsg.contains("email_not_confirmed", ignoreCase = true) ||
                                 rawMsg.contains("Email not confirmed", ignoreCase = true) ||
@@ -65,13 +68,18 @@ class LoginViewModel @Inject constructor(
                             val errorMessage = when {
                                 isUnconfirmed -> "Debes confirmar tu correo electrónico antes de iniciar sesión."
                                 isInvalidCredentials -> "Correo o contraseña incorrectos"
+                                result.exception is AuthRestException -> {
+                                    val authEx = result.exception as AuthRestException
+                                    Log.e("LOGIN_DEBUG", "Error Supabase: ${authEx.error} - ${authEx.error}")
+
+                                    authEx.error ?: authEx.error ?: "Error de respuesta del servidor (HTTP 404/500)"
+                                }
                                 result.exception is HttpException -> when (result.exception.code()) {
                                     400 -> "Credenciales incorrectas"
                                     401 -> "Credenciales incorrectas"
                                     404 -> "Endpoint no encontrado (404)"
                                     else -> "Error en la solicitud (${result.exception.code()})"
                                 }
-
                                 result.exception is IOException -> "Error de conexión a internet"
                                 else -> rawMsg.ifBlank { "Error desconocido al iniciar sesión" }
                             }

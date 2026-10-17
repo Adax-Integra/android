@@ -67,7 +67,7 @@ fun RecordsScreen(
     onRetry: () -> Unit,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
-    onRecordClick: (String) -> Unit,
+    onRecordClick: (recordId: String, userId: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     onRegisterRecordClick: () -> Unit
 ) {
@@ -271,7 +271,7 @@ fun RecordsScreen(
                                 RecordCard(
                                     record = record,
                                     // V-10 receives the selected owner's ID.
-                                    onClick = { onRecordClick(record.userId) },
+                                    onClick = { onRecordClick(record.recordId, record.userId) },
                                 )
                             }
                         }
@@ -496,7 +496,7 @@ private fun RecordsScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
-            onRecordClick = {},
+            onRecordClick = { _, _ -> },
             onRegisterRecordClick = {}
         )
     }

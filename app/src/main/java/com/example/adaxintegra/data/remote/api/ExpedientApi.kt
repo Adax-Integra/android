@@ -17,8 +17,8 @@ interface ExpedientApi {
         @Body request: RegisterExpedientRequestDto,
     ): RegisterExpedientResponseDto
 
-    @PATCH("api/expedients/{recordId}/status")
-    suspend fun updateExpedientStatus(
+    @PATCH("api/records/{recordId}/status")
+    suspend fun updateRecordStatus(
         @Path("recordId") recordId: String,
         @Header("Authorization") authorization: String,
         @Body request: UpdateExpedientStatusRequestDto,
