@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.AssignHelpsToCaseUseCase
+import com.example.adaxintegra.domain.usecases.AssignViolenceToCaseUseCase
 import com.example.adaxintegra.domain.usecases.CloseCaseUseCase
 import com.example.adaxintegra.domain.usecases.GetCaseDetailUseCase
 import com.example.adaxintegra.domain.usecases.GetHelpTypesUseCase
+import com.example.adaxintegra.domain.usecases.GetViolenceTypesUseCase
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,8 @@ constructor(
     private val closeCaseUseCase: CloseCaseUseCase,
     private val getHelpTypesUseCase: GetHelpTypesUseCase,
     private val assignHelpsToCaseUseCase: AssignHelpsToCaseUseCase,
+    private val getViolenceTypesUseCase: GetViolenceTypesUseCase,
+    private val assignViolenceToCaseUseCase: AssignViolenceToCaseUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CaseDetailUiState())
     val uiState: StateFlow<CaseDetailUiState> = _uiState.asStateFlow()
@@ -33,6 +37,7 @@ constructor(
     fun loadCase(caseId: String) {
         loadCaseInternal(caseId, isRefresh = false)
         loadHelpTypes()
+        loadViolenceTypes()
     }
 
     private fun loadHelpTypes() {
@@ -45,6 +50,24 @@ constructor(
 
                     is Result.Error -> {
                         println("Error loading help types: ${result.exception.message}")
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun loadViolenceTypes() {
+        viewModelScope.launch {
+            getViolenceTypesUseCase().collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        _uiState.update { it.copy(availableViolences = result.data) }
+                    }
+
+                    is Result.Error -> {
+                        println("Error loading violence types: ${result.exception.message}")
                     }
 
                     else -> {}
@@ -165,6 +188,42 @@ constructor(
                             state.copy(
                                 isAssigningHelps = false,
                                 assignHelpsError = "No fue posible guardar la ayuda asignada.",
+                            )
+                        }
+                    }
+                }
+
+                // If the request was successful, refresh the case detail
+                if (result is Result.Success) {
+                    refresh(caseId)
+                }
+            }
+        }
+    }
+
+    fun assignViolences(caseId: String, violenceIds: List<String>) {
+        viewModelScope.launch {
+            assignViolenceToCaseUseCase(caseId, violenceIds).collect { result ->
+                _uiState.update { state ->
+                    when (result) {
+                        is Result.Loading -> {
+                            state.copy(
+                                isAssigningViolences = true,
+                                assignViolencesError = null,
+                            )
+                        }
+
+                        is Result.Success -> {
+                            state.copy(
+                                isAssigningViolences = false,
+                                assignViolencesError = null,
+                            )
+                        }
+
+                        is Result.Error -> {
+                            state.copy(
+                                isAssigningViolences = false,
+                                assignViolencesError = "No fue posible guardar la violencia asignada.",
                             )
                         }
                     }

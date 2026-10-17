@@ -3,6 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
+import com.example.adaxintegra.data.remote.dto.AssignViolenceRequestDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseDataDto
 import com.example.adaxintegra.domain.model.CaseDetail
 import com.example.adaxintegra.domain.repository.AuthRepository
@@ -68,6 +69,17 @@ constructor(
     suspend fun assignHelpsToCase(caseId: String, helpIds: List<String>): Boolean {
         val request = AssignHelpRequestDto(helpIds = helpIds)
         val response = api.assignHelpsToCase(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = request
+        )
+        return response.success
+    }
+
+    // R-07: assigns violences to the selected case through the backend endpoint
+    suspend fun assignViolenceToCase(caseId: String, violenceIds: List<String>): Boolean {
+        val request = AssignViolenceRequestDto(violenceIds = violenceIds)
+        val response = api.assignViolenceToCase(
             caseId = caseId,
             authorization = authorizationHeader(),
             request = request

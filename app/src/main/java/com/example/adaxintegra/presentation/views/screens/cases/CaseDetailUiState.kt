@@ -2,6 +2,7 @@ package com.example.adaxintegra.presentation.views.screens.cases
 
 import com.example.adaxintegra.domain.model.CaseDetail
 import com.example.adaxintegra.domain.model.HelpType
+import com.example.adaxintegra.domain.model.Violence
 
 data class CaseDetailUiState(
     val case: CaseDetail? = null,
@@ -12,4 +13,7 @@ data class CaseDetailUiState(
     val availableHelps: List<HelpType> = emptyList(),
     val isAssigningHelps: Boolean = false,
     val assignHelpsError: String? = null,
+    val availableViolences: List<Violence> = emptyList(),
+    val isAssigningViolences: Boolean = false,
+    val assignViolencesError: String? = null,
 )
