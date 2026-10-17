@@ -2,10 +2,8 @@ package com.example.adaxintegra.presentation.views.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -30,7 +28,6 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
-import com.example.adaxintegra.presentation.views.screens.ConfirmationDialog
 
 @Composable
 fun EditableProfileScreen (
