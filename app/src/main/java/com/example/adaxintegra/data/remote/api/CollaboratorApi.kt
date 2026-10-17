@@ -4,9 +4,12 @@ import com.example.adaxintegra.data.remote.dto.CollaboratorDetailResponseDto
 import com.example.adaxintegra.data.remote.dto.CollaboratorListResponseDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorResponseDto
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusRequestDto
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -30,4 +33,12 @@ interface CollaboratorApi {
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String,
     ): CollaboratorDetailResponseDto
+
+    // G-04: admin activates or deactivates a collaborator account (requires the admin token)
+    @PATCH("api/internal-users/{userId}/status")
+    suspend fun updateCollaboratorStatus(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String,
+        @Body request: UpdateCollaboratorStatusRequestDto,
+    ): UpdateCollaboratorStatusResponseDto
 }

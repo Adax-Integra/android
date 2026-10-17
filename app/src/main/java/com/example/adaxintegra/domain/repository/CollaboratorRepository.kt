@@ -14,4 +14,7 @@ interface CollaboratorRepository {
 
     // G-10: returns the detail of one collaborator, also when it is inactive
     suspend fun getCollaboratorDetail(userId: String): CollaboratorDetail
+
+    // G-04: changes the status of the account and returns the new one
+    suspend fun updateCollaboratorStatus(userId: String, isActive: Boolean): Boolean
 }
