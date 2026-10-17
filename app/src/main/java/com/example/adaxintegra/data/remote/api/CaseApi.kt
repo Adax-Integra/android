@@ -89,7 +89,7 @@ interface CaseApi {
     ): AssignHelpResponseDto
 
     // R-07: Assign violences to a case.
-    @POST("api/cases/{caseId}/violence-types")
+    @PATCH("api/cases/{caseId}/violence-types")
     suspend fun assignViolenceToCase(
         @Path("caseId") caseId: String,
         @Header("Authorization") authorization: String,
