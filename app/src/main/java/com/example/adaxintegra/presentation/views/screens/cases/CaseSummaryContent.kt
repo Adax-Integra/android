@@ -1,14 +1,11 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
-import android.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHelpCard
 
 //cards allows external user to view their case info
