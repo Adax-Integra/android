@@ -14,6 +14,7 @@ data class CaseDetail(
     val userName: String?,
     val createdAt: Date?,
     val updatedAt: Date?,
+    val caseSteps: List<CaseProgressStep>,
     val violenceList: List<Violence>,
     val helpList: List<Helps>,
 )
