@@ -215,6 +215,9 @@ private fun CaseDetailContent(
             }
         }
 
+        // TODO section where the help types will live
+
+
         // actions defined by the V-11 case detail acceptance criteria
         item {
             Row(

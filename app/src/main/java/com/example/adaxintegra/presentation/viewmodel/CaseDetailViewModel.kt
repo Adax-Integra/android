@@ -76,6 +76,16 @@ constructor(
         }
     }
 
+    private fun expandHelp() {
+        _uiState.update { it.copy(isHelpExpanded = true) }
+    }
+
+    private fun collapseHelp() {
+        _uiState.update {
+            it.copy(isHelpExpanded = false)
+        }
+    }
+
     // closes the selected case and refreshes its information
     fun closeCase(caseId: String) {
         viewModelScope.launch {

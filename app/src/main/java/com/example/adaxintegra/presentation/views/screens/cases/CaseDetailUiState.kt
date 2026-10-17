@@ -7,4 +7,5 @@ data class CaseDetailUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isRefreshing: Boolean = false,
+    val isHelpExpanded: Boolean = false,
 )
