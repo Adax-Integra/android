@@ -3,8 +3,10 @@ package com.example.adaxintegra.presentation.views.screens.cases
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,12 +34,11 @@ fun CaseProgressScreen(
     viewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val case = uiState.case
 
     LaunchedEffect(caseId) {
         viewModel.loadCase(caseId)
     }
-
-    val case = uiState.case
 
     Column(
         modifier =
@@ -71,8 +72,7 @@ fun CaseProgressScreen(
                 uiState.error != null -> {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = uiState.error!!)
@@ -84,9 +84,15 @@ fun CaseProgressScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
+                        CaseSummaryContent(
+                            description = case.description,
+                            helpWanted = case.helpWanted,
+                        )
+
                         CaseProgressTimeline(
-                            caseSteps = case.caseSteps,
+                            caseSteps = case.caseSteps.orEmpty(),
                         )
                     }
                 }
