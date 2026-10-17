@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.screens.profile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -83,76 +84,84 @@ fun EditableProfileScreen (
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .fillMaxHeight()
         ) {
-            LabeledTextField(
-                label = "Nombre",
-                value = uiState.name,
-                onValueChange = viewModel::onNameChange,
-                enabled = uiState.isEditing && !uiState.isSaving
-            )
-
-            LabeledTextField(
-                label = "Apellidos",
-                value = uiState.lastName,
-                onValueChange = viewModel::onLastNameChange,
-                enabled = uiState.isEditing && !uiState.isSaving
-            )
-
-            LabeledTextField(
-                label = "Teléfono celular",
-                value = uiState.phone,
-                onValueChange = viewModel::onPhoneChange,
-                enabled = uiState.isEditing && !uiState.isSaving
-            )
-
-            if (uiState.hasAddressFields) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
                 LabeledTextField(
-                    label = "País",
-                    value = uiState.country,
-                    onValueChange = viewModel::onCountryChange,
+                    label = "Nombre",
+                    value = uiState.name,
+                    onValueChange = viewModel::onNameChange,
                     enabled = uiState.isEditing && !uiState.isSaving
                 )
 
                 LabeledTextField(
-                    label = "Estado",
-                    value = uiState.state,
-                    onValueChange = viewModel::onStateChange,
+                    label = "Apellidos",
+                    value = uiState.lastName,
+                    onValueChange = viewModel::onLastNameChange,
                     enabled = uiState.isEditing && !uiState.isSaving
                 )
 
                 LabeledTextField(
-                    label = "Municipio",
-                    value = uiState.municipality,
-                    onValueChange = viewModel::onMunicipalityChange,
+                    label = "Teléfono celular",
+                    value = uiState.phone,
+                    onValueChange = viewModel::onPhoneChange,
                     enabled = uiState.isEditing && !uiState.isSaving
                 )
-            }
 
-            if (uiState.error != null && uiState.isEditing) {
-                Text(
-                    text = uiState.error!!,
-                    style = AppTextStyle.BodyMedium,
-                    fontWeight = FontWeight.Normal
-                )
-            }
+                if (uiState.hasAddressFields) {
+                    LabeledTextField(
+                        label = "País",
+                        value = uiState.country,
+                        onValueChange = viewModel::onCountryChange,
+                        enabled = uiState.isEditing && !uiState.isSaving
+                    )
 
-            if (uiState.successMessage != null) {
-                Text(
-                    text = uiState.successMessage!!,
-                    style = AppTextStyle.BodyMedium,
-                    fontWeight = FontWeight.Normal
-                )
-            }
+                    LabeledTextField(
+                        label = "Estado",
+                        value = uiState.state,
+                        onValueChange = viewModel::onStateChange,
+                        enabled = uiState.isEditing && !uiState.isSaving
+                    )
 
+                    LabeledTextField(
+                        label = "Municipio",
+                        value = uiState.municipality,
+                        onValueChange = viewModel::onMunicipalityChange,
+                        enabled = uiState.isEditing && !uiState.isSaving
+                    )
+                }
+
+                if (uiState.error != null && uiState.isEditing) {
+                    Text(
+                        text = uiState.error!!,
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+
+                if (uiState.successMessage != null) {
+                    Text(
+                        text = uiState.successMessage!!,
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+            //button outside scrollable area
             if (uiState.isEditing) {
-                Spacer(modifier = Modifier.height(8.dp))
-
                 AppButton(
                     onClick = viewModel::requestSaveConfirmation,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 8.dp, bottom = 16.dp),
                     enabled = !uiState.isSaving,
                     text = "Guardar cambios",
                 )
