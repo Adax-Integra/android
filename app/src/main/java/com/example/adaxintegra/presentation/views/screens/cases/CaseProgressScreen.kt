@@ -32,12 +32,11 @@ fun CaseProgressScreen(
     viewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val case = uiState.case
 
     LaunchedEffect(caseId) {
         viewModel.loadCase(caseId)
     }
-
-    val case = uiState.case
 
     Column(
         modifier =
@@ -71,8 +70,7 @@ fun CaseProgressScreen(
                 uiState.error != null -> {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = uiState.error!!)
@@ -84,9 +82,15 @@ fun CaseProgressScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
+                        CaseSummaryContent(
+                            description = case.description,
+                            helpWanted = case.helpWanted,
+                        )
+
                         CaseProgressTimeline(
-                            caseSteps = case.caseSteps,
+                            caseSteps = case.caseSteps.orEmpty(),
                         )
                     }
                 }
