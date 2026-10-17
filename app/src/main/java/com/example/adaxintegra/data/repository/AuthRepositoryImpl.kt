@@ -11,6 +11,7 @@ import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
 import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
+import com.example.adaxintegra.data.remote.dto.ValidateCodeRequestDto
 import com.example.adaxintegra.data.remote.toAuthError
 import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
@@ -26,6 +27,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
+import retrofit2.HttpException
 
 /*
  * Auth against the Node backend (G-01, G-02, G-09, G-12) with the session saved
@@ -74,7 +76,24 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        // Clear storage first so the session cannot return after reopening.
+        val token = _session.value?.token
+
+        if (!token.isNullOrBlank()) {
+            try {
+                val response = api.logout("Bearer $token")
+
+                if (!response.success) {
+                    throw IllegalStateException("Unable to revoke the token.")
+                }
+            } catch (exception: HttpException) {
+                // An unauthorized token no longer grants access.
+                if (exception.code() != 401) {
+                    throw exception
+                }
+            }
+        }
+
+        // Clear local data after revocation or an unauthorized response.
         sessionPreferences.clear()
         _session.value = null
     }
@@ -88,6 +107,27 @@ class AuthRepositoryImpl @Inject constructor(
 
             if (!response.success) {
                 throw AuthError.Unknown("forgot-password returned success=false")
+            }
+
+            Result.Success(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Result.Error(exception.toAuthError())
+        }
+    }
+
+    override suspend fun validateRecoveryCode(
+        email: String,
+        code: String,
+    ): Result<Unit> {
+        return try {
+            val response = api.validateRecoveryCode(ValidateCodeRequestDto(
+                email = email.trim(),
+                code = code.trim()))
+
+            if (!response.success) {
+                throw AuthError.Unknown("validate-code returned success=false")
             }
 
             Result.Success(Unit)

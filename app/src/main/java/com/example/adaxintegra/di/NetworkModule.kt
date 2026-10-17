@@ -8,6 +8,7 @@ import com.example.adaxintegra.data.remote.api.ExpedientApi
 import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
+import com.example.adaxintegra.data.remote.api.ReportApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,8 +24,9 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "https://dev-api.adaxdigitales.com"
+    private const val BASE_URL = "http://localhost:3001/"
 
+    // Server testing: use "https://dev-api.adaxdigitales.com", enable networkSecurityConfig
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
     // in AndroidManifest and run "adb reverse tcp:3001 tcp:3001".
     @Provides
@@ -82,4 +84,8 @@ object NetworkModule {
     @Singleton
     fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi =
         retrofit.create(PrivacyPolicyApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideReportApi(retrofit: Retrofit): ReportApi = retrofit.create(ReportApi::class.java)
 }

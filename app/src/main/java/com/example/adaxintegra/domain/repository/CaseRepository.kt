@@ -19,4 +19,6 @@ interface CaseRepository {
     suspend fun getExternalUserCases(userId: String): List<Case>
 
     suspend fun createCase(userId: String, newCase: NewCase): Case
+
+    suspend fun createCaseForExternalUser(userId: String, newCase: NewCase): Case
 }

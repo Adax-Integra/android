@@ -27,11 +27,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,13 +59,13 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordC
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RecordsScreen(
     uiState: RecordsUiState,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onSearchChange: (String) -> Unit,
     onApplyFilters: (Boolean?, String?) -> Unit,
@@ -74,9 +74,8 @@ fun RecordsScreen(
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
     onRecordClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
     onRegisterRecordClick: () -> Unit,
-    viewModel: RecordsViewModel = hiltViewModel()
+    onRefresh: () -> Unit = {},
 ) {
     val spacing = Spacing()
 
@@ -115,7 +114,6 @@ fun RecordsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(
                     start = spacing.medium,
                     end = spacing.medium,
@@ -189,7 +187,7 @@ fun RecordsScreen(
 
                     Text(
                         text = "Registrar expediente",
-                        style = MaterialTheme.typography.labelLarge
+                        style = AppTextStyle.LabelMedium,
                     )
                 }
             }
@@ -235,7 +233,7 @@ fun RecordsScreen(
 
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.refresh() },
+                onRefresh = onRefresh,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
@@ -256,11 +254,10 @@ fun RecordsScreen(
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
                         ) {
                             Text(
-                                text = uiState.error
-                                    ?: "No se pudieron cargar los expedientes.",
+                                text = uiState.error,
                             )
 
                             AppButton(
@@ -277,7 +274,7 @@ fun RecordsScreen(
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically,),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
                         ) {
                             Text(
                                 text = when {
@@ -448,6 +445,7 @@ private fun RecordFilterOption(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true, widthDp = 360, heightDp = 804)
 @Composable
@@ -478,7 +476,7 @@ private fun RecordsScreenPreview() {
         RecordsScreen(
             uiState = RecordsUiState(
                 records = records,
-                total = 25,
+                total = 30,
                 page = 2,
                 limit = 10,
             ),
