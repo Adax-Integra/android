@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
+import com.example.adaxintegra.domain.common.PasswordValidator
 
 @HiltViewModel
 class ResetPasswordViewModel
@@ -64,7 +65,8 @@ class ResetPasswordViewModel
         //password field validation
         val error = when {
             state.password.isBlank() -> "Favor de ingresar la nueva contraseña."
-            state.password.length < 8 -> "La contraseña debe tener al menos 8 carácteres."
+            state.password.length < 8 -> "La contraseña debe tener al menos 8 caracteres."
+            !PasswordValidator.hasSpecialCharacter(state.password) -> "La contraseña debe contener al menos un carácter especial."
             state.confirmPassword.isBlank() -> "Favor de confirmar tu nueva contraseña."
             state.password != state.confirmPassword -> "Las contraseñas deben coincidir."
             else -> null

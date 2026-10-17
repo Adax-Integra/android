@@ -12,4 +12,7 @@ interface ProfileRepository {
 
     //update profile
     suspend fun updateProfile(userId: String, fields: Map<String, String>)
+    
+    // G-08: deactivates the account of the signed in user
+    suspend fun deactivateAccount(userId: String)
 }

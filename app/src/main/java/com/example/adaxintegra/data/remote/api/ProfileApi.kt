@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.remote.api
 
 import com.example.adaxintegra.data.remote.dto.EditableProfileResponseDto
+import com.example.adaxintegra.data.remote.dto.DeactivateAccountResponseDto
 import com.example.adaxintegra.data.remote.dto.ProfileResponseDto
 import com.example.adaxintegra.data.remote.dto.UpdateProfileResponseDto
 import retrofit2.http.Body
@@ -30,4 +31,11 @@ interface ProfileApi {
         @Header("Authorization") authorization: String,
         @Body fields: Map<String, String>
     ): UpdateProfileResponseDto
+  
+    // G-08: the user deactivates her own account, the id must match the token
+    @PATCH("api/profile/{userId}/deactivate")
+    suspend fun deactivateAccount(
+        @Path("userId") userId: String,
+        @Header("Authorization") authorization: String
+    ): DeactivateAccountResponseDto
 }
