@@ -54,6 +54,11 @@ fun CheckboxesInDropdown(
                 title = title,
                 modifier = modifier,
                 initialExpanded = initialExpanded,
+                onExpandedChange = { isExpanded ->
+                    if (!isExpanded) {
+                        isEditing = false
+                    }
+                }
             ) {
                 MultipleCheckboxes(
                     options = options,
