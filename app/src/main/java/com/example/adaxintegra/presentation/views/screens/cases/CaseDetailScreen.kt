@@ -113,7 +113,11 @@ fun CaseDetailScreen(
 
                 isCaseClosed = isCaseClosed,
                 availableHelps = uiState.availableHelps,
-                assignedHelps = case.helpList.map { it.description }.toSet(),
+                assignedHelps = case.helpList.mapNotNull { caseHelp ->
+                    // Tratamos de hacer match por ID con el catálogo para asegurar que el texto sea idéntico
+                    val matchById = uiState.availableHelps.find { it.helpId == caseHelp.id }
+                    matchById?.description ?: caseHelp.description
+                }.toSet(),
                 onAssignHelps = { selectedDescriptions ->
                     val helpIds = uiState.availableHelps
                         .filter { it.description in selectedDescriptions }

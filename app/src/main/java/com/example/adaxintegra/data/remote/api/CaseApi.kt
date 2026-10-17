@@ -78,7 +78,7 @@ interface CaseApi {
         @Body request: CreateCaseRequestDto,
     ): CreateCaseResponseDto
 
-    // R-08: Assign helps to a case. NOTA: Verifica el path ("api/cases/{caseId}/helps") y el método (POST/PATCH/PUT)
+    // R-08: Assign helps to a case.
     @PUT("api/cases/{caseId}/helps")
     suspend fun assignHelpsToCase(
         @Path("caseId") caseId: String,

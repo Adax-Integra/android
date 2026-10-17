@@ -1,6 +1,7 @@
 package com.example.adaxintegra.data.mapper
 
 import com.example.adaxintegra.data.remote.dto.CaseDetailDto
+import com.example.adaxintegra.data.remote.dto.CaseDetailHelpTypeDto
 import com.example.adaxintegra.domain.model.CaseDetail
 import com.example.adaxintegra.domain.model.CaseProgressStep
 import com.example.adaxintegra.domain.model.Helps
@@ -54,9 +55,12 @@ fun CaseDetailDto.toDomain(): CaseDetail {
             },
         helpList =
             case_help.mapNotNull { relation ->
-                val help = relation.help_types
+                val help = relation.help_types ?: CaseDetailHelpTypeDto(
+                    help_id = relation.help_id,
+                    description = relation.description
+                )
 
-                if (help?.description.isNullOrBlank()) {
+                if (help.description.isNullOrBlank() && help.help_id.isNullOrBlank()) {
                     null
                 } else {
                     Helps(
