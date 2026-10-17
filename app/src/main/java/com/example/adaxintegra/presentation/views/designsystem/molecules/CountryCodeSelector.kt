@@ -42,6 +42,8 @@ fun CountryCodeSelector(
     selectedCode: String,
     onCodeSelected: (String) -> Unit,
     options: List<CountryCodeOption> = CountryCodeOptions,
+    errorMessage: String? = null,
+    enabled: Boolean = true,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -62,7 +64,7 @@ fun CountryCodeSelector(
         }
 
         DropdownMenu(
-            expanded = expanded,
+            expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
         ) {
             options.forEach { option ->

@@ -60,6 +60,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
@@ -628,7 +629,10 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
-                    onPersonalDataClick = {},
+                    onPersonalDataClick = { navController.navigate("editProfile") {
+                        launchSingleTop = true
+                    }
+                                          },
                     onUploadDocumentsClick = {
                         if (hasValidSession && isExternal) {
                             navController.navigate("uploadDocuments") {
@@ -671,6 +675,14 @@ fun AppNavigation(
 
             composable("changePassword") {
                 ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+
+            composable("editProfile") {
+                EditableProfileScreen(
                     onBack = {
                         navController.popBackStack()
                     },
