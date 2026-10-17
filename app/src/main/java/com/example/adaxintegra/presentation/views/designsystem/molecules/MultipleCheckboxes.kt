@@ -24,6 +24,7 @@ fun MultipleCheckboxes(
     selectedOptions: Set<String>,
     onOptionToggle: (String) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
 
     Column(
@@ -36,7 +37,7 @@ fun MultipleCheckboxes(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onOptionToggle(option) }
+                    .clickable(enabled = enabled) { onOptionToggle(option) }
                     .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -44,6 +45,7 @@ fun MultipleCheckboxes(
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = { onOptionToggle(option) },
+                    enabled = enabled,
                 )
                 Text(
                     text = option,
