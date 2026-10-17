@@ -5,6 +5,7 @@ import com.example.adaxintegra.data.remote.api.AuthApi
 import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
 import com.example.adaxintegra.data.remote.api.ExpedientApi
+import com.example.adaxintegra.data.remote.api.HelpApi
 import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
@@ -88,4 +89,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideReportApi(retrofit: Retrofit): ReportApi = retrofit.create(ReportApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideHelpApi(retrofit: Retrofit): HelpApi = retrofit.create(HelpApi::class.java)
 }

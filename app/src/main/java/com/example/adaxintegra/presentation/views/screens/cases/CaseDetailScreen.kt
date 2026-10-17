@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.HelpType
 import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
@@ -111,6 +112,14 @@ fun CaseDetailScreen(
                 recordId = case.recordId,
 
                 isCaseClosed = isCaseClosed,
+                availableHelps = uiState.availableHelps,
+                assignedHelps = case.helpList.map { it.description }.toSet(),
+                onAssignHelps = { selectedDescriptions ->
+                    val helpIds = uiState.availableHelps
+                        .filter { it.description in selectedDescriptions }
+                        .map { it.helpId }
+                    viewModel.assignHelps(caseId, helpIds)
+                },
                 onBack = onBack,
                 onEdit = onEdit,
                 onRequestClose = {
@@ -155,6 +164,9 @@ private fun CaseDetailContent(
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    availableHelps: List<HelpType>,
+    assignedHelps: Set<String>,
+    onAssignHelps: (Set<String>) -> Unit,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onRequestClose: () -> Unit,
@@ -221,30 +233,28 @@ private fun CaseDetailContent(
 
         // Section of R-08, assigning the help requested by the case
         item {
-            // TEMP, mock options for the dropdown
-            val mockOptions = listOf(
-                "Primera opción",
-                "Segunda opción",
-                "Opción 3",
-                "Esta también es una opción",
-                "Así se verían multiples opciones de diferente tamaño",
-            )
-            val mockSelected = remember{
-                mutableStateListOf("Primera opción", "Opción 3")
-            }
+            val options = availableHelps.map { it.description }
+            val selectedState = remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
+
             CheckboxesInDropdown(
-                title = "Tipos de ayuda",
-                options = mockOptions,
-                selectedOptions = mockSelected.toSet(),
+                title = "Tipos de ayuda asignados",
+                options = options,
+                selectedOptions = selectedState.toSet(),
                 onOptionToggle = { option ->
-                    if (option in mockSelected) {
-                        mockSelected.remove(option)
+                    if (option in selectedState) {
+                        selectedState.remove(option)
                     } else {
-                        mockSelected.add(option)
+                        selectedState.add(option)
                     }
                 },
-                saveButtonAction = {},
-                cancelButtonAction = {},
+                saveButtonAction = {
+                    onAssignHelps(selectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // Revertimos a lo que viene de backend
+                    selectedState.clear()
+                    selectedState.addAll(assignedHelps)
+                },
             )
         }
 
@@ -303,7 +313,9 @@ private fun OpenCaseDetailScreenPreview() {
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
-
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
                 onRequestClose = {},
@@ -346,7 +358,9 @@ private fun ClosedCaseDetailScreenPreview() {
 
                 // closed cases must not expose the close-case action again
                 isCaseClosed = true,
-
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
                 onRequestClose = {},

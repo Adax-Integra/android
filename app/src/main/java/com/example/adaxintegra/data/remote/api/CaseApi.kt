@@ -1,5 +1,7 @@
 package com.example.adaxintegra.data.remote.api
 
+import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
+import com.example.adaxintegra.data.remote.dto.AssignHelpResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseDetailResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseListResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseResponseDto
@@ -12,6 +14,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -74,4 +77,12 @@ interface CaseApi {
         @Header("Authorization") authorization: String,
         @Body request: CreateCaseRequestDto,
     ): CreateCaseResponseDto
+
+    // R-08: Assign helps to a case. NOTA: Verifica el path ("api/cases/{caseId}/helps") y el método (POST/PATCH/PUT)
+    @PUT("api/cases/{caseId}/helps")
+    suspend fun assignHelpsToCase(
+        @Path("caseId") caseId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: AssignHelpRequestDto,
+    ): AssignHelpResponseDto
 }
