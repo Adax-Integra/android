@@ -78,7 +78,9 @@ fun ChangeStatusBottomSheet(
             Spacer(modifier = Modifier.height(4.dp))
 
             ExpedientStatus.entries.forEach { option ->
-                val isAllowed = currentStatus.isTransitionAllowedTo(option)
+                val isAllowed = currentStatus.isTransitionAllowedTo(option) &&
+                    !(currentStatus == ExpedientStatus.UNDER_REVIEW && option == ExpedientStatus.COMPLETED)
+
                 val isSelected = selectedStatus == option
 
                 val borderColor = when {

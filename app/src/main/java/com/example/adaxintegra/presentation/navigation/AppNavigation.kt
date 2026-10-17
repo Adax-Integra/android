@@ -33,7 +33,6 @@ import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
-import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
@@ -68,6 +67,7 @@ import com.example.adaxintegra.presentation.views.screens.records.RecordDocument
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
 import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
+import io.ktor.client.utils.EmptyContent.status
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -213,10 +213,6 @@ fun AppNavigation(
                             currentRoute == "allRecords" ||
                             currentRoute.startsWith("recordFromUser") ||
                             currentRoute.startsWith("recordDocuments") -> "records"
-                        "collaboratorCases",
-                        "allRecords",
-                        "recordFromUser/{recordId}/{userId}",
-                            -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
@@ -417,8 +413,7 @@ fun AppNavigation(
                     } else {
                         InternalHomeScreen(
                             onRecordClick = { userId ->
-                                // V-10 loads the cases belonging to the selected owner
-                                navController.navigate("recordFromUser/$userId") {
+                                navController.navigate("recordFromUser/none/$userId") {
                                     launchSingleTop = true
                                 }
                             },
@@ -493,25 +488,21 @@ fun AppNavigation(
             }
 
             composable("allRecords") {
-                // Check access before creating the ViewModel and loading records.
                 if (hasValidSession && canViewAllCases) {
                     val recordsViewModel: RecordsViewModel = hiltViewModel()
                     val recordsUiState by recordsViewModel.uiState.collectAsStateWithLifecycle()
 
                     RecordsScreen(
                         uiState = recordsUiState,
-                        onBackClick = {
-                            navController.popBackStack()
-                        },
+                        onBackClick = { navController.popBackStack() },
                         onSearchChange = recordsViewModel::searchRecords,
                         onApplyFilters = recordsViewModel::applyFilters,
                         onClearFilters = recordsViewModel::clearFilters,
                         onRetry = recordsViewModel::retry,
                         onNextPage = recordsViewModel::nextPage,
                         onPreviousPage = recordsViewModel::previousPage,
-                        onRecordClick = { recordId, userId ->
-                            // V-10 loads the cases belonging to the selected owner.
-                            navController.navigate("recordFromUser/$recordId/$userId") {
+                        onRecordClick = { recordId: String, userId: String, status: String ->
+                            navController.navigate("recordFromUser/$recordId/$userId?status=$status") {
                                 launchSingleTop = true
                             }
                         },
@@ -521,14 +512,13 @@ fun AppNavigation(
                             }
                         },
                         onRefresh = recordsViewModel::refresh,
-
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
             }
 
-            composable("recordFromUser/{recordId}/{userId}") { entry ->
+            composable("recordFromUser/{recordId}/{userId}?status={status}") { entry ->
                 if (hasValidSession && canViewAllCases) {
                     val recordId = entry.arguments?.getString("recordId").orEmpty()
                     val userId = entry.arguments?.getString("userId").orEmpty()
@@ -540,7 +530,7 @@ fun AppNavigation(
                             onBackClick = {
                                 navController.popBackStack()
                             },
-                            onCaseClick = { caseId ->
+                            onCaseClick = { caseId: String ->
                                 navController.navigate("caseDetail/$caseId") {
                                     launchSingleTop = true
                                 }

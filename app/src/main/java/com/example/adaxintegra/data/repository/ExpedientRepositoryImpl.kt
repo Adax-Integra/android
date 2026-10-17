@@ -17,8 +17,13 @@ class ExpedientRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ExpedientRepository {
 
+    private suspend fun authorizationHeader(): String {
+        val session = authRepository.session.filterNotNull().first()
+        return "Bearer ${session.token}"
+    }
+
     override suspend fun registerExpedient(token: String, form: PersonalDataForm): Result<String> = try {
-        val response = api.registerExpedient(
+        val response = expedientApi.registerExpedient(
             authorization = "Bearer $token",
             request = form.toDto(),
         )
@@ -47,5 +52,5 @@ class ExpedientRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
-        }
+    }
 }

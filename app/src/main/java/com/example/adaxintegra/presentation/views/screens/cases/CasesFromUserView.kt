@@ -52,6 +52,8 @@ fun RecordFromUser(
     viewModel: CasesFromUserViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
+    onCreateCaseClick: () -> Unit = {},
+    onDocumentsClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -63,9 +65,13 @@ fun RecordFromUser(
         uiState = uiState,
         onBackClick = onBackClick,
         onCaseClick = onCaseClick,
+        onCreateCaseClick = onCreateCaseClick,
+        onDocumentsClick = onDocumentsClick,
         onStatusChange = { newStatus ->
-            // Usamos la variable 'userId' que recibe este Composable
-            viewModel.updateStatus(recordId = userId, newStatus = newStatus)
+            viewModel.updateStatus(
+                recordId = recordId,
+                newStatus = newStatus
+            )
         }
     )
 }
@@ -76,6 +82,8 @@ fun RecordFromUserContent(
     uiState: CasesFromUserUiState,
     onBackClick: () -> Unit = {},
     onCaseClick: (String) -> Unit = {},
+    onCreateCaseClick: () -> Unit = {},
+    onDocumentsClick: () -> Unit = {},
     onStatusChange: (ExpedientStatus) -> Unit = {}
 ) {
     // Right now the name doesn't get through correctly because it is a hard coded UserID
@@ -98,7 +106,7 @@ fun RecordFromUserContent(
         ) {
             item {
                 ExpedientStatusCard(
-                    currentStatus = currentStatus,
+                    currentStatus = uiState.currentStatus,
                     onEditClick = { showBottomSheet = true }
                 )
             }
