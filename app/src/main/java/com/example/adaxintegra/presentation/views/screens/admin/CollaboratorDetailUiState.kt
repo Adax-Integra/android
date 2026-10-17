@@ -7,4 +7,8 @@ data class CollaboratorDetailUiState(
     val collaborator: CollaboratorDetail? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+    // G-04: change of the account status
+    val showStatusDialog: Boolean = false,
+    val isUpdatingStatus: Boolean = false,
+    val statusError: String? = null,
 )
