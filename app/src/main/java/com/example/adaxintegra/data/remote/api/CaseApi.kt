@@ -2,6 +2,8 @@ package com.example.adaxintegra.data.remote.api
 
 import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
 import com.example.adaxintegra.data.remote.dto.AssignHelpResponseDto
+import com.example.adaxintegra.data.remote.dto.AssignViolenceRequestDto
+import com.example.adaxintegra.data.remote.dto.AssignViolenceResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseDetailResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseListResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseResponseDto
@@ -85,7 +87,15 @@ interface CaseApi {
         @Header("Authorization") authorization: String,
         @Body request: AssignHelpRequestDto,
     ): AssignHelpResponseDto
-  
+
+    // R-07: Assign violences to a case.
+    @PATCH("api/cases/{caseId}/violence-types")
+    suspend fun assignViolenceToCase(
+        @Path("caseId") caseId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: AssignViolenceRequestDto,
+    ): AssignViolenceResponseDto
+
     // V-12: cases assigned to the logged in collaborator (user comes from the token)
     @GET("api/cases/assigned")
     suspend fun getMyCases(
