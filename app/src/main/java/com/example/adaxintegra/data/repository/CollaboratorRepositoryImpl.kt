@@ -3,6 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusRequestDto
 import com.example.adaxintegra.domain.model.Collaborator
 import com.example.adaxintegra.domain.model.CollaboratorDetail
 import com.example.adaxintegra.domain.model.CollaboratorSummary
@@ -15,6 +16,7 @@ import javax.inject.Singleton
 // G-03: sends the new collaborator to the backend
 // G-06: lists collaborator accounts in the backend
 // G-10: gets the detail of one collaborator
+// G-04: activates or deactivates a collaborator account
 @Singleton
 class CollaboratorRepositoryImpl @Inject constructor(
     private val api: CollaboratorApi,
@@ -48,5 +50,16 @@ class CollaboratorRepositoryImpl @Inject constructor(
         val response = api.getCollaboratorDetail(authorizationHeader(), userId)
         val detail = response.data ?: throw IllegalStateException("Empty response from server")
         return detail.toDomain()
+    }
+
+    // G-04: returns the status saved by the backend
+    override suspend fun updateCollaboratorStatus(userId: String, isActive: Boolean): Boolean {
+        val response = api.updateCollaboratorStatus(
+            authorization = authorizationHeader(),
+            userId = userId,
+            request = UpdateCollaboratorStatusRequestDto(isActive = isActive),
+        )
+        val status = response.data ?: throw IllegalStateException("Empty response from server")
+        return status.isActive ?: isActive
     }
 }
