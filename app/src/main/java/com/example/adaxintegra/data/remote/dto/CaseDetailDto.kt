@@ -1,5 +1,7 @@
 package com.example.adaxintegra.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 // backend response used specifically by the V-11 case detail flow
 data class CaseDetailResponseDto(
     val success: Boolean,
@@ -38,10 +40,12 @@ data class CaseDetailUserDto(
 
 // violence information returned by the case relation
 data class CaseDetailViolenceDto(
+    @SerializedName("violence_types")
     val violence_types: CaseDetailViolenceTypeDto? = null,
 )
 
 data class CaseDetailViolenceTypeDto(
+    @SerializedName("violence_id")
     val violence_id: String? = null,
     val description: String? = null,
     val severity: Int? = null,
@@ -49,10 +53,16 @@ data class CaseDetailViolenceTypeDto(
 
 // requested help information returned by the case relation
 data class CaseDetailHelpDto(
+    @SerializedName("help_types")
     val help_types: CaseDetailHelpTypeDto? = null,
+
+    @SerializedName("help_id")
+    val help_id: String? = null,
+    val description: String? = null,
 )
 
 data class CaseDetailHelpTypeDto(
+    @SerializedName("help_id")
     val help_id: String? = null,
     val description: String? = null,
 )

@@ -39,10 +39,10 @@ fun UserCaseItemDto.toDomain(): Case = Case(
     description = writtenDescription,
     helpWanted = writtenHelpsWanted,
     hasLawyer = hasLawyer,
-    violenceList = violenceTypes?.map { Violence(type = it, severity = 0) } ?: emptyList(),
+    violenceList = violenceTypes?.map { Violence(id = "", type = it, severity = 0) } ?: emptyList(),
     createdAt = parseIsoDate(createdAt),
     updatedAt = parseIsoDate(updatedAt),
-    helpList = helps?.map { Helps(description = it) } ?: emptyList(),
+    helpList = helps?.map { Helps(id = "", description = it) } ?: emptyList(),
     internsAssigned = assignedUsers?.mapNotNull { it.name } ?: emptyList(),
     userName = userName,
     urgency = urgency,
@@ -67,12 +67,13 @@ fun CreatedCaseDto.toDomain(): Case = Case(
     violenceList = emptyList(),
     createdAt = parseIsoDate(createdAt),
     updatedAt = parseIsoDate(createdAt),
-    helpList = helps?.map { Helps(description = it) } ?: emptyList(),
+    helpList = helps?.map { Helps(id = "", description = it) } ?: emptyList(),
 )
 
 fun CaseStepDto.toDomain(): CaseProgressStep = CaseProgressStep(
     stepNumber = step_number,
     status = status,
+    caseStepId = case_step_id,
 )
 
 // converts backend ISO dates (ex. 2026-09-22T19:45:00.000Z) to Date

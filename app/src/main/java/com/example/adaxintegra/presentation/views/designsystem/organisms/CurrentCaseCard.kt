@@ -139,7 +139,7 @@ fun CurrentCaseCardPreviewWithCase() {
                 description = "Descripción de prueba",
                 helpWanted = "Asesoría legal",
                 hasLawyer = false,
-                violenceList = listOf(Violence(type = "Psicológica", severity = 6)),
+                violenceList = listOf(Violence(id = "1", type = "Psicológica", severity = 6)),
                 helpList = null,
                 createdAt = Date(),
                 updatedAt = Date(),

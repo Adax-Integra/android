@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.HelpType
 import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
@@ -25,10 +27,10 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseEvidenceCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHelpCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseRecordSummaryCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CheckboxesInDropdown
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.IconGrey
@@ -103,9 +105,6 @@ fun CaseDetailScreen(
                 hasLawyer = case.hasLawyer ?: false,
                 description = case.description,
 
-                // evidence stays hidden until its backend source is available
-                showEvidenceSection = false,
-
                 helpWanted = case.helpWanted,
 
                 // record information returned by the V-11 backend detail response
@@ -113,6 +112,18 @@ fun CaseDetailScreen(
                 recordId = case.recordId,
 
                 isCaseClosed = isCaseClosed,
+                availableHelps = uiState.availableHelps,
+                assignedHelps = case.helpList.mapNotNull { caseHelp ->
+                    // Tratamos de hacer match por ID con el catálogo para asegurar que el texto sea idéntico
+                    val matchById = uiState.availableHelps.find { it.helpId == caseHelp.id }
+                    matchById?.description ?: caseHelp.description
+                }.toSet(),
+                onAssignHelps = { selectedDescriptions ->
+                    val helpIds = uiState.availableHelps
+                        .filter { it.description in selectedDescriptions }
+                        .map { it.helpId }
+                    viewModel.assignHelps(caseId, helpIds)
+                },
                 onBack = onBack,
                 onEdit = onEdit,
                 onRequestClose = {
@@ -153,11 +164,13 @@ private fun CaseDetailContent(
     location: String?,
     hasLawyer: Boolean,
     description: String?,
-    showEvidenceSection: Boolean,
     helpWanted: String?,
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    availableHelps: List<HelpType>,
+    assignedHelps: Set<String>,
+    onAssignHelps: (Set<String>) -> Unit,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onRequestClose: () -> Unit,
@@ -210,12 +223,8 @@ private fun CaseDetailContent(
             }
         }
 
-        // evidence is prepared for V-11 but stays hidden until its source is integrated
-        if (showEvidenceSection) {
-            item {
-                CaseEvidenceCard()
-            }
-        }
+        // TODO this section is there the other dropdown for the violence types will be
+        // This is part of the R-07 and will be implemented in another PR
 
         // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
@@ -225,6 +234,34 @@ private fun CaseDetailContent(
                 )
             }
         }
+
+        // Section of R-08, assigning the help requested by the case
+        item {
+            val options = availableHelps.map { it.description }
+            val selectedState = remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
+
+            CheckboxesInDropdown(
+                title = "Tipos de ayuda asignados",
+                options = options,
+                selectedOptions = selectedState.toSet(),
+                onOptionToggle = { option ->
+                    if (option in selectedState) {
+                        selectedState.remove(option)
+                    } else {
+                        selectedState.add(option)
+                    }
+                },
+                saveButtonAction = {
+                    onAssignHelps(selectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // Revertimos a lo que viene de backend
+                    selectedState.clear()
+                    selectedState.addAll(assignedHelps)
+                },
+            )
+        }
+
 
         // actions defined by the V-11 case detail acceptance criteria
         item {
@@ -273,9 +310,6 @@ private fun OpenCaseDetailScreenPreview() {
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
 
-                // preview-only value used to validate the Figma evidence section
-                showEvidenceSection = true,
-
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
@@ -283,7 +317,9 @@ private fun OpenCaseDetailScreenPreview() {
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
-
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
                 onRequestClose = {},
@@ -319,7 +355,6 @@ private fun ClosedCaseDetailScreenPreview() {
                 hasLawyer = true,
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
-                showEvidenceSection = true,
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
@@ -327,7 +362,9 @@ private fun ClosedCaseDetailScreenPreview() {
 
                 // closed cases must not expose the close-case action again
                 isCaseClosed = true,
-
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
                 onRequestClose = {},
