@@ -1,6 +1,7 @@
 package com.example.adaxintegra.presentation.views.screens
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,10 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -71,6 +72,30 @@ fun PrivacyPolicyScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var accepted by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val openPolicyDocument: () -> Unit = {
+        val url = viewModel.getDocumentUrl()
+        if (!url.isNullOrBlank()) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    "No se pudo abrir el aviso de privacidad: ${e.localizedMessage}",
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        } else {
+            Toast.makeText(
+                context,
+                "El documento del aviso de privacidad no está disponible",
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
 
     val items = listOf(
         PrivacyPolicyItem(
@@ -190,36 +215,25 @@ fun PrivacyPolicyScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    val annotatedString = buildAnnotatedString {
-                        append("He leído y acepto el ")
-                        pushStringAnnotation(tag = "POLICY", annotation = "policy")
-                        withStyle(
-                            style = SpanStyle(
-                                color = Purple,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                        ) {
-                            append("Aviso de privacidad")
-                        }
-                        pop()
-                    }
-
-                    ClickableText(
-                        text = annotatedString,
-                        style = MaterialTheme.typography.bodyMedium.copy(
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "He leído y acepto el ",
+                            style = AppTextStyle.BodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                        ),
-                        onClick = { offset ->
-                            annotatedString.getStringAnnotations(tag = "POLICY", start = offset, end = offset)
-                                .firstOrNull()?.let {
-                                    val url = viewModel.getDocumentUrl()
-                                    if (!url.isNullOrBlank()) {
-                                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                                        context.startActivity(intent)
-                                    }
-                                }
-                        },
-                    )
+                        )
+                        Text(
+                            text = "Aviso de privacidad",
+                            style = AppTextStyle.BodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Purple,
+                            modifier = Modifier.clickable {
+                                openPolicyDocument()
+                            },
+                        )
+                    }
 
                     Text(
                         text = "Al seleccionar esta casilla acepto el tratamiento de mis datos personales conforme al aviso.",

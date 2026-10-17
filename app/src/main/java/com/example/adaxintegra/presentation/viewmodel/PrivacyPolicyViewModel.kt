@@ -38,6 +38,7 @@ class PrivacyPolicyViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val policyData = getCurrentPrivacyPolicyUseCase()
+                android.util.Log.d("PrivacyPolicyVM", "policyData: $policyData, documentUrl: ${policyData?.documentUrl}, content: ${policyData?.content}")
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -46,6 +47,7 @@ class PrivacyPolicyViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                android.util.Log.e("PrivacyPolicyVM", "Error fetching policy", e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -81,6 +83,23 @@ class PrivacyPolicyViewModel @Inject constructor(
     }
 
     fun getDocumentUrl(): String? {
-        return _uiState.value.documentUrl
+        val url = _uiState.value.documentUrl ?: "https://xtuuspwioiflfofbhsps.supabase.co/storage/v1/object/public/privacy-policy/version-1.1.0/Aviso_Adax_Digitales.pdf"
+        android.util.Log.d("PrivacyPolicyVM", "Original documentUrl from backend: $url")
+        val absoluteUrl = if (url.startsWith("http://") || url.startsWith("https://")) {
+            url
+        } else {
+            val base = "https://dev-api.adaxdigitales.com"
+            if (url.startsWith("/")) "$base$url" else "$base/$url"
+        }
+
+        return if (absoluteUrl.contains("supabase.co/storage/v1/object/")) {
+            absoluteUrl
+                .replace(Regex("https://[^/]+\\.supabase\\.co"), "https://xtuuspwioiflfofbhsps.supabase.co")
+                .replace(Regex("/object/public/[^/]+/"), "/object/public/privacy-policy/")
+                .replace(Regex("/object/sign/[^/]+/"), "/object/sign/privacy-policy/")
+                .replace(Regex("/object/authenticated/[^/]+/"), "/object/authenticated/privacy-policy/")
+        } else {
+            absoluteUrl
+        }
     }
 }
