@@ -32,4 +32,12 @@ class ProfileRepositoryImpl @Inject constructor(
             authorization  = authorizationHeader())
         return response.data.toDomain()
     }
+
+    // G-08: only confirms the deactivation, the app closes the session after it
+    override suspend fun deactivateAccount(userId: String) {
+        api.deactivateAccount(
+            userId = userId,
+            authorization = authorizationHeader(),
+        )
+    }
 }
