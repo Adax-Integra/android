@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
+import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
@@ -60,6 +61,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
@@ -205,6 +207,7 @@ fun AppNavigation(
                     when {
                         // Keep the records tab selected throughout this flow.
                         currentRoute == "collaboratorCases" ||
+                            currentRoute == "myCases" ||
                             currentRoute == "allRecords" ||
                             currentRoute.startsWith("recordFromUser") -> "records"
 
@@ -440,6 +443,11 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onMyCasesCLick = {
+                            navController.navigate("myCases") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -623,12 +631,48 @@ fun AppNavigation(
                 }
             }
 
+            // V-12: cases assigned to the logged in collaborator (internal and admin)
+            composable("myCases") {
+                if (hasValidSession && canViewAllCases) {
+                    val myCasesViewModel: MyCasesViewModel = hiltViewModel()
+                    val uiState by myCasesViewModel.uiState.collectAsStateWithLifecycle()
+
+                    CasesScreen(
+                        uiState = uiState,
+                        title = "Mis Casos",
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onCaseClick = { caseId ->
+                            navController.navigate("caseDetail/$caseId") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onSearchChange = myCasesViewModel::searchCases,
+                        onUrgencyChange = { urgency ->
+                            myCasesViewModel.applyFilters(uiState.status, urgency)
+                        },
+                        onApplyFilters = myCasesViewModel::applyFilters,
+                        onClearFilters = myCasesViewModel::clearFilters,
+                        onRetry = myCasesViewModel::retry,
+                        onNextPage = myCasesViewModel::nextPage,
+                        onPreviousPage = myCasesViewModel::previousPage,
+                        onRefresh = myCasesViewModel::refresh,
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
             composable("profile") {
                 ProfileScreen(
                     onBack = {
                         navController.popBackStack()
                     },
-                    onPersonalDataClick = {},
+                    onPersonalDataClick = { navController.navigate("editProfile") {
+                        launchSingleTop = true
+                    }
+                                          },
                     onUploadDocumentsClick = {
                         if (hasValidSession && isExternal) {
                             navController.navigate("uploadDocuments") {
@@ -671,6 +715,14 @@ fun AppNavigation(
 
             composable("changePassword") {
                 ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+
+            composable("editProfile") {
+                EditableProfileScreen(
                     onBack = {
                         navController.popBackStack()
                     },

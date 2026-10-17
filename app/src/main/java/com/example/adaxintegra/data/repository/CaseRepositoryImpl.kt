@@ -15,6 +15,7 @@ import com.google.gson.JsonSyntaxException
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.example.adaxintegra.domain.entities.CaseStatusFilter
 
 @Singleton
 class CaseRepositoryImpl
@@ -62,7 +63,37 @@ constructor(
         )
 
         if (!response.success) {
-            throw IllegalStateException("Unable to retrive cases.")
+            throw IllegalStateException("Unable to retrieve cases.")
+        }
+        val data = response.data
+
+        return CasePage(
+            cases = data.cases.map { it.toDomain() },
+            total = data.total,
+            page = data.page,
+            limit = data.limit,
+        )
+    }
+
+    // V-12: same shape as getCases, filtered to the collaborator's cases
+    override suspend fun getMyCases(
+        status: CaseStatusFilter,
+        search: String,
+        urgency: String,
+        page: Int,
+        limit: Int,
+    ): CasePage {
+        val response = api.getMyCases(
+            authorization = authorizationHeader(),
+            status = status.apiValue,
+            search = search,
+            urgency = urgency,
+            page = page,
+            limit = limit,
+        )
+
+        if (!response.success) {
+            throw IllegalStateException("Unable to retrieve cases.")
         }
         val data = response.data
 

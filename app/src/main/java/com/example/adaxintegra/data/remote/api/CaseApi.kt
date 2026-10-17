@@ -85,4 +85,15 @@ interface CaseApi {
         @Header("Authorization") authorization: String,
         @Body request: AssignHelpRequestDto,
     ): AssignHelpResponseDto
+  
+    // V-12: cases assigned to the logged in collaborator (user comes from the token)
+    @GET("api/cases/assigned")
+    suspend fun getMyCases(
+        @Header("Authorization") authorization: String,
+        @Query("status") status: String = "all",
+        @Query("search") search: String = "",
+        @Query("urgency") urgency: String = "",
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20,
+    ): CaseListResponseDto
 }

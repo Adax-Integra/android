@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 
 // template: header + loading/error/content states, shared by screens
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ScreenTemplate(
@@ -29,10 +31,16 @@ fun ScreenTemplate(
     isRefreshing: Boolean = false,
     onRefresh: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    trailingAction: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize().clearFocusOnTap()) {
-        AppHeader(title = title, subtitle = subtitle, onBack = if (showBackButton) onBack else null)
+    Column(modifier = modifier.fillMaxSize()) {
+        AppHeader(
+            title = title,
+            subtitle = subtitle,
+            onBack = if (showBackButton) onBack else null,
+            trailingAction = trailingAction,
+            )
 
         when {
             isLoading -> {

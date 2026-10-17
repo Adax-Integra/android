@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.adaxintegra.domain.common.PasswordValidator
 
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
@@ -107,6 +108,7 @@ class ChangePasswordViewModel @Inject constructor(
             hasValidLength = hasValidLength,
             hasUpperAndLower = hasUpperAndLower,
             hasNumber = hasNumber,
+            hasSpecialCharacter = PasswordValidator.hasSpecialCharacter(newPass),
             isDifferentFromCurrent = isDifferentFromCurrent,
             doPasswordsMatch = doPasswordsMatch,
             hasNoSpecialAccents = hasNoSpecialAccents,

@@ -6,4 +6,5 @@ data class CasesFromUserUiState(
     val cases: List<Case> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
+    val nOfCases: Int = 0,
 )

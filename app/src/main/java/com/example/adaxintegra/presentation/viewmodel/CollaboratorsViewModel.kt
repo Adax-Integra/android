@@ -18,6 +18,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 // G-06: the admin consults the list of collaborator accounts
+// G-04: the screen loads the list each time it is shown, so a status changed in the detail is updated
 @HiltViewModel
 class CollaboratorsViewModel @Inject constructor(
     private val getCollaboratorsUseCase: GetCollaboratorsUseCase,
@@ -27,10 +28,6 @@ class CollaboratorsViewModel @Inject constructor(
 
     // Request in progress, so a reload cancels the previous one
     private var loadJob: Job? = null
-
-    init {
-        loadCollaborators()
-    }
 
     // Also called after a new collaborator is created (G-03)
     fun loadCollaborators() {

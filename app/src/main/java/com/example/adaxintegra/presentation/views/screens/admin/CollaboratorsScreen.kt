@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,6 +66,12 @@ fun CollaboratorsScreen(
     var showFilterDialog by rememberSaveable { mutableStateOf(false) }
     val spacing = Spacing()
     val collaborators = listState.visibleCollaborators
+
+    // G-04: loads the list when the screen is shown and when coming back from the detail,
+    // so a status changed there is updated in the list
+    LaunchedEffect(Unit) {
+        listViewModel.loadCollaborators()
+    }
 
     // Same template as the other screens, so it follows the light/dark theme
     ScreenTemplate(

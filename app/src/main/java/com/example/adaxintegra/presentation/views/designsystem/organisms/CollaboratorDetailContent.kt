@@ -30,9 +30,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.domain.model.CollaboratorDetail
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
@@ -98,11 +100,13 @@ private fun initials(name: String, lastName: String): String {
 }
 
 // G-10: draws the data of one collaborator, the screen only decides when to show it
+// G-04: the status section has the button to activate or deactivate the account
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CollaboratorDetailContent(
     collaborator: CollaboratorDetail,
     onCopy: (String) -> Unit,
+    onChangeStatusClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = Spacing()
@@ -208,6 +212,22 @@ fun CollaboratorDetailContent(
                 style = AppTextStyle.BodySmall,
                 color = IconGrey,
             )
+
+            // G-04: an active account can be deactivated and an inactive one reactivated
+            if (collaborator.isActive) {
+                AppButton(
+                    text = "Desactivar cuenta",
+                    onClick = onChangeStatusClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                AppButton(
+                    text = "Reactivar cuenta",
+                    onClick = onChangeStatusClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -383,6 +403,7 @@ fun CollaboratorDetailContentPreview() {
                 isActive = false,
             ),
             onCopy = {},
+            onChangeStatusClick = {},
         )
     }
 }

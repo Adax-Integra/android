@@ -27,6 +27,7 @@ fun AppHeader(
     title: String,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
+    trailingAction: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier =
@@ -53,7 +54,9 @@ fun AppHeader(
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        Column {
+        Column (
+            modifier = Modifier.weight(1f),
+        ){
             Text(
                 text = title,
                 style = AppTextStyle.TitleLarge,
@@ -68,6 +71,8 @@ fun AppHeader(
                 )
             }
         }
+
+        trailingAction?.invoke()
     }
 }
 
