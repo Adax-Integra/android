@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,12 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.CollaboratorDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CollaboratorDetailContent
@@ -29,6 +33,7 @@ import com.example.adaxintegra.ui.theme.Purple
 
 // G-10: detail of a collaborator, opened from the G-06 list (admin only).
 // Loads the data and decides what to show, the content draws it
+// G-04: asks for confirmation before activating or deactivating the account
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CollaboratorDetailScreen(
@@ -92,8 +97,66 @@ fun CollaboratorDetailScreen(
                 CollaboratorDetailContent(
                     collaborator = collaborator,
                     onCopy = copyText,
+                    onChangeStatusClick = viewModel::openStatusDialog,
                 )
             }
         }
+    }
+
+    // G-04: confirmation before changing the status, the text depends on the current one
+    if (uiState.showStatusDialog && collaborator != null) {
+        val fullName = "${collaborator.name} ${collaborator.lastName}".trim()
+        val isActive = collaborator.isActive
+
+        val title = if (isActive) "Desactivar cuenta" else "Reactivar cuenta"
+        val message = if (isActive) {
+            "¿Seguro que quieres desactivar la cuenta de $fullName? " +
+                "Ya no podrá iniciar sesión ni recibir nuevas asignaciones."
+        } else {
+            "¿Quieres reactivar la cuenta de $fullName? " +
+                "Podrá volver a iniciar sesión y recibir nuevas asignaciones."
+        }
+        val confirmText = if (isActive) "Desactivar" else "Reactivar"
+
+        AlertDialog(
+            onDismissRequest = viewModel::dismissStatusDialog,
+            title = {
+                Text(
+                    text = title,
+                    style = AppTextStyle.TitleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
+                    Text(text = message)
+
+                    // Error from the request, the admin can try again
+                    val statusError = uiState.statusError
+                    if (statusError != null) {
+                        Text(
+                            text = statusError,
+                            style = AppTextStyle.BodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                AppButton(
+                    text = confirmText,
+                    onClick = viewModel::updateStatus,
+                    isLoading = uiState.isUpdatingStatus,
+                )
+            },
+            dismissButton = {
+                AppButton(
+                    text = "Cancelar",
+                    onClick = viewModel::dismissStatusDialog,
+                    variant = ButtonVariant.Outlined,
+                    enabled = !uiState.isUpdatingStatus,
+                )
+            },
+        )
     }
 }
