@@ -55,10 +55,14 @@ fun LoginScreen(
             onEmailChange = { viewModel.onEmailChanger(it) },
             passwordValue = uiState.password,
             onPasswordChange = { viewModel.onPasswordChanged(it) },
-            onLoginClick = { viewModel.login() },
+            onLoginClick = {
+                viewModel.login(
+                    onNavigateToVerify = onVerifyUnconfirmedAccount,
+                )
+            },
             onRegisterClick = onRegisterClick,
             onForgotPasswordClick = onForgotPasswordClick,
-            isLoading = uiState.isLoading,
+            isLoading = uiState.isLoading || uiState.isResendingEmail,
             errorMessage = uiState.error,
             isEmailNotConfirmed = uiState.isEmailNotConfirmed,
             onResendEmailClick = {
