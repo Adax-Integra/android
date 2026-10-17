@@ -82,7 +82,7 @@ fun ProfileScreen(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                top = 32.dp,
+                top = 16.dp,
             ),
     ) {
         AppHeader(
