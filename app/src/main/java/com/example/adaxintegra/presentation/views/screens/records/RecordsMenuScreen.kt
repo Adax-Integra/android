@@ -24,6 +24,7 @@ fun RecordsMenuScreen(
     onAllCasesClick: () -> Unit,
     onAllRecordsClick: () -> Unit = {},
     onReportsClick: () -> Unit = {},
+    onMyCasesCLick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -63,6 +64,14 @@ fun RecordsMenuScreen(
             subtitle = "Consulta los reportes de casos",
             onClick = onReportsClick,
             icon = AppIcons.Reports,
+        )
+
+        // V-12: cases assigned to the logged in collaborator
+        MenuOptionCard(
+            title = "Mis Casos",
+            subtitle = "Casos que yo llevo",
+            onClick = onMyCasesCLick,
+            icon = AppIcons.Profile,
         )
     }
 }
