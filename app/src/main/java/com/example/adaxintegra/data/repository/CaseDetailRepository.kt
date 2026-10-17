@@ -2,6 +2,7 @@ package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.remote.api.CaseApi
+import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseDataDto
 import com.example.adaxintegra.domain.model.CaseDetail
 import com.example.adaxintegra.domain.repository.AuthRepository
@@ -61,5 +62,16 @@ constructor(
         }
 
         return response.data
+    }
+
+    // R-08: assigns helps to the selected case through the backend endpoint
+    suspend fun assignHelpsToCase(caseId: String, helpIds: List<String>): Boolean {
+        val request = AssignHelpRequestDto(helpIds = helpIds)
+        val response = api.assignHelpsToCase(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = request
+        )
+        return response.success
     }
 }

@@ -2,7 +2,6 @@ package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,21 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,19 +33,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.adaxintegra.domain.entities.Case
+import com.example.adaxintegra.domain.entities.CaseStatusFilter
 import com.example.adaxintegra.presentation.viewmodel.CasesUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseFilterDialog
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -64,17 +58,23 @@ fun CasesScreen(
     onRetry: () -> Unit,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String = "Casos",
+    // V-12: when set, the dialog also filters by status and applies both at once
+    onApplyFilters: ((CaseStatusFilter, String) -> Unit)? = null,
 ) {
-    var pendingUrgency by rememberSaveable { mutableStateOf("Todas") }
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
     val selectedUrgency = uiState.urgency.ifEmpty { "Todas" }
+    val hasStatusFilter = onApplyFilters != null && uiState.status != CaseStatusFilter.ALL
+    val hasActiveFilters = uiState.search.isNotEmpty() || selectedUrgency != "Todas" || hasStatusFilter
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(
                     start = 16.dp,
@@ -95,7 +95,7 @@ fun CasesScreen(
                 }
 
                 Text(
-                    text = "Casos",
+                    text = title,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
@@ -130,10 +130,7 @@ fun CasesScreen(
                 )
 
                 OutlinedButton(
-                    onClick = {
-                        pendingUrgency = selectedUrgency
-                        showFilters = true
-                    },
+                    onClick = { showFilters = true },
                     modifier = Modifier.height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                 ) {
@@ -141,13 +138,16 @@ fun CasesScreen(
                 }
             }
 
-            if (uiState.search.isNotEmpty() || selectedUrgency != "Todas") {
+            if (hasActiveFilters) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Urgencia: $selectedUrgency",
+                        text = buildString {
+                            if (hasStatusFilter) append("Estado: ${uiState.status.label} · ")
+                            append("Urgencia: $selectedUrgency")
+                        },
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -164,7 +164,11 @@ fun CasesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = "ORDENADOS POR URGENCIA",
+                    text = if (uiState.status == CaseStatusFilter.CLOSED) {
+                        "ORDENADOS POR FECHA"
+                    } else {
+                        "ORDENADOS POR URGENCIA"
+                    },
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -182,7 +186,9 @@ fun CasesScreen(
                 }
             }
 
-            Box(
+            PullToRefreshBox(
+                isRefreshing = uiState.isLoading,
+                onRefresh = onRefresh,
                 modifier =
                     Modifier
                         .weight(1f)
@@ -196,6 +202,9 @@ fun CasesScreen(
 
                     uiState.error != null -> {
                         Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -211,18 +220,23 @@ fun CasesScreen(
                     }
 
                     uiState.cases.isEmpty() -> {
-                        Text(
-                            text =
-                                if (
-                                    uiState.search.isNotBlank() ||
-                                    selectedUrgency != "Todas"
-                                ) {
-                                    "No hay casos que coincidan con tu busqueda y filtro."
-                                } else {
-                                    "No hay casos disponibles"
-                                },
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                text =
+                                    if (hasActiveFilters) {
+                                        "No hay casos que coincidan con tu busqueda y filtro."
+                                    } else {
+                                        "No hay casos disponibles"
+                                    },
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
                     }
 
                     else -> {
@@ -256,116 +270,31 @@ fun CasesScreen(
                 val canGoNext =
                     uiState.page.toLong() * uiState.limit < uiState.total
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 0.dp,
-                    ),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(
-                            onClick = onPreviousPage,
-                            enabled = canGoBack,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Página anterior",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoBack) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-
-                        Text(
-                            text = "Página ${uiState.page}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-
-                        IconButton(
-                            onClick = onNextPage,
-                            enabled = canGoNext,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Página siguiente",
-                                modifier = Modifier.size(28.dp),
-                                tint = if (canGoNext) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                },
-                            )
-                        }
-                    }
-                }
+                PageSwitcher(
+                    page = uiState.page,
+                    canGoBack = canGoBack,
+                    canGoNext = canGoNext,
+                    onPreviousPage = onPreviousPage,
+                    onNextPage = onNextPage,
+                )
             }
         }
     }
 
     if (showFilters) {
-        AlertDialog(
-            onDismissRequest = { showFilters = false },
-            title = { Text("Filtrar por urgencia") },
-            text = {
-                Column(
-                    modifier = Modifier.selectableGroup().verticalScroll(rememberScrollState()),
-                ) {
-                    listOf("Todas", "Alta", "Media", "Baja", "Sin evaluar").forEach { urgency ->
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .selectable(
-                                        selected = pendingUrgency == urgency,
-                                        onClick = { pendingUrgency = urgency },
-                                        role = Role.RadioButton,
-                                    )
-                                    .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            RadioButton(
-                                selected = pendingUrgency == urgency,
-                                onClick = null,
-                            )
-
-                            Text(urgency)
-                        }
-                    }
+        CaseFilterDialog(
+            initialUrgency = uiState.urgency,
+            // null hides the status section (V-03)
+            initialStatus = if (onApplyFilters != null) uiState.status else null,
+            onApply = { status, urgency ->
+                if (onApplyFilters != null && status != null) {
+                    onApplyFilters(status, urgency)
+                } else {
+                    onUrgencyChange(urgency)
                 }
+                showFilters = false
             },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onUrgencyChange(
-                            if (pendingUrgency == "Todas") "" else pendingUrgency,
-                        )
-                        showFilters = false
-                    },
-                ) {
-                    Text("Aplicar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showFilters = false }) {
-                    Text("Cancelar")
-                }
-            },
+            onDismiss = { showFilters = false },
         )
     }
 }
@@ -379,7 +308,10 @@ fun CasesScreen(
 )
 @Composable
 private fun CasesScreenPreview() {
-    val mockCases = Case.getMockData()
+    // Preview only cases that belong to the priority listing.
+    val mockCases = Case.getMockData().filterNot {
+        it.state.trim().lowercase() in listOf("closed", "cerrado")
+    }
 
     AdaxIntegraTheme(dynamicColor = false) {
         CasesScreen(
@@ -397,6 +329,38 @@ private fun CasesScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
+            onRefresh = {},
+        )
+    }
+}
+
+@Suppress("ktlint:standard:function-naming")
+@Preview(
+    name = "Mis casos con finalizados",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 804,
+)
+@Composable
+private fun MyCasesScreenPreview() {
+    AdaxIntegraTheme(dynamicColor = false) {
+        CasesScreen(
+            uiState = CasesUiState(
+                cases = Case.getMockData(),
+                total = 4,
+                status = CaseStatusFilter.ALL,
+            ),
+            onBackClick = {},
+            onCaseClick = {},
+            onSearchChange = {},
+            onUrgencyChange = {},
+            onClearFilters = {},
+            onRetry = {},
+            onNextPage = {},
+            onPreviousPage = {},
+            onRefresh = {},
+            title = "Mis Casos",
+            onApplyFilters = { _, _ -> },
         )
     }
 }

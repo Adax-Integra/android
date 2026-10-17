@@ -24,6 +24,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +49,10 @@ fun OtpCodeInput(
 ) {
     val focusRequester = remember { FocusRequester() }
     val clipboardManager = LocalClipboardManager.current
+
+    // requestFocus() alone does nothing when the field is already focused but the
+    // keyboard was hidden, so the keyboard must be shown explicitly
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -83,7 +88,10 @@ fun OtpCodeInput(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { focusRequester.requestFocus() },
+                    .clickable {
+                        focusRequester.requestFocus()
+                        keyboardController?.show()
+                    },
             ) {
                 for (i in 0 until codeLength) {
                     val digit = otpCode.getOrNull(i)?.toString() ?: ""

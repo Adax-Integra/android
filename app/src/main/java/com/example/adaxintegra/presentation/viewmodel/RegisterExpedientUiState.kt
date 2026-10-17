@@ -14,5 +14,6 @@ data class RegisterExpedientUiState(
     // Dialogs and navigation control
     val showConfirmationDialog: Boolean = false,
     val isSuccess: Boolean = false,
+    val createdUserId: String? = null,
     val errorMessage: String? = null,
 )

@@ -1,40 +1,57 @@
 package com.example.adaxintegra.presentation.navigation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
+import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
+import com.example.adaxintegra.presentation.viewmodel.ReportsViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.screens.ForgotPasswordScreen
-import com.example.adaxintegra.presentation.views.screens.HomeScreen
 import com.example.adaxintegra.presentation.views.screens.LoginScreen
+import com.example.adaxintegra.presentation.views.screens.PasswordRecoveryCodeScreen
 import com.example.adaxintegra.presentation.views.screens.PendingVerificationScreen
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
-import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
-import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
-import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
+import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
+import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -43,31 +60,21 @@ import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
+import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
+import com.example.adaxintegra.presentation.views.screens.records.RecordDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
-import android.net.Uri
 import com.example.adaxintegra.presentation.views.screens.records.RecordsScreen
+import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRange
 import java.net.URLDecoder
 import java.net.URLEncoder
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.TextButton
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.res.painterResource
-import com.example.adaxintegra.R
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavigation(
-    deepLinkUri: Uri? = null,
     viewModel: AppViewModel = hiltViewModel(),
 ) {
     val isRestoringSession by viewModel.isRestoringSession.collectAsStateWithLifecycle()
@@ -136,19 +143,6 @@ fun AppNavigation(
 
     val navController = rememberNavController()
 
-    //handle Supabase password recovery deep link
-    LaunchedEffect(deepLinkUri) {
-        if (
-            deepLinkUri?.scheme == "adax" &&
-            deepLinkUri.host == "auth" &&
-            deepLinkUri.path == "/callback"
-        ) {
-            navController.navigate("resetPassword") {
-                launchSingleTop = true
-            }
-        }
-    }
-
     val needsPrivacyConsent by viewModel.needsPrivacyConsent.collectAsStateWithLifecycle()
 
     LaunchedEffect(hasValidSession, isExternal) {
@@ -164,7 +158,12 @@ fun AppNavigation(
     LaunchedEffect(hasValidSession, currentRoute, needsPrivacyConsent) {
         val destination =
             when {
-                hasValidSession && needsPrivacyConsent && currentRoute != "privacyPolicy" -> "privacyPolicy"
+                // G-09: let the user read the success screen; "Continuar" goes on to
+                // the privacy policy or home once she leaves it
+                hasValidSession &&
+                    needsPrivacyConsent &&
+                    currentRoute != "privacyPolicy" &&
+                    currentRoute != "verificationSuccess" -> "privacyPolicy"
 
                 hasValidSession && !needsPrivacyConsent && (currentRoute == "login" || currentRoute == "session") -> "home"
 
@@ -175,9 +174,10 @@ fun AppNavigation(
                     currentRoute != "login" &&
                     currentRoute != "register" &&
                     currentRoute != "forgotPassword" &&
-                    currentRoute != "resetPassword" &&
                     currentRoute != "verificationSuccess" &&
-                    !currentRoute.startsWith("pendingVerification") -> "login"
+                    !currentRoute.startsWith("pendingVerification") &&
+                    !currentRoute.startsWith("recoveryCode") &&
+                    !currentRoute.startsWith("resetPassword") -> "login"
 
                 else -> null
             }
@@ -201,31 +201,41 @@ fun AppNavigation(
                 currentRoute != "login" &&
                 currentRoute != "register" &&
                 currentRoute != "verificationSuccess" &&
-                !currentRoute.startsWith("pendingVerification")
+                !currentRoute.startsWith("pendingVerification") &&
+                !currentRoute.startsWith("recoveryCode") &&
+                !currentRoute.startsWith("resetPassword")
             ) {
                 val selectedRoute =
-                    when (currentRoute) {
+                    when {
                         // Keep the records tab selected throughout this flow.
+                        currentRoute == "collaboratorCases" ||
+                            currentRoute == "myCases" ||
+                            currentRoute == "allRecords" ||
+                            currentRoute.startsWith("recordFromUser") ||
+                            currentRoute.startsWith("recordDocuments") -> "records"
                         "collaboratorCases",
                         "allRecords",
                         "recordFromUser/{recordId}/{userId}",
                             -> "records"
 
                         // G-03: collaborators screen is opened from the admin section (NV-02)
-                        "collaborators" -> "admin"
-
                         // V-06: activity log is opened from the admin section
-                        "activityLog" -> "admin"
+                        // G-10: the collaborator detail keeps the admin tab selected
+                        currentRoute == "collaborators" ||
+                            currentRoute == "activityLog" ||
+                            currentRoute.startsWith("collaboratorDetail") -> "admin"
 
-                        "case/{caseId}" -> {
+                        currentRoute.startsWith("case/") -> {
                             if (isExternal) "cases" else "records"
                         }
 
                         // V-11 belongs to the internal/admin records flow
-                        "caseDetail/{caseId}" -> "records"
+                        currentRoute.startsWith("caseDetail") -> "records"
 
-                        // R-02 is opened from the external user's case list
-                        "createCase" -> "cases"
+                        // R-02 is opened from the external user's case list or after expedient registration
+                        currentRoute.startsWith("createCase") -> {
+                            if (isExternal) "cases" else "records"
+                        }
 
                         else -> currentRoute
                     }
@@ -249,9 +259,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "session",
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
+            Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -282,32 +292,56 @@ fun AppNavigation(
                 )
             }
 
-            //forgot password screen
+            // forgot password screen
             composable("forgotPassword") {
-
                 ForgotPasswordScreen(
                     onBack = {
-                        navController.popBackStack() },
-                    viewModel = hiltViewModel()
+                        navController.popBackStack()
+                    },
+                    onCodeRequested = { email ->
+                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                        navController.navigate("recoveryCode/$encodedEmail") {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 
-            //reset password screen
-            composable("resetPassword") { entry ->
-
-                    ResetPasswordScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        onResetPasswordSuccess = {
-                            navController.navigate("login") {
-                                popUpTo("login") {
-                                    inclusive = true
-                                }
-                            }
+            // code verification
+            composable("recoveryCode/{email}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                PasswordRecoveryCodeScreen(
+                    email = email,
+                    onBack = { navController.popBackStack() },
+                    onCodeEntered = { enteredEmail, code ->
+                        val encodedEmail = URLEncoder.encode(enteredEmail, "UTF-8")
+                        navController.navigate("resetPassword/$encodedEmail/$code") {
+                            launchSingleTop = true
                         }
-                    )
-                }
+                    },
+                )
+            }
+
+            // reset password screen
+            composable("resetPassword/{email}/{code}") { entry ->
+                val email = entry.arguments?.getString("email").orEmpty()
+                val code = entry.arguments?.getString("code").orEmpty()
+
+                ResetPasswordScreen(
+                    email = email,
+                    code = code,
+                    onBack = { navController.popBackStack() },
+                    // expired or too many attempts: go back to the first screen for a new code
+                    onNeedNewCode = {
+                        navController.popBackStack("forgotPassword", inclusive = false)
+                    },
+                    onResetPasswordSuccess = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                )
+            }
 
             composable("register") {
                 val registerViewModel: RegisterViewModel = hiltViewModel()
@@ -366,7 +400,7 @@ fun AppNavigation(
 
             composable("home") {
                 if (hasValidSession) {
-                    //NV-01: the external user gets her own home, the rest keep the role probe
+                    // NV-01: the external user gets her own home, the rest keep the role probe
                     if (isExternal) {
                         ExternalHomeScreen(
                             onCaseClick = { caseId ->
@@ -381,7 +415,19 @@ fun AppNavigation(
                             },
                         )
                     } else {
-                        HomeScreen(role = role ?: "sin rol")
+                        InternalHomeScreen(
+                            onRecordClick = { userId ->
+                                // V-10 loads the cases belonging to the selected owner
+                                navController.navigate("recordFromUser/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllRecordsClick = {
+                                navController.navigate("allRecords") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
                     }
                 }
             }
@@ -398,6 +444,47 @@ fun AppNavigation(
                             navController.navigate("allRecords") {
                                 launchSingleTop = true
                             }
+                        },
+                        onReportsClick = {
+                            navController.navigate("reportSelectRange") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onMyCasesCLick = {
+                            navController.navigate("myCases") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("reportSelectRange") {
+                if (hasValidSession && canViewAllCases) {
+                    val reportsViewModel: ReportsViewModel = hiltViewModel()
+                    val reportsUiState by reportsViewModel.uiState.collectAsStateWithLifecycle()
+
+                    ReportSelectRange(
+                        uiState = reportsUiState,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onStartDateSelected = reportsViewModel::setStartDate,
+                        onEndDateSelected = reportsViewModel::setEndDate,
+                        onChipSelected = { chip ->
+                            when (chip) {
+                                "Mes anterior" -> reportsViewModel.chipPreviousMonthSelected()
+                                "Mes actual" -> reportsViewModel.chipThisMonthSelected()
+                                "Trimestre previo" -> reportsViewModel.chipPreviousTrimester()
+                            }
+                        },
+                        onGenerateReportClick = {
+                            reportsViewModel.downloadReport()
+                        },
+                        onClearDownloadedFile = {
+                            reportsViewModel.clearDownloadedFile()
                         },
                     )
                 } else {
@@ -432,7 +519,8 @@ fun AppNavigation(
                             navController.navigate("registerExpedient") {
                                 launchSingleTop = true
                             }
-                        }
+                        },
+                        onRefresh = recordsViewModel::refresh,
 
                     )
                 } else {
@@ -457,9 +545,39 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
+                            onCreateCaseClick = {
+                                navController.navigate("createCase/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onDocumentsClick = {
+                                navController.navigate("recordDocuments/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         Text("No se encontró el identificador del expediente o usuario")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // V-13: documents of the external user inside her record
+            composable("recordDocuments/{userId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val userId = entry.arguments?.getString("userId")
+
+                    if (!userId.isNullOrBlank()) {
+                        RecordDocumentsScreen(
+                            userId = userId,
+                            onBackClick = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del usuario")
                     }
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -485,10 +603,27 @@ fun AppNavigation(
                 }
             }
 
-            // R-02: the external user registers a new case
+            // R-02: registers a new case (for external user or created by internal/admin)
             composable("createCase") {
-                if (hasValidSession && isExternal) {
+                if (hasValidSession && (isExternal || canViewAllCases)) {
                     CreateCaseScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onCaseCreated = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            composable("createCase/{targetUserId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val targetUserId = entry.arguments?.getString("targetUserId")
+                    CreateCaseScreen(
+                        targetUserId = targetUserId,
                         onBack = {
                             navController.popBackStack()
                         },
@@ -523,6 +658,40 @@ fun AppNavigation(
                         onRetry = casesViewModel::retry,
                         onNextPage = casesViewModel::nextPage,
                         onPreviousPage = casesViewModel::previousPage,
+                        onRefresh = casesViewModel::refresh,
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // V-12: cases assigned to the logged in collaborator (internal and admin)
+            composable("myCases") {
+                if (hasValidSession && canViewAllCases) {
+                    val myCasesViewModel: MyCasesViewModel = hiltViewModel()
+                    val uiState by myCasesViewModel.uiState.collectAsStateWithLifecycle()
+
+                    CasesScreen(
+                        uiState = uiState,
+                        title = "Mis Casos",
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onCaseClick = { caseId ->
+                            navController.navigate("caseDetail/$caseId") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onSearchChange = myCasesViewModel::searchCases,
+                        onUrgencyChange = { urgency ->
+                            myCasesViewModel.applyFilters(uiState.status, urgency)
+                        },
+                        onApplyFilters = myCasesViewModel::applyFilters,
+                        onClearFilters = myCasesViewModel::clearFilters,
+                        onRetry = myCasesViewModel::retry,
+                        onNextPage = myCasesViewModel::nextPage,
+                        onPreviousPage = myCasesViewModel::previousPage,
+                        onRefresh = myCasesViewModel::refresh,
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
@@ -534,7 +703,18 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
-                    onPersonalDataClick = {},
+                    onPersonalDataClick = { navController.navigate("editProfile") {
+                        launchSingleTop = true
+                    }
+                                          },
+                    onUploadDocumentsClick = {
+                        if (hasValidSession && isExternal) {
+                            navController.navigate("uploadDocuments") {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    isExternal = isExternal,
                     onSecurityClick = {
                         navController.navigate("changePassword") {
                             launchSingleTop = true
@@ -551,8 +731,28 @@ fun AppNavigation(
                 )
             }
 
+            composable("uploadDocuments") {
+                if (hasValidSession && isExternal) {
+                    UploadDocumentsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
             composable("changePassword") {
                 ChangePasswordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+
+            composable("editProfile") {
+                EditableProfileScreen(
                     onBack = {
                         navController.popBackStack()
                     },
@@ -566,9 +766,35 @@ fun AppNavigation(
                         onBack = {
                             navController.popBackStack()
                         },
+                        onCollaboratorClick = { userId ->
+                            navController.navigate("collaboratorDetail/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
             }
+
+            // G-10: admin consults the detail of one collaborator
+            composable("collaboratorDetail/{userId}") { entry ->
+                if (hasValidSession && isAdmin) {
+                    val userId = entry.arguments?.getString("userId")
+
+                    if (!userId.isNullOrBlank()) {
+                        CollaboratorDetailScreen(
+                            userId = userId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la colaboradora")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
             // V-11: internal/admin case detail screen
             composable("caseDetail/{caseId}") { entry ->
                 if (hasValidSession && canViewAllCases) {
@@ -669,13 +895,20 @@ fun AppNavigation(
                     val registerViewModel: RegisterExpedientViewModel = hiltViewModel()
                     RegisterExpedientScreen(
                         viewModel = registerViewModel,
-                        userToken = session?.token ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
+                        userToken = session?.token
+                            ?: "", // Pasa el token de tu objeto session (o session?.accessToken según tu modelo)
                         onCancel = {
                             navController.popBackStack()
                         },
-                        onSuccess = {
-                            navController.popBackStack()
-                        }
+                        onSuccess = { createdUserId ->
+                            if (createdUserId.isNotBlank()) {
+                                navController.navigate("createCase/$createdUserId") {
+                                    popUpTo("registerExpedient") { inclusive = true }
+                                }
+                            } else {
+                                navController.popBackStack()
+                            }
+                        },
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")

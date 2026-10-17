@@ -9,4 +9,5 @@ data class CasesFromUserUiState(
     val isLoading: Boolean = false,
     val isUpdatingStatus: Boolean = false,
     val error: String? = null,
+    val nOfCases: Int = 0,
 )

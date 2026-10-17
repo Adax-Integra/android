@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.screens.home
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,12 +8,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
@@ -22,11 +21,8 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
-
-//NV-01: link the team left, the podcast card is the only way into it
-private const val PODCAST_URL =
-    "https://open.spotify.com/show/5yaZdYjbR36lrDmaJ0WhVk?si=pbLJm3ifQIuItgKcnyN08Q&utm_source=copy-link"
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -41,7 +37,7 @@ fun ExternalHomeScreen(
     val spacing = Spacing()
     val context = LocalContext.current
 
-    //Reloaded on every entry, so a case registered in R-02 shows up here
+    // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
         viewModel.loadCases()
     }
@@ -53,41 +49,53 @@ fun ExternalHomeScreen(
         !"closed".equals(case.state, ignoreCase = true)
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = viewModel::refresh,
         modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing.medium),
-        verticalArrangement = Arrangement.spacedBy(spacing.medium),
+            .fillMaxSize(),
     ) {
-        Spacer(modifier = Modifier.height(spacing.small))
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            Spacer(modifier = Modifier.height(spacing.small))
 
-        HomeHeader()
+            HomeHeader()
 
-        CurrentCaseCard(
-            currentCase = currentCase,
-            onCaseClick = onCaseClick,
-            onRegisterCaseClick = onRegisterCaseClick,
-            isLoading = uiState.isLoading,
-            error = uiState.error,
-        )
+            CurrentCaseCard(
+                currentCase = currentCase,
+                onCaseClick = onCaseClick,
+                onRegisterCaseClick = onRegisterCaseClick,
+                isLoading = uiState.isLoading,
+                error = uiState.error,
+            )
 
-        SectionTitle(text = "Eventos")
+            SectionTitle(text = "Eventos")
 
-        //NV-01: there is no events endpoint yet, the section stays empty as in iOS
-        Spacer(modifier = Modifier.height(spacing.extraLarge))
+            // NV-01: there is no events endpoint yet, the section stays empty as in iOS
+            Spacer(modifier = Modifier.height(spacing.extraLarge))
 
-        SectionTitle(text = "Podcast")
+            SectionTitle(text = "Podcast")
 
-        PodcastCard(
-            onClick = {
-                //Spotify if it is installed, the browser otherwise
-                runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, PODCAST_URL.toUri()))
-                }
-            },
-        )
+            PodcastCard(
+                onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
+                onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
+            )
 
-        Spacer(modifier = Modifier.height(spacing.large))
+            SectionTitle(text = "Redes sociales")
+
+            SocialMediaCard(
+                onFacebookClick = { HomeLinks.open(context, HomeLinks.FACEBOOK_URL) },
+                onInstagramClick = { HomeLinks.open(context, HomeLinks.INSTAGRAM_URL) },
+                onXClick = { HomeLinks.open(context, HomeLinks.X_URL) },
+                onTikTokClick = { HomeLinks.open(context, HomeLinks.TIKTOK_URL) },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.large))
+        }
     }
 }

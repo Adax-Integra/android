@@ -30,6 +30,7 @@ fun LabeledTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     errorMessage: String? = null,
+    enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -49,6 +50,7 @@ fun LabeledTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             isError = errorMessage != null,
+            enabled = enabled,
         )
         if (errorMessage != null) {
             Spacer(modifier = Modifier.height(4.dp))

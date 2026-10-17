@@ -17,22 +17,14 @@ class ExpedientRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ExpedientRepository {
 
-    private suspend fun authorizationHeader(): String {
-        val session = authRepository.session.filterNotNull().first()
-        val token = session.token
-        if (token.isBlank()) {
-            throw IllegalStateException("Sesión no válida")
-        }
-        return "Bearer $token"
-    }
-
-    override suspend fun registerExpedient(token: String, form: PersonalDataForm): Result<Unit> = try {
-        val response = expedientApi.registerExpedient(
+    override suspend fun registerExpedient(token: String, form: PersonalDataForm): Result<String> = try {
+        val response = api.registerExpedient(
             authorization = "Bearer $token",
             request = form.toDto(),
         )
-        if (response.success) {
-            Result.success(Unit)
+        val userId = response.data?.userId
+        if (response.success && !userId.isNullOrBlank()) {
+            Result.success(userId)
         } else {
             Result.failure(Exception("No se pudo completar el registro del expediente."))
         }

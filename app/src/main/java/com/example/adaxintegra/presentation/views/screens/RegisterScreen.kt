@@ -55,6 +55,8 @@ fun RegisterScreen(
     RegisterScreen(
         uiState = uiState,
         onBackClick = { viewModel.onBackPressed(onBackClick) },
+        // "Sí, regresar" already confirmed: navigate without asking again
+        onConfirmLeave = onBackClick,
         onRegisterSuccess = { email ->
             viewModel.resetRegisterSuccess()
             onRegisterSuccess(email)
@@ -93,6 +95,7 @@ fun RegisterScreen(
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
     onCountryCodeChange: (String) -> Unit = {},
+    onConfirmLeave: () -> Unit = {},
     onConfirmRegister: () -> Unit = {},
     onDismissDialog: () -> Unit = {},
     onDismissUnsavedChanges: () -> Unit = {},
@@ -108,7 +111,7 @@ fun RegisterScreen(
         UnsavedChangesDialog(
             onConfirm = {
                 onDismissUnsavedChanges()
-                onBackClick()
+                onConfirmLeave()
             },
             onDismiss = onDismissUnsavedChanges,
         )

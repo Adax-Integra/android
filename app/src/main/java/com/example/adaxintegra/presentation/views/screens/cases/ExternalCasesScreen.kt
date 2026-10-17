@@ -2,6 +2,7 @@ package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,10 +41,14 @@ fun ExternalCasesScreen(
         title = "Casos",
         isLoading = uiState.isLoading,
         error = uiState.error,
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = viewModel::refresh,
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
         Column(
-            modifier = Modifier.padding(top = spacing.small),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = spacing.small),
             verticalArrangement = Arrangement.spacedBy(spacing.medium),
         ) {
 
@@ -60,7 +65,7 @@ fun ExternalCasesScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(uiState.cases) { caso ->
                     CaseSummaryCard(
                         caseItem = caso,
