@@ -69,7 +69,6 @@ fun ExternalUsersScreen(
 
     ScreenTemplate(
         title = "Gestión de Externas",
-        subtitle = "Consulta las cuentas de las usuarias externas",
         onBack = onBack,
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
