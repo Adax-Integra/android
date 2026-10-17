@@ -29,8 +29,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
-import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
@@ -60,8 +60,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
-import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
@@ -231,6 +231,9 @@ fun AppNavigation(
                         currentRoute.startsWith("createCase") -> {
                             if (isExternal) "cases" else "records"
                         }
+
+                        // R-06: "Mis documentos" is opened from the profile
+                        currentRoute == "uploadDocuments" -> "profile"
 
                         else -> currentRoute
                     }
@@ -696,10 +699,11 @@ fun AppNavigation(
                     onBack = {
                         navController.popBackStack()
                     },
-                    onPersonalDataClick = { navController.navigate("editProfile") {
-                        launchSingleTop = true
-                    }
-                                          },
+                    onPersonalDataClick = {
+                        navController.navigate("editProfile") {
+                            launchSingleTop = true
+                        }
+                    },
                     onUploadDocumentsClick = {
                         if (hasValidSession && isExternal) {
                             navController.navigate("uploadDocuments") {
