@@ -34,32 +34,57 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(password = password, isEmailNotConfirmed = false, error = null) }
     }
 
-    fun login() {
+    fun login(onNavigateToVerify: (String) -> Unit) {
+        val state = _uiState.value
+        if (state.isLoading || state.isResendingEmail) return
+
+        val targetEmail = state.email.trim()
+        val password = state.password
+
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                error = null,
+                isLoginSuccess = false,
+                isEmailNotConfirmed = false,
+                resendSuccessMessage = null,
+            )
+        }
+
         viewModelScope.launch {
-            loginUseCase(_uiState.value.email, _uiState.value.password).collect { result ->
-                _uiState.update { state ->
-                    when (result) {
-                        is Result.Loading -> state.copy(
-                            isLoading = true,
-                            error = null,
-                            isEmailNotConfirmed = false,
-                            resendSuccessMessage = null,
-                        )
+            loginUseCase(targetEmail, password).collect { result ->
+                when (result) {
+                    is Result.Loading -> Unit
 
-                        is Result.Success -> state.copy(
-                            isLoading = false,
-                            isLoginSuccess = true,
-                            userId = result.data.userId,
-                            userRole = result.data.role,
-                        )
+                    is Result.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isLoginSuccess = true,
+                                userId = result.data.userId,
+                                userRole = result.data.role,
+                            )
+                        }
+                    }
 
-                        // only an unverified account shows the "verify with code" button;
-                        // a wrong password must not offer to send codes
-                        is Result.Error -> state.copy(
-                            isLoading = false,
-                            error = result.exception.toAuthMessage(),
-                            isEmailNotConfirmed = result.exception == AuthError.EmailNotVerified,
-                        )
+                    is Result.Error -> {
+                        val needsVerification =
+                            result.exception == AuthError.EmailNotVerified
+
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.exception.toAuthMessage(),
+                                isEmailNotConfirmed = needsVerification,
+                            )
+                        }
+
+                        if (needsVerification) {
+                            resendVerificationEmail(
+                                email = targetEmail,
+                                onNavigateToVerify = onNavigateToVerify,
+                            )
+                        }
                     }
                 }
             }
@@ -68,9 +93,26 @@ class LoginViewModel @Inject constructor(
 
     // G-09: asks for a new code and opens the code screen.
     // Navigation runs outside _uiState.update, whose block may run more than once
-    fun resendVerificationEmail(onNavigateToVerify: (String) -> Unit = {}) {
-        val targetEmail = _uiState.value.email.trim()
-        if (targetEmail.isBlank()) return
+    fun resendVerificationEmail(
+        email: String = _uiState.value.email,
+        onNavigateToVerify: (String) -> Unit = {},
+    ) {
+        val targetEmail = email.trim()
+        val state = _uiState.value
+
+        if (
+            targetEmail.isBlank() ||
+            state.isLoading ||
+            state.isResendingEmail
+        ) return
+
+        _uiState.update {
+            it.copy(
+                isResendingEmail = true,
+                error = null,
+                resendSuccessMessage = null,
+            )
+        }
 
         viewModelScope.launch {
             resendVerificationEmailUseCase(targetEmail).collect { result ->
