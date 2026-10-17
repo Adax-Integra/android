@@ -73,6 +73,7 @@ fun RegisterScreen(
         onRegisterClick = { viewModel.register() },
         onConfirmRegister = { viewModel.onConfirmRegister() },
         onDismissDialog = { viewModel.onDismissDialog() },
+        onDismissRegistrationError = { viewModel.dismissRegistrationError() },
         onDismissUnsavedChanges = { viewModel.dismissUnsavedChangesDialog() },
         modifier = modifier,
     )
@@ -99,6 +100,7 @@ fun RegisterScreen(
     onConfirmRegister: () -> Unit = {},
     onDismissDialog: () -> Unit = {},
     onDismissUnsavedChanges: () -> Unit = {},
+    onDismissRegistrationError: () -> Unit = {},
 ) {
     LaunchedEffect(uiState.isRegisterSuccess) {
         if (uiState.isRegisterSuccess) {
@@ -145,6 +147,31 @@ fun RegisterScreen(
                     text = "Cancelar",
                     onClick = onDismissDialog,
                     variant = ButtonVariant.Outlined,
+                )
+            },
+        )
+    }
+
+    uiState.error?.let { message ->
+        AlertDialog(
+            onDismissRequest = onDismissRegistrationError,
+            title = {
+                Text(
+                    text = "No se pudo crear la cuenta",
+                    style = AppTextStyle.TitleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodyMedium,
+                )
+            },
+            confirmButton = {
+                AppButton(
+                    text = "Aceptar",
+                    onClick = onDismissRegistrationError,
                 )
             },
         )
