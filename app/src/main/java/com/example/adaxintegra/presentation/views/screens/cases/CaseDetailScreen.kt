@@ -168,6 +168,9 @@ private fun CaseDetailContent(
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    availableViolences: List<HelpType>,
+    assignedViolences: Set<String>,
+    onAssignViolences: (Set<String>) -> Unit,
     availableHelps: List<HelpType>,
     assignedHelps: Set<String>,
     onAssignHelps: (Set<String>) -> Unit,
@@ -223,8 +226,36 @@ private fun CaseDetailContent(
             }
         }
 
-        // TODO this section is there the other dropdown for the violence types will be
-        // This is part of the R-07 and will be implemented in another PR
+        // Section of R-07, assigning the violence a case has
+        item {
+            val options = listOf(
+                "Opcion1",
+                "Opcion2",
+            )
+            val selectedState = remember { mutableStateListOf<String>() }
+
+            CheckboxesInDropdown(
+                title = "Tipos de violencia del caso",
+                options = options,
+                selectedOptions = selectedState.toSet(),
+                onOptionToggle = { option ->
+                    if (option in selectedState) {
+                        selectedState.remove(option)
+                    } else {
+                        selectedState.add(option)
+                    }
+                },
+                saveButtonAction = {
+                    onAssignViolences(selectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // We cancel the actions and take the values from backend
+                    selectedState.clear()
+                    selectedState.addAll(assignedViolences)
+                },
+            )
+        }
+
 
         // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
@@ -237,27 +268,28 @@ private fun CaseDetailContent(
 
         // Section of R-08, assigning the help requested by the case
         item {
-            val options = availableHelps.map { it.description }
-            val selectedState = remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
+            val helpOptions = availableHelps.map { it.description }
+            val helpSelectedState =
+                remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
 
             CheckboxesInDropdown(
                 title = "Tipos de ayuda asignados",
-                options = options,
-                selectedOptions = selectedState.toSet(),
+                options = helpOptions,
+                selectedOptions = helpSelectedState.toSet(),
                 onOptionToggle = { option ->
-                    if (option in selectedState) {
-                        selectedState.remove(option)
+                    if (option in helpSelectedState) {
+                        helpSelectedState.remove(option)
                     } else {
-                        selectedState.add(option)
+                        helpSelectedState.add(option)
                     }
                 },
                 saveButtonAction = {
-                    onAssignHelps(selectedState.toSet())
+                    onAssignHelps(helpSelectedState.toSet())
                 },
                 cancelButtonAction = {
-                    // Revertimos a lo que viene de backend
-                    selectedState.clear()
-                    selectedState.addAll(assignedHelps)
+                    // We cancel the actions and take the values from backend
+                    helpSelectedState.clear()
+                    helpSelectedState.addAll(assignedHelps)
                 },
             )
         }
