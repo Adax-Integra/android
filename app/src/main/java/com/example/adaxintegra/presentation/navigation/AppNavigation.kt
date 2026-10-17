@@ -52,6 +52,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScree
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ExternalUsersScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -216,8 +217,10 @@ fun AppNavigation(
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
                         // G-10: the collaborator detail keeps the admin tab selected
+                        // G-16: the external users list is opened from the admin section
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
+                            currentRoute == "externalUsers" ||
                             currentRoute.startsWith("collaboratorDetail") -> "admin"
 
                         currentRoute.startsWith("case/") -> {
@@ -254,9 +257,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "session",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -517,7 +520,7 @@ fun AppNavigation(
                         },
                         onRefresh = recordsViewModel::refresh,
 
-                    )
+                        )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
                 }
@@ -699,7 +702,7 @@ fun AppNavigation(
                     onPersonalDataClick = { navController.navigate("editProfile") {
                         launchSingleTop = true
                     }
-                                          },
+                    },
                     onUploadDocumentsClick = {
                         if (hasValidSession && isExternal) {
                             navController.navigate("uploadDocuments") {
@@ -858,11 +861,30 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        // G-16: opens the list of external accounts
+                        onManageExternalUsersClick = {
+                            navController.navigate("externalUsers") {
+                                launchSingleTop = true
+                            }
+                        },
                         // V-06: opens the activity log
                         onAuditLogClick = {
                             navController.navigate("activityLog") {
                                 launchSingleTop = true
                             }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // G-16: admin consults the list of external accounts
+            composable("externalUsers") {
+                if (hasValidSession && isAdmin) {
+                    ExternalUsersScreen(
+                        onBack = {
+                            navController.popBackStack()
                         },
                     )
                 } else {

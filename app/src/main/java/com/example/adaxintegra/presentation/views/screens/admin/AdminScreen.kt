@@ -24,6 +24,7 @@ fun AdminScreen(
     onManageExpedientsClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAuditLogClick: () -> Unit = {},
+    onManageExternalUsersClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -48,6 +49,14 @@ fun AdminScreen(
             subtitle = "Administra y crea las cuentas de los colaboradores de la aplicación.",
             icon = AppIcons.People,
             onClick = onManageUsersClick,
+        )
+
+        // G-16: list of every external account registered in the system
+        MenuOptionCard(
+            title = "Gestión de externas",
+            subtitle = "Consulta las cuentas de las usuarias externas registradas.",
+            icon = AppIcons.Account,
+            onClick = onManageExternalUsersClick,
         )
 
         MenuOptionCard(
