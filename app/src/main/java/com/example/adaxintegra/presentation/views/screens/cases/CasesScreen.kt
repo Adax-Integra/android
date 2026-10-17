@@ -74,7 +74,6 @@ fun CasesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(
                     start = 16.dp,

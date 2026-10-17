@@ -71,8 +71,7 @@ fun CaseProgressScreen(
                 uiState.error != null -> {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(text = uiState.error!!)
