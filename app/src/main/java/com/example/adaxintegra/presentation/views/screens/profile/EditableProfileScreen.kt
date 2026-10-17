@@ -94,6 +94,25 @@ fun EditableProfileScreen (
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+
+                if (uiState.error != null && uiState.isEditing) {
+                    Text(
+                        text = uiState.error!!,
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Red
+                    )
+                }
+
+                if (uiState.successMessage != null) {
+                    Text(
+                        text = uiState.successMessage!!,
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = Color(0xFF2E7D32)
+                    )
+                }
+
                 LabeledTextField(
                     label = "Nombre",
                     value = uiState.name,
@@ -135,22 +154,6 @@ fun EditableProfileScreen (
                         value = uiState.municipality,
                         onValueChange = viewModel::onMunicipalityChange,
                         enabled = uiState.isEditing && !uiState.isSaving
-                    )
-                }
-
-                if (uiState.error != null && uiState.isEditing) {
-                    Text(
-                        text = uiState.error!!,
-                        style = AppTextStyle.BodyMedium,
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-
-                if (uiState.successMessage != null) {
-                    Text(
-                        text = uiState.successMessage!!,
-                        style = AppTextStyle.BodyMedium,
-                        fontWeight = FontWeight.Normal
                     )
                 }
             }
