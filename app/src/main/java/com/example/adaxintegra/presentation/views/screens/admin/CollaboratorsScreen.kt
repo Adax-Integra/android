@@ -51,10 +51,12 @@ private fun emptyText(searchQuery: String, hasStatusFilter: Boolean): String = w
 
 // G-06: admin's collaborator management screen, opened from the admin section.
 // Shows every internal account and "Agregar colaboradora"
+// G-10: tapping a collaborator opens her detail
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CollaboratorsScreen(
     onBack: () -> Unit,
+    onCollaboratorClick: (String) -> Unit,
     viewModel: AddCollaboratorViewModel = hiltViewModel(),
     listViewModel: CollaboratorsViewModel = hiltViewModel(),
 ) {
@@ -174,6 +176,7 @@ fun CollaboratorsScreen(
                                 lastName = collaborator.lastName,
                                 email = collaborator.email,
                                 isActive = collaborator.isActive,
+                                onClick = { onCollaboratorClick(collaborator.userId) },
                             )
                         }
                     }

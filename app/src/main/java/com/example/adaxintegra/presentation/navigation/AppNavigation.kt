@@ -44,11 +44,13 @@ import com.example.adaxintegra.presentation.views.screens.PendingVerificationScr
 import com.example.adaxintegra.presentation.views.screens.PrivacyPolicyScreen
 import com.example.adaxintegra.presentation.views.screens.ProfileScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterExpedientScreen
+import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.RegisterScreen
 import com.example.adaxintegra.presentation.views.screens.ResetPasswordScreen
 import com.example.adaxintegra.presentation.views.screens.VerificationSuccessScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScreen
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
+import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -212,7 +214,10 @@ fun AppNavigation(
                         "collaborators" -> "admin"
 
                         // V-06: activity log is opened from the admin section
-                        "activityLog" -> "admin"
+                        // G-10: the collaborator detail keeps the admin tab selected
+                        currentRoute == "collaborators" ||
+                            currentRoute == "activityLog" ||
+                            currentRoute.startsWith("collaboratorDetail") -> "admin"
 
                         "case/{caseId}" -> {
                             if (isExternal) "cases" else "records"
@@ -603,6 +608,14 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onPersonalDataClick = {},
+                    onUploadDocumentsClick = {
+                        if (hasValidSession && isExternal) {
+                            navController.navigate("uploadDocuments") {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    isExternal = isExternal,
                     onSecurityClick = {
                         navController.navigate("changePassword") {
                             launchSingleTop = true
@@ -619,6 +632,22 @@ fun AppNavigation(
                 )
             }
 
+
+            composable("uploadDocuments") {
+                if (hasValidSession && isExternal) {
+                    UploadDocumentsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+
+
+
             composable("changePassword") {
                 ChangePasswordScreen(
                     onBack = {
@@ -634,9 +663,35 @@ fun AppNavigation(
                         onBack = {
                             navController.popBackStack()
                         },
+                        onCollaboratorClick = { userId ->
+                            navController.navigate("collaboratorDetail/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
             }
+
+            // G-10: admin consults the detail of one collaborator
+            composable("collaboratorDetail/{userId}") { entry ->
+                if (hasValidSession && isAdmin) {
+                    val userId = entry.arguments?.getString("userId")
+
+                    if (!userId.isNullOrBlank()) {
+                        CollaboratorDetailScreen(
+                            userId = userId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la colaboradora")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
             // V-11: internal/admin case detail screen
             composable("caseDetail/{caseId}") { entry ->
                 if (hasValidSession && canViewAllCases) {

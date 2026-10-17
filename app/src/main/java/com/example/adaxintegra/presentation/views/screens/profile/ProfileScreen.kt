@@ -47,6 +47,8 @@ fun ProfileScreen(
     isAdmin: Boolean = false,
     onManageCollaboratorsClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
+    onUploadDocumentsClick: () -> Unit = {},
+    isExternal: Boolean = false,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val profile = uiState.profile
@@ -131,6 +133,17 @@ fun ProfileScreen(
                                     subtitle = "Cambio de contraseña",
                                     onClick = onSecurityClick,
                                 )
+
+                                if (isExternal) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    MenuOptionCard(
+                                        icon = AppIcons.Profile,
+                                        title = "Mis documentos",
+                                        subtitle = "INE y comprobante de domicilio",
+                                        onClick = onUploadDocumentsClick,
+                                    )
+                                }
                             }
 
                             else -> {
