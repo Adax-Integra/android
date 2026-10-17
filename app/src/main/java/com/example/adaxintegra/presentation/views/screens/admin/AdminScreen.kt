@@ -55,14 +55,15 @@ fun AdminScreen(
         MenuOptionCard(
             title = "Gestión de externas",
             subtitle = "Consulta las cuentas de las usuarias externas registradas.",
-            icon = AppIcons.Account,
+            icon = AppIcons.Profile,
             onClick = onManageExternalUsersClick,
         )
 
+        // Opens the records menu (cases, records and reports), same icon as the "Expedientes" tab
         MenuOptionCard(
-            title = "Gestionar expedientes",
-            subtitle = "Administra y crea las cuentas de las usuarias externas.",
-            icon = AppIcons.Profile,
+            title = "Expedientes y casos",
+            subtitle = "Consulta los expedientes, casos y reportes de las usuarias externas.",
+            icon = AppIcons.Folder,
             onClick = onManageExpedientsClick,
         )
 
