@@ -4,4 +4,9 @@
     <external-path
         name="public_downloads"
         path="Download/" />
+
+    <!-- R-06: documents shared from "Mis documentos", they stay in the app cache -->
+    <cache-path
+        name="shared_documents"
+        path="documents/" />
 </paths>

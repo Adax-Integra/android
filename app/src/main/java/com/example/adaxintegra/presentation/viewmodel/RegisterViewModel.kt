@@ -182,6 +182,10 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(showConfirmationDialog = false) }
     }
 
+    fun dismissRegistrationError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
     // // G-09-Register: Confirms and executes registration UseCase via coroutine flow
     fun onConfirmRegister() {
         val state = _uiState.value
