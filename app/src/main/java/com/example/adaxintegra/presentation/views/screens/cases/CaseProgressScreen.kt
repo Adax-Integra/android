@@ -47,7 +47,9 @@ fun CaseProgressScreen(
     ) {
         AppHeader(
             title = "Progreso de caso",
-            subtitle = "ID: ${case?.caseNumber ?: caseId}",
+            subtitle = case?.caseNumber
+                ?.takeIf { it.isNotBlank() }
+                ?: "Sin número de caso",
             onBack = onBack,
         )
         PullToRefreshBox(

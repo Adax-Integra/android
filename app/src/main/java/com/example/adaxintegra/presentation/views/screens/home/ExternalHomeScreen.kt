@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.presentation.viewmodel.EventsViewModel
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
@@ -23,6 +25,7 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHea
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.EventsCarousel
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -30,16 +33,22 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.Current
 fun ExternalHomeScreen(
     onCaseClick: (String) -> Unit,
     onRegisterCaseClick: () -> Unit,
+    onEventClick: (String) -> Unit,
+    onSeeAllEventsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ExternalCasesViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
     val context = LocalContext.current
 
     // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
         viewModel.loadCases()
+        // E-01: the carousel only shows the events of the current month
+        eventsViewModel.loadEvents(EventScope.MONTH)
     }
 
     // NV-01: V-04 already hands the list sorted by updatedAt, so the case in progress is
@@ -50,8 +59,12 @@ fun ExternalHomeScreen(
     }
 
     PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing,
-        onRefresh = viewModel::refresh,
+        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing,
+        // Pulling the home down reloads the cases and the events together
+        onRefresh = {
+            viewModel.refresh()
+            eventsViewModel.refresh()
+        },
         modifier = modifier
             .fillMaxSize(),
     ) {
@@ -74,10 +87,12 @@ fun ExternalHomeScreen(
                 error = uiState.error,
             )
 
-            SectionTitle(text = "Eventos")
-
-            // NV-01: there is no events endpoint yet, the section stays empty as in iOS
-            Spacer(modifier = Modifier.height(spacing.extraLarge))
+            EventsCarousel(
+                uiState = eventsState,
+                onSeeAllClick = onSeeAllEventsClick,
+                onEventClick = onEventClick,
+                onRetry = eventsViewModel::loadEvents,
+            )
 
             SectionTitle(text = "Podcast")
 

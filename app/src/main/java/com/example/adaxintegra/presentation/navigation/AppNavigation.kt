@@ -59,6 +59,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.events.EventDetailScreen
+import com.example.adaxintegra.presentation.views.screens.events.EventsScreen
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
@@ -239,6 +241,10 @@ fun AppNavigation(
                         // R-06: "Mis documentos" is opened from the profile
                         currentRoute == "uploadDocuments" -> "profile"
 
+                        // E-01: the events are opened from the carousel of the home
+                        currentRoute == "events" ||
+                            currentRoute.startsWith("eventDetail") -> "home"
+
                         else -> currentRoute
                     }
 
@@ -415,6 +421,16 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
+                            onEventClick = { eventId ->
+                                navController.navigate("eventDetail/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllEventsClick = {
+                                navController.navigate("events") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         InternalHomeScreen(
@@ -425,6 +441,16 @@ fun AppNavigation(
                             },
                             onSeeAllRecordsClick = {
                                 navController.navigate("allRecords") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onEventClick = { eventId ->
+                                navController.navigate("eventDetail/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllEventsClick = {
+                                navController.navigate("events") {
                                     launchSingleTop = true
                                 }
                             },
@@ -599,6 +625,40 @@ fun AppNavigation(
                 }
             }
 
+            // E-01: every active event, opened from "Ver todos" in both homes
+            composable("events") {
+                if (hasValidSession) {
+                    EventsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onEventClick = { eventId ->
+                            navController.navigate("eventDetail/$eventId") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                }
+            }
+
+            // E-01: detail of one event, opened from the carousel or the events screen
+            composable("eventDetail/{eventId}") { entry ->
+                if (hasValidSession) {
+                    val eventId = entry.arguments?.getString("eventId")
+
+                    if (!eventId.isNullOrBlank()) {
+                        EventDetailScreen(
+                            eventId = eventId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del evento")
+                    }
+                }
+            }
+
             // R-02: registers a new case (for external user or created by internal/admin)
             composable("createCase") {
                 if (hasValidSession && (isExternal || canViewAllCases)) {
@@ -695,33 +755,36 @@ fun AppNavigation(
             }
 
             composable("profile") {
-                ProfileScreen(
-                    onPersonalDataClick = { navController.navigate("editProfile") {
-                        launchSingleTop = true
-                    }
-                                          },
-                    onUploadDocumentsClick = {
-                        if (hasValidSession && isExternal) {
-                            navController.navigate("uploadDocuments") {
+                if (hasValidSession) {
+                    ProfileScreen(
+                        onPersonalDataClick = {
+                            navController.navigate("editProfile") {
                                 launchSingleTop = true
                             }
-                        }
-                    },
-                    isExternal = isExternal,
-                    onSecurityClick = {
-                        navController.navigate("changePassword") {
-                            launchSingleTop = true
-                        }
-                    },
-                    onLogoutClick = viewModel::logout,
-                    isAdmin = isAdmin,
-                    onManageCollaboratorsClick = {
-                        navController.navigate("collaborators") {
-                            launchSingleTop = true
-                        }
-                    },
-                    viewModel = hiltViewModel(),
-                )
+                        },
+                        onUploadDocumentsClick = {
+                            if (hasValidSession && isExternal) {
+                                navController.navigate("uploadDocuments") {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        isExternal = isExternal,
+                        onSecurityClick = {
+                            navController.navigate("changePassword") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onLogoutClick = viewModel::logout,
+                        isAdmin = isAdmin,
+                        onManageCollaboratorsClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
+                        viewModel = hiltViewModel(),
+                    )
+                }
             }
 
             composable("uploadDocuments") {
