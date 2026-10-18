@@ -64,9 +64,9 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
-import com.example.adaxintegra.presentation.views.screens.events.CreateEvent
 import com.example.adaxintegra.presentation.views.screens.events.EventDetailScreen
 import com.example.adaxintegra.presentation.views.screens.events.EventsScreen
+import com.example.adaxintegra.presentation.views.screens.events.NewEventScreen
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
@@ -681,8 +681,11 @@ fun AppNavigation(
             // E-01: create a new event
             composable("createEvent") {
                 if (hasValidSession && !isExternal) {
-                    CreateEvent(
+                    NewEventScreen(
                         onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onEventCreated = {
                             navController.popBackStack()
                         },
                     )

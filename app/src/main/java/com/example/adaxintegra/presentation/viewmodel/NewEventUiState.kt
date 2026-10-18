@@ -1,16 +1,17 @@
 package com.example.adaxintegra.presentation.viewmodel
 
-import java.time.Instant
+import java.time.LocalTime
+import java.util.Calendar
 
 data class NewEventUiState(
     val title: String = "",
     val titleError: String? = null,
-    val startDate: Instant? = null,
-    val endDate: Instant? = null,
+    val startDate: Calendar? = null,
+    val endDate: Calendar? = null,
     val startDateError: String? = null,
     val endDateError: String? = null,
-    val startTime: Instant? = null,
-    val endTime: Instant? = null,
+    val startTime: LocalTime? = null,
+    val endTime: LocalTime? = null,
     val startTimeError: String? = null,
     val endTimeError: String? = null,
     val modality: String = "",
@@ -28,5 +29,7 @@ data class NewEventUiState(
     val notesError: String? = null,
     val hasAddedImage: Boolean = false,
     val hasAddedImageError: Boolean = false,
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
     val error: String? = null,
 )

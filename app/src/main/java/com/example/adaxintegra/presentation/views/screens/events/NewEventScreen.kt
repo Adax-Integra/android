@@ -3,8 +3,10 @@ package com.example.adaxintegra.presentation.views.screens.events
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -22,7 +24,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.NewEventUiState
+import com.example.adaxintegra.presentation.viewmodel.NewEventViewModel
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AppDatePickerDialog
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AppTimePickerDialog
 import com.example.adaxintegra.presentation.views.designsystem.molecules.DateField
@@ -31,18 +37,56 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.Labeled
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.TimeField
+import com.example.adaxintegra.presentation.views.designsystem.organisms.SuccessDialog
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import java.time.LocalTime
-import java.time.ZoneId
 import java.util.Calendar
+
+@Suppress("ktlint:standard:function-naming")
+@Composable
+fun NewEventScreen(
+    onBackClick: () -> Unit,
+    onEventCreated: () -> Unit = {},
+    viewModel: NewEventViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    CreateEvent(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onTitleChange = viewModel::onTitleChange,
+        onStartDateSelected = viewModel::setStartDate,
+        onEndDateSelected = viewModel::setEndDate,
+        onStartTimeSelected = viewModel::setStartTime,
+        onEndTimeSelected = viewModel::setEndTime,
+        onModalityChange = viewModel::onModalityChange,
+        onLocationChange = viewModel::onLocationChange,
+        onLinkChange = viewModel::onLinkChange,
+        onPhoneChange = viewModel::onPhoneChange,
+        onCountryCodeChange = viewModel::onCountryCodeChange,
+        onDescriptionChange = viewModel::onDescriptionChange,
+        onNotesChange = viewModel::onNotesChange,
+        onCreateEventClick = viewModel::createEvent,
+    )
+
+    if (uiState.isSuccess) {
+        SuccessDialog(
+            title = "Evento creado",
+            message = "El evento fue registrado con éxito.",
+            onConfirm = {
+                viewModel.dismissSuccess()
+                onEventCreated()
+            },
+        )
+    }
+}
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CreateEvent(
     modifier: Modifier = Modifier,
     uiState: NewEventUiState = NewEventUiState(),
-    // Add the functionality for adding a file, photograph
     onBackClick: () -> Unit = {},
     onTitleChange: (String) -> Unit = {},
     onStartDateSelected: (Calendar) -> Unit = {},
@@ -56,6 +100,7 @@ fun CreateEvent(
     onCountryCodeChange: (String) -> Unit = {},
     onDescriptionChange: (String) -> Unit = {},
     onNotesChange: (String) -> Unit = {},
+    onCreateEventClick: () -> Unit = {},
 ) {
     // To know if it needs to show the start date
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -65,48 +110,15 @@ fun CreateEvent(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
 
-    // Local state variables for dates, times, modality, location, link, phone, description, notes
-    var localStartDate by remember { mutableStateOf<Calendar?>(null) }
-    var localEndDate by remember { mutableStateOf<Calendar?>(null) }
-    var localStartTime by remember { mutableStateOf<LocalTime?>(null) }
-    var localEndTime by remember { mutableStateOf<LocalTime?>(null) }
-
-    var localModality by remember { mutableStateOf("") }
-    var localLocation by remember { mutableStateOf("") }
-    var localLink by remember { mutableStateOf("") }
-    var localPhone by remember { mutableStateOf("") }
-    var localCountryCode by remember { mutableStateOf("+52") }
-    var localDescription by remember { mutableStateOf("") }
-    var localNotes by remember { mutableStateOf("") }
-
-    val startDateCalendar = uiState.startDate?.let { instant ->
-        Calendar.getInstance().apply { timeInMillis = instant.toEpochMilli() }
-    } ?: localStartDate
-
-    val endDateCalendar = uiState.endDate?.let { instant ->
-        Calendar.getInstance().apply { timeInMillis = instant.toEpochMilli() }
-    } ?: localEndDate
-
-    val startTimeLocal = uiState.startTime?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: localStartTime
-
-    val endTimeLocal = uiState.endTime?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: localEndTime
-
-    val currentModality = uiState.modality.ifEmpty { localModality }
-    val currentLocation = uiState.location.ifEmpty { localLocation }
-    val currentLink = uiState.link.ifEmpty { localLink }
-    val currentPhone = uiState.phone.ifEmpty { localPhone }
-    val currentCountryCode = uiState.countryCode.ifEmpty { localCountryCode }
-    val currentDescription = uiState.description.ifEmpty { localDescription }
-    val currentNotes = uiState.notes.ifEmpty { localNotes }
+    val focusManager = LocalFocusManager.current
 
     ScreenTemplate(
         title = "Nuevo evento",
         error = uiState.error,
+        isLoading = uiState.isLoading,
         onBack = onBackClick,
         modifier = modifier,
     ) {
-        val focusManager = LocalFocusManager.current
-
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -132,7 +144,7 @@ fun CreateEvent(
             ) {
                 DateField(
                     label = "Fecha inicio",
-                    value = startDateCalendar,
+                    value = uiState.startDate,
                     errorMessage = uiState.startDateError,
                     placeholder = "Fecha",
                     onClick = { showStartDatePicker = true },
@@ -140,7 +152,7 @@ fun CreateEvent(
                 )
                 DateField(
                     label = "Fecha fin",
-                    value = endDateCalendar,
+                    value = uiState.endDate,
                     errorMessage = uiState.endDateError,
                     placeholder = "Fecha",
                     onClick = { showEndDatePicker = true },
@@ -155,7 +167,7 @@ fun CreateEvent(
             ) {
                 TimeField(
                     label = "Hora inicio",
-                    value = startTimeLocal,
+                    value = uiState.startTime,
                     errorMessage = uiState.startTimeError,
                     placeholder = "Hora",
                     onClick = { showStartTimePicker = true },
@@ -163,7 +175,7 @@ fun CreateEvent(
                 )
                 TimeField(
                     label = "Hora fin",
-                    value = endTimeLocal,
+                    value = uiState.endTime,
                     errorMessage = uiState.endTimeError,
                     placeholder = "Hora",
                     onClick = { showEndTimePicker = true },
@@ -174,12 +186,9 @@ fun CreateEvent(
             // Dropdown "Modalidad"
             LabeledDropdownField(
                 label = "Modalidad",
-                selectedOption = currentModality.ifEmpty { null },
+                selectedOption = uiState.modality.ifEmpty { null },
                 options = listOf("Presencial", "Virtual", "Mixto"),
-                onOptionSelected = {
-                    localModality = it
-                    onModalityChange(it)
-                },
+                onOptionSelected = onModalityChange,
                 placeholder = "Presencial",
                 error = uiState.modalityError,
             )
@@ -187,11 +196,8 @@ fun CreateEvent(
             // Field "Lugar"
             LabeledTextField(
                 label = "Lugar",
-                value = currentLocation,
-                onValueChange = {
-                    localLocation = it
-                    onLocationChange(it)
-                },
+                value = uiState.location,
+                onValueChange = onLocationChange,
                 placeholder = "Ej. Oficinas ADAX",
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
@@ -201,11 +207,8 @@ fun CreateEvent(
             // Field "Link (opcional)"
             LabeledTextField(
                 label = "Link (opcional)",
-                value = currentLink,
-                onValueChange = {
-                    localLink = it
-                    onLinkChange(it)
-                },
+                value = uiState.link,
+                onValueChange = onLinkChange,
                 placeholder = "https://meet.google.com/...",
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
@@ -215,16 +218,10 @@ fun CreateEvent(
             // Field "Teléfono (opcional)"
             PhoneField(
                 label = "Teléfono (opcional)",
-                countryCode = currentCountryCode,
-                phoneValue = currentPhone,
-                onPhoneChange = {
-                    localPhone = it
-                    onPhoneChange(it)
-                },
-                onCountryCodeChange = {
-                    localCountryCode = it
-                    onCountryCodeChange(it)
-                },
+                countryCode = uiState.countryCode,
+                phoneValue = uiState.phone,
+                onPhoneChange = onPhoneChange,
+                onCountryCodeChange = onCountryCodeChange,
                 placeholder = "55 1234 5678",
                 errorMessage = uiState.phoneError,
             )
@@ -232,11 +229,8 @@ fun CreateEvent(
             // Field "Descripción"
             LabeledTextArea(
                 label = "Descripción",
-                value = currentDescription,
-                onValueChange = {
-                    localDescription = it
-                    onDescriptionChange(it)
-                },
+                value = uiState.description,
+                onValueChange = onDescriptionChange,
                 placeholder = "Describe el evento...",
                 maxLength = 500,
                 minLines = 4,
@@ -246,26 +240,31 @@ fun CreateEvent(
             // Field "Notas (opcional)"
             LabeledTextArea(
                 label = "Notas (opcional)",
-                value = currentNotes,
-                onValueChange = {
-                    localNotes = it
-                    onNotesChange(it)
-                },
+                value = uiState.notes,
+                onValueChange = onNotesChange,
                 placeholder = "Escribe notas adicionales...",
                 maxLength = 500,
                 minLines = 4,
                 error = uiState.notesError,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AppButton(
+                text = "Crear evento",
+                onClick = onCreateEventClick,
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
         // Dialog for Start Date
         if (showStartDatePicker) {
             AppDatePickerDialog(
-                initialSelectedDateMillis = startDateCalendar?.timeInMillis,
+                initialSelectedDateMillis = uiState.startDate?.timeInMillis,
                 onDateSelected = { millis ->
                     if (millis != null) {
                         val calendar = Calendar.getInstance().apply { timeInMillis = millis }
-                        localStartDate = calendar
                         onStartDateSelected(calendar)
                     }
                 },
@@ -277,11 +276,10 @@ fun CreateEvent(
         // Dialog for End Date
         if (showEndDatePicker) {
             AppDatePickerDialog(
-                initialSelectedDateMillis = endDateCalendar?.timeInMillis,
+                initialSelectedDateMillis = uiState.endDate?.timeInMillis,
                 onDateSelected = { millis ->
                     if (millis != null) {
                         val calendar = Calendar.getInstance().apply { timeInMillis = millis }
-                        localEndDate = calendar
                         onEndDateSelected(calendar)
                     }
                 },
@@ -293,11 +291,10 @@ fun CreateEvent(
         // Dialog for Start Time
         if (showStartTimePicker) {
             AppTimePickerDialog(
-                initialHour = startTimeLocal?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-                initialMinute = startTimeLocal?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
+                initialHour = uiState.startTime?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+                initialMinute = uiState.startTime?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
                 onTimeSelected = { hour, minute ->
                     val time = LocalTime.of(hour, minute)
-                    localStartTime = time
                     onStartTimeSelected(time)
                 },
                 onDismiss = { showStartTimePicker = false },
@@ -308,11 +305,10 @@ fun CreateEvent(
         // Dialog for End Time
         if (showEndTimePicker) {
             AppTimePickerDialog(
-                initialHour = endTimeLocal?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-                initialMinute = endTimeLocal?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
+                initialHour = uiState.endTime?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+                initialMinute = uiState.endTime?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
                 onTimeSelected = { hour, minute ->
                     val time = LocalTime.of(hour, minute)
-                    localEndTime = time
                     onEndTimeSelected(time)
                 },
                 onDismiss = { showEndTimePicker = false },
