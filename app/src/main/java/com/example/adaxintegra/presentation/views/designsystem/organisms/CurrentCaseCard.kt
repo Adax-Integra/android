@@ -101,7 +101,9 @@ fun CurrentCaseCard(
                 val status = CaseStatusUi.from(currentCase.state)
 
                 Text(
-                    text = "ID: ${currentCase.caseId.take(8).uppercase()}",
+                    text = currentCase.caseNumber
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "Sin número de caso",
                     style = AppTextStyle.BodyLarge,
                     fontWeight = FontWeight.SemiBold,
                 )

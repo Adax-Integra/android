@@ -700,9 +700,6 @@ fun AppNavigation(
             composable("profile") {
                 if (hasValidSession) {
                     ProfileScreen(
-                        onBack = {
-                            navController.popBackStack()
-                        },
                         onPersonalDataClick = {
                             navController.navigate("editProfile") {
                                 launchSingleTop = true
