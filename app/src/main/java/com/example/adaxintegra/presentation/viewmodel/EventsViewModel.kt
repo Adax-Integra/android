@@ -2,7 +2,6 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.adaxintegra.domain.model.Event
 import com.example.adaxintegra.domain.model.EventScope
 import com.example.adaxintegra.domain.usecases.GetEventsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -84,10 +83,6 @@ class EventsViewModel @Inject constructor(
         _uiState.update { it.copy(isRefreshing = true) }
         loadEvents()
     }
-
-    // E-01: the detail screen reads the event from the list already loaded,
-    // The backend has no endpoint for a single event
-    fun findEvent(eventId: String): Event? = _uiState.value.events.find { it.id == eventId }
 
     private fun errorMessage(e: Throwable): String = when {
         e is HttpException && e.code() == 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."

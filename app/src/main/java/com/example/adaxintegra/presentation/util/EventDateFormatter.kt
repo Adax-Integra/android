@@ -13,8 +13,13 @@ object EventDateFormatter {
         DateTimeFormatter.ofPattern("MMM", locale)
     private val longDateFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM, yyyy", locale)
 
+    private val timeFormatter = DateTimeFormatter.ofPattern("h:mm a", locale)
     private fun local(instant: Instant): ZonedDateTime =
         instant.atZone(ZoneId.systemDefault())
+
+    private val detailDateFormatter = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM, yyyy", locale)
+
+    private val dayAndTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM, h:mm a", locale)
 
     // ex. "25" for the date badge
     fun day(instant: Instant): String =
@@ -27,4 +32,18 @@ object EventDateFormatter {
     // ex. "25 de octubre, 2026"
     fun longDate(instant: Instant): String =
         longDateFormatter.format(local(instant))
+
+    // ex "6:00 p.m." for the events list
+    fun time(instant: Instant): String =
+        timeFormatter.format(local(instant))
+
+    // ex. "Sábado 25 de octubre, 2026" for the detail screen
+    fun detailDate(instant: Instant): String = detailDateFormatter.format(local(instant)).replaceFirstChar { it.uppercase(locale) }
+
+    // ex. "6:00 p.m. - 8:00 p.m.", events that end on another day
+    fun timeRange(start: Instant, end: Instant): String {
+        val sameDay = local(start).toLocalDate() == local(end).toLocalDate()
+        val formatter = if (sameDay) timeFormatter else dayAndTimeFormatter
+        return "${formatter.format(local(start))} - ${formatter.format(local(end))}"
+    }
 }

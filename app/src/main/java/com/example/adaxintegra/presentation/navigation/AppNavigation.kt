@@ -58,6 +58,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.events.EventDetailScreen
+import com.example.adaxintegra.presentation.views.screens.events.EventsScreen
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
@@ -235,6 +237,10 @@ fun AppNavigation(
                         // R-06: "Mis documentos" is opened from the profile
                         currentRoute == "uploadDocuments" -> "profile"
 
+                        // E-01: the events are opened from the carousel of the home
+                        currentRoute == "events" ||
+                            currentRoute.startsWith("eventDetail") -> "home"
+
                         else -> currentRoute
                     }
 
@@ -411,8 +417,16 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
-                            onEventClick = {},
-                            onSeeAllEventsClick = {},
+                            onEventClick = { eventId ->
+                                navController.navigate("eventDetail/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllEventsClick = {
+                                navController.navigate("events") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         InternalHomeScreen(
@@ -427,8 +441,16 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
-                            onEventClick = {},
-                            onSeeAllEventsClick = {},
+                            onEventClick = { eventId ->
+                                navController.navigate("eventDetail/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onSeeAllEventsClick = {
+                                navController.navigate("events") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     }
                 }
@@ -600,6 +622,40 @@ fun AppNavigation(
                     )
                 } else {
                     Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // E-01: every active event, opened from "Ver todos" in both homes
+            composable("events") {
+                if (hasValidSession) {
+                    EventsScreen(
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onEventClick = { eventId ->
+                            navController.navigate("eventDetail/$eventId") {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                }
+            }
+
+            // E-01: detail of one event, opened from the carousel or the events screen
+            composable("eventDetail/{eventId}") { entry ->
+                if (hasValidSession) {
+                    val eventId = entry.arguments?.getString("eventId")
+
+                    if (!eventId.isNullOrBlank()) {
+                        EventDetailScreen(
+                            eventId = eventId,
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador del evento")
+                    }
                 }
             }
 
