@@ -84,7 +84,7 @@ class EventDetailViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isDisabling = true,
-                                disableError = null,
+                                disableError = false,
                                 disableSuccess = false,
                             )
                         }
@@ -95,7 +95,7 @@ class EventDetailViewModel @Inject constructor(
                             it.copy(
                                 isDisabling = false,
                                 disableSuccess = true,
-                                disableError = null,
+                                disableError = false,
                             )
                         }
                     }
@@ -105,9 +105,7 @@ class EventDetailViewModel @Inject constructor(
                             it.copy(
                                 isDisabling = false,
                                 disableSuccess = false,
-                                disableError = disableErrorMessage(
-                                    result.exception
-                                ),
+                                disableError = true,
                             )
                         }
                     }
@@ -116,26 +114,20 @@ class EventDetailViewModel @Inject constructor(
         }
     }
 
+    fun clearDisableFeedback() {
+        _uiState.update {
+            it.copy(
+                disableSuccess = false,
+                disableError = false,
+            )
+        }
+    }
+
     private fun errorMessage(e: Throwable): String = when {
         e is HttpException && e.code() == 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
         e is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
         else -> "No se pudo cargar el evento."
     }
-
-    private fun disableErrorMessage(e: Throwable): String = when {
-        e is HttpException && e.code() == 401 ->
-            "Tu sesión expiró. Vuelve a iniciar sesión."
-
-        e is HttpException && e.code() == 403 ->
-            "No tienes permiso para eliminar este evento."
-
-        e is HttpException && e.code() == 404 ->
-            "El evento ya no está disponible."
-
-        e is IOException ->
-            "Sin conexión a internet. Inténtalo de nuevo."
-
-        else ->
-            "No se pudo eliminar el evento. Inténtalo de nuevo."
-    }
 }
+
+

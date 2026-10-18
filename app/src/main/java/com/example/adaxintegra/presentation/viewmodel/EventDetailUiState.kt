@@ -13,5 +13,5 @@ data class EventDetailUiState(
     //disable events ui states
     val isDisabling: Boolean = false,
     val disableSuccess: Boolean = false,
-    val disableError: String? = null,
+    val disableError: Boolean = false,
 )

@@ -33,7 +33,7 @@ class EventRepositoryImpl @Inject constructor(
     }
 
     //disable events
-    override suspend fun disableEvents(eventId: String) {
+    override suspend fun disableEvent(eventId: String) {
         val response = api.disableEvent(
             eventId = eventId,
             authorizationHeader()
