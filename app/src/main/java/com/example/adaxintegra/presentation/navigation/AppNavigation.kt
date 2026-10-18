@@ -699,14 +699,10 @@ fun AppNavigation(
 
             composable("profile") {
                 ProfileScreen(
-                    onBack = {
-                        navController.popBackStack()
-                    },
-                    onPersonalDataClick = {
-                        navController.navigate("editProfile") {
-                            launchSingleTop = true
-                        }
-                    },
+                    onPersonalDataClick = { navController.navigate("editProfile") {
+                        launchSingleTop = true
+                    }
+                                          },
                     onUploadDocumentsClick = {
                         if (hasValidSession && isExternal) {
                             navController.navigate("uploadDocuments") {
