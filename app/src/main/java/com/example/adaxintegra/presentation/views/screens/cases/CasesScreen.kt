@@ -187,7 +187,7 @@ fun CasesScreen(
             }
 
             PullToRefreshBox(
-                isRefreshing = uiState.isLoading,
+                isRefreshing = uiState.isRefreshing,
                 onRefresh = onRefresh,
                 modifier =
                     Modifier

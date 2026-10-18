@@ -44,7 +44,6 @@ import com.example.adaxintegra.ui.theme.Orange
 fun ProfileScreen(
     onPersonalDataClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onBack: () -> Unit,
     onSecurityClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     isAdmin: Boolean = false,
@@ -83,12 +82,11 @@ fun ProfileScreen(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                top = 32.dp,
+                top = 16.dp,
             ),
     ) {
         AppHeader(
             title = "Perfil",
-            onBack = onBack,
         )
 
         Spacer(modifier = Modifier.height(16.dp))

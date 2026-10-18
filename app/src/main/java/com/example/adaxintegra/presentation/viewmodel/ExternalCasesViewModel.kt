@@ -96,7 +96,7 @@ class ExternalCasesViewModel @Inject constructor(
     fun onSearchQueryChange(query: String) {
         val filtrados =
             allCases.filter { caso ->
-                caso.caseId.contains(query, ignoreCase = true) ||
+                caso.caseNumber.orEmpty().contains(query, ignoreCase = true) ||
                     caso.violenceList.orEmpty().any { it.type.contains(query, ignoreCase = true) } ||
                     caso.description.orEmpty().contains(query, ignoreCase = true)
             }
