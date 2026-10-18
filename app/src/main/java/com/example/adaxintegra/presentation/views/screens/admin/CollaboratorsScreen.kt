@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +31,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CollaboratorCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.molecules.SearchBar
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AddCollaboratorDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CollaboratorFilterDialog
@@ -51,7 +51,7 @@ private fun emptyText(searchQuery: String, hasStatusFilter: Boolean): String = w
 }
 
 // G-06: admin's collaborator management screen, opened from the admin section.
-// Shows every internal account and "Agregar colaboradora"
+// Shows every internal account in pages of 10 and "Agregar colaboradora"
 // G-10: tapping a collaborator opens her detail
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -119,13 +119,13 @@ fun CollaboratorsScreen(
                 }
             }
 
-            // Number of collaborators shown
+            // Number of collaborators found, not only the ones on this page
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = countText(collaborators.size),
+                    text = countText(listState.filteredCollaborators.size),
                     style = AppTextStyle.LabelMedium,
                     modifier = Modifier.weight(1f),
                 )
@@ -135,58 +135,76 @@ fun CollaboratorsScreen(
                 )
             }
 
-            when {
-                // First load, the list is still empty
-                listState.isLoading && listState.collaborators.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator(color = Purple)
+            // The list takes the free space so the page buttons stay at the bottom
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
+                when {
+                    // First load, the list is still empty
+                    listState.isLoading && listState.collaborators.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(color = Purple)
+                        }
                     }
-                }
-                // The list could not be loaded
-                listState.error != null && listState.collaborators.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
-                    ) {
-                        Text(text = listState.error ?: "", style = AppTextStyle.BodyMedium)
-                        AppButton(text = "Reintentar", onClick = listViewModel::loadCollaborators)
+                    // The list could not be loaded
+                    listState.error != null && listState.collaborators.isEmpty() -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
+                        ) {
+                            Text(text = listState.error ?: "", style = AppTextStyle.BodyMedium)
+                            AppButton(text = "Reintentar", onClick = listViewModel::loadCollaborators)
+                        }
                     }
-                }
 
-                collaborators.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = emptyText(listState.searchQuery, listState.hasStatusFilter),
-                            style = AppTextStyle.BodyMedium,
-                            color = IconGrey,
-                        )
-                    }
-                }
-
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(spacing.small),
-                        contentPadding = PaddingValues(bottom = spacing.medium),
-                    ) {
-                        items(collaborators) { collaborator ->
-                            CollaboratorCard(
-                                name = collaborator.name,
-                                lastName = collaborator.lastName,
-                                email = collaborator.email,
-                                isActive = collaborator.isActive,
-                                onClick = { onCollaboratorClick(collaborator.userId) },
+                    collaborators.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = emptyText(listState.searchQuery, listState.hasStatusFilter),
+                                style = AppTextStyle.BodyMedium,
+                                color = IconGrey,
                             )
                         }
                     }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                            contentPadding = PaddingValues(bottom = spacing.medium),
+                        ) {
+                            items(collaborators) { collaborator ->
+                                CollaboratorCard(
+                                    name = collaborator.name,
+                                    lastName = collaborator.lastName,
+                                    email = collaborator.email,
+                                    isActive = collaborator.isActive,
+                                    onClick = { onCollaboratorClick(collaborator.userId) },
+                                )
+                            }
+                        }
+                    }
                 }
+            }
+
+            // G-06: pages of 10 collaborators, as in the other lists
+            if (listState.filteredCollaborators.isNotEmpty()) {
+                PageSwitcher(
+                    page = listState.currentPage,
+                    canGoBack = listState.canGoBack,
+                    canGoNext = listState.canGoNext,
+                    onPreviousPage = listViewModel::previousPage,
+                    onNextPage = listViewModel::nextPage,
+                )
             }
         }
     }
