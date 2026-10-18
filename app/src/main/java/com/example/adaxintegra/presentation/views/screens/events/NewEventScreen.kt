@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -42,6 +43,7 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import java.time.LocalTime
 import java.util.Calendar
+import java.util.TimeZone
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -132,7 +134,10 @@ fun CreateEvent(
                 value = uiState.title,
                 onValueChange = onTitleChange,
                 placeholder = "Ej. Reunión de equipo",
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next,
+                ),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 errorMessage = uiState.titleError,
             )
@@ -261,11 +266,10 @@ fun CreateEvent(
         // Dialog for Start Date
         if (showStartDatePicker) {
             AppDatePickerDialog(
-                initialSelectedDateMillis = uiState.startDate?.timeInMillis,
+                initialSelectedDateMillis = uiState.startDate?.toUtcPickerMillis(),
                 onDateSelected = { millis ->
                     if (millis != null) {
-                        val calendar = Calendar.getInstance().apply { timeInMillis = millis }
-                        onStartDateSelected(calendar)
+                        onStartDateSelected(utcMillisToLocalCalendar(millis))
                     }
                 },
                 onDismiss = { showStartDatePicker = false },
@@ -276,11 +280,10 @@ fun CreateEvent(
         // Dialog for End Date
         if (showEndDatePicker) {
             AppDatePickerDialog(
-                initialSelectedDateMillis = uiState.endDate?.timeInMillis,
+                initialSelectedDateMillis = uiState.endDate?.toUtcPickerMillis(),
                 onDateSelected = { millis ->
                     if (millis != null) {
-                        val calendar = Calendar.getInstance().apply { timeInMillis = millis }
-                        onEndDateSelected(calendar)
+                        onEndDateSelected(utcMillisToLocalCalendar(millis))
                     }
                 },
                 onDismiss = { showEndDatePicker = false },
@@ -316,6 +319,34 @@ fun CreateEvent(
             )
         }
     }
+}
+
+private fun utcMillisToLocalCalendar(utcMillis: Long): Calendar {
+    val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        timeInMillis = utcMillis
+    }
+    return Calendar.getInstance().apply {
+        set(
+            utcCalendar.get(Calendar.YEAR),
+            utcCalendar.get(Calendar.MONTH),
+            utcCalendar.get(Calendar.DAY_OF_MONTH),
+            0, 0, 0
+        )
+        set(Calendar.MILLISECOND, 0)
+    }
+}
+
+private fun Calendar.toUtcPickerMillis(): Long {
+    val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        clear()
+        set(
+            this@toUtcPickerMillis.get(Calendar.YEAR),
+            this@toUtcPickerMillis.get(Calendar.MONTH),
+            this@toUtcPickerMillis.get(Calendar.DAY_OF_MONTH),
+            0, 0, 0
+        )
+    }
+    return utcCalendar.timeInMillis
 }
 
 @Preview(showBackground = true)

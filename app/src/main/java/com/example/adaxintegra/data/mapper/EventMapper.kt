@@ -4,9 +4,10 @@ import com.example.adaxintegra.data.remote.dto.CreateEventRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateEventResponseDataDto
 import com.example.adaxintegra.data.remote.dto.EventListItemDto
 import com.example.adaxintegra.domain.model.Event
-import com.example.adaxintegra.domain.model.NewEvent
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 // The backend sends the offset ("+00:00"), so OffsetDateTime reads it with or without miliseconds
@@ -41,11 +42,15 @@ fun EventListItemDto.toDomain(): Event? {
     )
 }
 
-fun NewEvent.toDto(): CreateEventRequestDto {
+fun Event.toCreateDto(): CreateEventRequestDto {
+    val zone = ZoneId.systemDefault()
+    val startIso = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startsAt.atZone(zone))
+    val endIso = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endsAt.atZone(zone))
+
     return CreateEventRequestDto(
         title = title,
-        startsAt = startsAt,
-        endsAt = endsAt,
+        startsAt = startIso,
+        endsAt = endIso,
         modality = modality,
         location = location,
         link = link,

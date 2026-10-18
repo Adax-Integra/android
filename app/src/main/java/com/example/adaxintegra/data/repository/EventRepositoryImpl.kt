@@ -1,11 +1,10 @@
 package com.example.adaxintegra.data.repository
 
+import com.example.adaxintegra.data.mapper.toCreateDto
 import com.example.adaxintegra.data.mapper.toDomain
-import com.example.adaxintegra.data.mapper.toDto
 import com.example.adaxintegra.data.remote.api.EventApi
 import com.example.adaxintegra.domain.model.Event
 import com.example.adaxintegra.domain.model.EventScope
-import com.example.adaxintegra.domain.model.NewEvent
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.EventRepository
 import javax.inject.Inject
@@ -34,10 +33,10 @@ class EventRepositoryImpl @Inject constructor(
         return items.mapNotNull { it.toDomain() }
     }
 
-    override suspend fun createEvent(newEvent: NewEvent): Event {
+    override suspend fun createEvent(event: Event): Event {
         val response = api.createEvent(
             authorization = authorizationHeader(),
-            request = newEvent.toDto(),
+            request = event.toCreateDto(),
         )
         val data = response.data
             ?: throw IllegalStateException(response.error ?: "Error al registrar el evento")

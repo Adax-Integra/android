@@ -3,7 +3,7 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
-import com.example.adaxintegra.domain.model.NewEvent
+import com.example.adaxintegra.domain.model.Event
 import com.example.adaxintegra.domain.usecases.CreateEventUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -206,6 +206,16 @@ class NewEventViewModel @Inject constructor(
             }
         }
 
+        if (state.link.isNotBlank()) {
+            val cleanLink = state.link.trim()
+            if (!cleanLink.startsWith("http://", ignoreCase = true) &&
+                !cleanLink.startsWith("https://", ignoreCase = true)
+            ) {
+                linkError = "El enlace debe comenzar con http:// o https://"
+                hasError = true
+            }
+        }
+
         if (state.description.isBlank()) {
             descriptionError = "Ingresa la descripción del evento"
             hasError = true
@@ -260,8 +270,8 @@ class NewEventViewModel @Inject constructor(
             return
         }
 
-        val startsAtIso = formatToIsoWithOffset(startDate!!, startTime!!)
-        val endsAtIso = formatToIsoWithOffset(endDate!!, endTime!!)
+        val startInstant = toInstant(startDate!!, startTime!!)
+        val endInstant = toInstant(endDate!!, endTime!!)
 
         val formattedPhone = if (state.phone.isNotBlank()) {
             val cleanPhone = state.phone.trim().filter { it.isDigit() }
@@ -270,20 +280,22 @@ class NewEventViewModel @Inject constructor(
             null
         }
 
-        val newEvent = NewEvent(
+        val event = Event(
+            id = "",
             title = state.title.trim(),
-            startsAt = startsAtIso,
-            endsAt = endsAtIso,
+            description = state.description.trim(),
+            notes = state.notes.trim().ifBlank { null },
+            startsAt = startInstant,
+            endsAt = endInstant,
             modality = state.modality.trim(),
             location = state.location.trim().ifBlank { null },
             link = state.link.trim().ifBlank { null },
             phone = formattedPhone,
-            description = state.description.trim(),
-            notes = state.notes.trim().ifBlank { null },
+            imageUrl = null,
         )
 
         viewModelScope.launch {
-            createEventUseCase(newEvent).collect { result ->
+            createEventUseCase(event).collect { result ->
                 _uiState.update { current ->
                     when (result) {
                         is Result.Loading -> current.copy(isLoading = true, error = null)
@@ -292,10 +304,15 @@ class NewEventViewModel @Inject constructor(
                             isSuccess = true,
                             error = null,
                         )
-                        is Result.Error -> current.copy(
-                            isLoading = false,
-                            error = parseErrorMessage(result.exception),
-                        )
+                        is Result.Error -> {
+                            val parsed = parseErrorMessage(result.exception)
+                            current.copy(
+                                isLoading = false,
+                                error = parsed.generalError,
+                                linkError = parsed.fieldErrors["link"] ?: current.linkError,
+                                locationError = parsed.fieldErrors["location"] ?: current.locationError,
+                            )
+                        }
                     }
                 }
             }
@@ -306,31 +323,52 @@ class NewEventViewModel @Inject constructor(
         _uiState.update { it.copy(isSuccess = false) }
     }
 
-    private fun formatToIsoWithOffset(calendar: Calendar, time: LocalTime): String {
+    private fun toInstant(calendar: Calendar, time: LocalTime): Instant {
         val localDate = LocalDate.of(
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,
             calendar.get(Calendar.DAY_OF_MONTH),
         )
         val localDateTime = LocalDateTime.of(localDate, time)
-        val zonedDateTime = localDateTime.atZone(ZoneId.systemDefault())
-        return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant()
     }
 
-    private fun parseErrorMessage(e: Throwable): String {
+    private data class ParsedError(
+        val generalError: String?,
+        val fieldErrors: Map<String, String> = emptyMap(),
+    )
+
+    private fun parseErrorMessage(e: Throwable): ParsedError {
         if (e is HttpException) {
-            return when (e.code()) {
-                400 -> "Solicitud inválida. Revisa que los campos cumplan con la modalidad seleccionada."
+            val errorBody = e.response()?.errorBody()?.string() ?: ""
+            if (e.code() == 400 || errorBody.contains("http:// or https://")) {
+                if (errorBody.contains("link must start with") || errorBody.contains("http:// or https://")) {
+                    return ParsedError(
+                        generalError = null,
+                        fieldErrors = mapOf("link" to "El enlace debe comenzar con http:// o https://"),
+                    )
+                }
+                if (errorBody.contains("location is required")) {
+                    return ParsedError(
+                        generalError = null,
+                        fieldErrors = mapOf("location" to "Ingresa el lugar para modalidad presencial"),
+                    )
+                }
+                return ParsedError(generalError = "Solicitud inválida. Revisa los datos ingresados.")
+            }
+            val msg = when (e.code()) {
                 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
                 403 -> "No tienes permiso para registrar eventos."
                 429 -> "Has superado el límite de 20 eventos por hora desde esta IP."
                 500 -> "Error interno en el servidor. Inténtalo de nuevo más tarde."
                 else -> e.message() ?: "Ocurrió un error al registrar el evento"
             }
+            return ParsedError(generalError = msg)
         }
-        return when (e) {
+        val msg = when (e) {
             is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
             else -> e.message ?: "Ocurrió un error al registrar el evento"
         }
+        return ParsedError(generalError = msg)
     }
 }
