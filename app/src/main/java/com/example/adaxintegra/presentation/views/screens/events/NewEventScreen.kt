@@ -134,6 +134,7 @@ fun CreateEvent(
                 value = uiState.title,
                 onValueChange = onTitleChange,
                 placeholder = "Ej. Reunión de equipo",
+                maxLength = 100,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Next,
@@ -204,6 +205,7 @@ fun CreateEvent(
                 value = uiState.location,
                 onValueChange = onLocationChange,
                 placeholder = "Ej. Oficinas ADAX",
+                maxLength = 100,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 errorMessage = uiState.locationError,
@@ -215,6 +217,7 @@ fun CreateEvent(
                 value = uiState.link,
                 onValueChange = onLinkChange,
                 placeholder = "https://meet.google.com/...",
+                maxLength = 200,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 errorMessage = uiState.linkError,

@@ -1,4 +1,4 @@
-package com.example.adaxintegra.presentation.views.designsystem.molecules
+.package com.example.adaxintegra.presentation.views.designsystem.molecules
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextFiel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
-//Long free text with its label, its error and how much room is left,
+// Long free text with its label, its error and how much room is left,
 // so the user sees the limit before the backend rejects the text
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -29,8 +29,8 @@ fun LabeledTextArea(
     placeholder: String? = null,
     minLines: Int = 4,
     error: String? = null,
-){
-    Column(modifier = modifier.fillMaxWidth()){
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
@@ -42,7 +42,11 @@ fun LabeledTextArea(
 
         AppTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                if (newValue.length <= maxLength) {
+                    onValueChange(newValue)
+                }
+            },
             placeholder = placeholder,
             singleLine = false,
             minLines = minLines,
@@ -53,8 +57,8 @@ fun LabeledTextArea(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ){
-            if (error != null){
+        ) {
+            if (error != null) {
                 Text(
                     text = error,
                     modifier = Modifier.weight(1f),

@@ -24,6 +24,7 @@ fun LabeledTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    maxLength: Int? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -42,7 +43,11 @@ fun LabeledTextField(
         Spacer(modifier = Modifier.height(8.dp))
         AppTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                if (maxLength == null || newValue.length <= maxLength) {
+                    onValueChange(newValue)
+                }
+            },
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,

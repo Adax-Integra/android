@@ -32,7 +32,7 @@ class NewEventViewModel @Inject constructor(
     fun onTitleChange(title: String) {
         _uiState.update {
             it.copy(
-                title = title,
+                title = title.take(100),
                 titleError = null,
                 error = null,
             )
@@ -96,7 +96,7 @@ class NewEventViewModel @Inject constructor(
     fun onLocationChange(location: String) {
         _uiState.update {
             it.copy(
-                location = location,
+                location = location.take(100),
                 locationError = null,
                 error = null,
             )
@@ -106,7 +106,7 @@ class NewEventViewModel @Inject constructor(
     fun onLinkChange(link: String) {
         _uiState.update {
             it.copy(
-                link = link,
+                link = link.take(200),
                 linkError = null,
                 error = null,
             )
@@ -136,7 +136,7 @@ class NewEventViewModel @Inject constructor(
     fun onDescriptionChange(description: String) {
         _uiState.update {
             it.copy(
-                description = description,
+                description = description.take(500),
                 descriptionError = null,
                 error = null,
             )
@@ -146,7 +146,7 @@ class NewEventViewModel @Inject constructor(
     fun onNotesChange(notes: String) {
         _uiState.update {
             it.copy(
-                notes = notes,
+                notes = notes.take(500),
                 notesError = null,
                 error = null,
             )
