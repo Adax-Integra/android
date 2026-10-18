@@ -9,4 +9,9 @@ data class EventDetailUiState(
     val error: String? = null,
     // True when the event was disabled or already ended, retrying cannot bring it back
     val isUnavailable: Boolean = false,
+
+    //disable events ui states
+    val isDisabling: Boolean = false,
+    val disableSuccess: Boolean = false,
+    val disableError: String? = null,
 )
