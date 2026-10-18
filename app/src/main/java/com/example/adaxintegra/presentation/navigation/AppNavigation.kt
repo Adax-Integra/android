@@ -1,5 +1,7 @@
 package com.example.adaxintegra.presentation.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -259,6 +261,8 @@ fun AppNavigation(
         NavHost(
             navController = navController,
             startDestination = "session",
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
             modifier =
                 Modifier
                     .padding(innerPadding)
