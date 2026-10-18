@@ -1,11 +1,13 @@
 package com.example.adaxintegra.data.mapper
 
+import com.example.adaxintegra.data.remote.dto.CreateEventRequestDto
+import com.example.adaxintegra.data.remote.dto.CreateEventResponseDataDto
 import com.example.adaxintegra.data.remote.dto.EventListItemDto
 import com.example.adaxintegra.domain.model.Event
+import com.example.adaxintegra.domain.model.NewEvent
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
-import java.time.Instant
-
 
 // The backend sends the offset ("+00:00"), so OffsetDateTime reads it with or without miliseconds
 private fun parseDate(value: String?): Instant? {
@@ -34,7 +36,41 @@ fun EventListItemDto.toDomain(): Event? {
         modality = modality ?: "",
         location = if (location.isNullOrBlank()) null else location,
         link = if (link.isNullOrBlank()) null else link,
-        phone = if(phone.isNullOrBlank()) null else phone,
-        imageUrl = if (imageUrl.isNullOrBlank()) null else imageUrl
+        phone = if (phone.isNullOrBlank()) null else phone,
+        imageUrl = if (imageUrl.isNullOrBlank()) null else imageUrl,
+    )
+}
+
+fun NewEvent.toDto(): CreateEventRequestDto {
+    return CreateEventRequestDto(
+        title = title,
+        startsAt = startsAt,
+        endsAt = endsAt,
+        modality = modality,
+        location = location,
+        link = link,
+        phone = phone,
+        description = description,
+        notes = notes,
+    )
+}
+
+fun CreateEventResponseDataDto.toDomain(): Event? {
+    val id = eventId ?: return null
+    val start = parseDate(startsAt) ?: return null
+    val end = parseDate(endsAt) ?: return null
+
+    return Event(
+        id = id,
+        title = title ?: "",
+        description = description ?: "",
+        notes = if (notes.isNullOrBlank()) null else notes,
+        startsAt = start,
+        endsAt = end,
+        modality = modality ?: "",
+        location = if (location.isNullOrBlank()) null else location,
+        link = if (link.isNullOrBlank()) null else link,
+        phone = if (phone.isNullOrBlank()) null else phone,
+        imageUrl = null,
     )
 }
