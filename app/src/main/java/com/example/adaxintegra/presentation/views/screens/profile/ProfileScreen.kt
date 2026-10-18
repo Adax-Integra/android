@@ -33,8 +33,8 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
-import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
 import com.example.adaxintegra.ui.theme.LightOrange
 import com.example.adaxintegra.ui.theme.Orange
 
@@ -44,7 +44,6 @@ import com.example.adaxintegra.ui.theme.Orange
 fun ProfileScreen(
     onPersonalDataClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onBack: () -> Unit,
     onSecurityClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     isAdmin: Boolean = false,
@@ -83,12 +82,11 @@ fun ProfileScreen(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                top = 32.dp,
+                top = 16.dp,
             ),
     ) {
         AppHeader(
             title = "Perfil",
-            onBack = onBack,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +135,7 @@ fun ProfileScreen(
                             MenuOptionCard(
                                 icon = AppIcons.Profile,
                                 title = "Datos Personales",
-                                subtitle = "Nombre, teléfono, correo",
+                                subtitle = if (isExternal) "Nombre, teléfono, dirección" else "Nombre, teléfono",
                                 onClick = onPersonalDataClick,
                             )
 
@@ -154,7 +152,7 @@ fun ProfileScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 MenuOptionCard(
-                                    icon = AppIcons.Profile,
+                                    icon = AppIcons.IdCard,
                                     title = "Mis documentos",
                                     subtitle = "INE y comprobante de domicilio",
                                     onClick = onUploadDocumentsClick,
@@ -218,7 +216,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        //logout confirmation
+        // logout confirmation
         if (showLogoutConfirmation) {
             AlertDialog(
                 onDismissRequest = { showLogoutConfirmation = false },
@@ -271,7 +269,7 @@ fun ProfileScreen(
                     Column {
                         Text(
                             "¿Seguro que quieres desactivar tu cuenta? " +
-                                "Ya no podrás iniciar sesión y esta acción no se puede deshacer."
+                                "Ya no podrás iniciar sesión y esta acción no se puede deshacer.",
                         )
 
                         // error from the request, the user can try again

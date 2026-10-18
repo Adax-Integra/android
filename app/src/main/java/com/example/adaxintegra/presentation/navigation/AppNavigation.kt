@@ -30,8 +30,8 @@ import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
 import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
-import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
+import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
@@ -52,6 +52,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScree
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ExternalUsersScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -60,8 +61,8 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
-import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
+import com.example.adaxintegra.presentation.views.screens.profile.EditableProfileScreen
 import com.example.adaxintegra.presentation.views.screens.profile.UploadDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordDocumentsScreen
 import com.example.adaxintegra.presentation.views.screens.records.RecordsMenuScreen
@@ -217,8 +218,10 @@ fun AppNavigation(
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
                         // G-10: the collaborator detail keeps the admin tab selected
+                        // G-16: the external users list is opened from the admin section
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
+                            currentRoute == "externalUsers" ||
                             currentRoute.startsWith("collaboratorDetail") -> "admin"
 
                         currentRoute.startsWith("case/") -> {
@@ -232,6 +235,9 @@ fun AppNavigation(
                         currentRoute.startsWith("createCase") -> {
                             if (isExternal) "cases" else "records"
                         }
+
+                        // R-06: "Mis documentos" is opened from the profile
+                        currentRoute == "uploadDocuments" -> "profile"
 
                         else -> currentRoute
                     }
@@ -255,9 +261,9 @@ fun AppNavigation(
             navController = navController,
             startDestination = "session",
             modifier =
-            Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+                Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -690,9 +696,6 @@ fun AppNavigation(
 
             composable("profile") {
                 ProfileScreen(
-                    onBack = {
-                        navController.popBackStack()
-                    },
                     onPersonalDataClick = { navController.navigate("editProfile") {
                         launchSingleTop = true
                     }
@@ -855,11 +858,30 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        // G-16: opens the list of external accounts
+                        onManageExternalUsersClick = {
+                            navController.navigate("externalUsers") {
+                                launchSingleTop = true
+                            }
+                        },
                         // V-06: opens the activity log
                         onAuditLogClick = {
                             navController.navigate("activityLog") {
                                 launchSingleTop = true
                             }
+                        },
+                    )
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // G-16: admin consults the list of external accounts
+            composable("externalUsers") {
+                if (hasValidSession && isAdmin) {
+                    ExternalUsersScreen(
+                        onBack = {
+                            navController.popBackStack()
                         },
                     )
                 } else {

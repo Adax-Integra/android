@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
@@ -23,8 +24,14 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.outlined.ArrowCircleDown
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MailOutline
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.test.user_attributes
 
@@ -101,8 +108,30 @@ object AppIcons {
 
     val Close: ImageVector
         get() = Icons.Default.Close
-  
+
     // G-10: phone of the collaborator in her detail
     val Phone: ImageVector
         get() = Icons.Default.Phone
+
+    // R-06: "Mis documentos" in the profile and its sections
+    val IdCard: ImageVector
+        get() = Icons.Default.Badge
+
+    val Upload: ImageVector
+        get() = Icons.Outlined.FileUpload
+
+    val UploadedImage: ImageVector
+        get() = Icons.Outlined.Image
+
+    val Download: ImageVector
+        get() = Icons.Outlined.ArrowCircleDown
+
+    val Replace: ImageVector
+        get() = Icons.Default.Sync
+
+    val Gallery: ImageVector
+        get() = Icons.Outlined.PhotoLibrary
+
+    val Files: ImageVector
+        get() = Icons.Outlined.FolderOpen
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.model.HelpType
+import com.example.adaxintegra.domain.model.Violence
 import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
@@ -112,9 +113,25 @@ fun CaseDetailScreen(
                 recordId = case.recordId,
 
                 isCaseClosed = isCaseClosed,
+
+                availableViolences = uiState.availableViolences,
+                assignedViolences = case.violenceList.mapNotNull { caseViolence ->
+                    val match = uiState.availableViolences.find {
+                        it.id == caseViolence.id || it.type.trim().equals(caseViolence.type.trim(), ignoreCase = true)
+                    }
+                    match?.type ?: caseViolence.type.takeIf { it.isNotBlank() }
+                }.toSet(),
+                onAssignViolences = { selectedDescriptions ->
+                    val violenceIds = uiState.availableViolences
+                        .filter { available ->
+                            selectedDescriptions.any { sel -> sel.trim().equals(available.type.trim(), ignoreCase = true) }
+                        }
+                        .map { it.id }
+                    viewModel.assignViolences(caseId, violenceIds)
+                },
+
                 availableHelps = uiState.availableHelps,
                 assignedHelps = case.helpList.mapNotNull { caseHelp ->
-                    // Tratamos de hacer match por ID con el catálogo para asegurar que el texto sea idéntico
                     val matchById = uiState.availableHelps.find { it.helpId == caseHelp.id }
                     matchById?.description ?: caseHelp.description
                 }.toSet(),
@@ -168,6 +185,9 @@ private fun CaseDetailContent(
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    availableViolences: List<Violence>,
+    assignedViolences: Set<String>,
+    onAssignViolences: (Set<String>) -> Unit,
     availableHelps: List<HelpType>,
     assignedHelps: Set<String>,
     onAssignHelps: (Set<String>) -> Unit,
@@ -223,8 +243,34 @@ private fun CaseDetailContent(
             }
         }
 
-        // TODO this section is there the other dropdown for the violence types will be
-        // This is part of the R-07 and will be implemented in another PR
+        // Section of R-07, assigning the violence a case has
+        item {
+            val violenceOptions = availableViolences.map { it.type }
+            val selectedState =
+                remember(assignedViolences) { mutableStateListOf(*assignedViolences.toTypedArray()) }
+
+            CheckboxesInDropdown(
+                title = "Tipos de violencia del caso",
+                options = violenceOptions,
+                selectedOptions = selectedState.toSet(),
+                onOptionToggle = { option ->
+                    if (option in selectedState) {
+                        selectedState.remove(option)
+                    } else {
+                        selectedState.add(option)
+                    }
+                },
+                saveButtonAction = {
+                    onAssignViolences(selectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // We cancel the actions and take the values from backend
+                    selectedState.clear()
+                    selectedState.addAll(assignedViolences)
+                },
+            )
+        }
+
 
         // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
@@ -237,27 +283,28 @@ private fun CaseDetailContent(
 
         // Section of R-08, assigning the help requested by the case
         item {
-            val options = availableHelps.map { it.description }
-            val selectedState = remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
+            val helpOptions = availableHelps.map { it.description }
+            val helpSelectedState =
+                remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
 
             CheckboxesInDropdown(
                 title = "Tipos de ayuda asignados",
-                options = options,
-                selectedOptions = selectedState.toSet(),
+                options = helpOptions,
+                selectedOptions = helpSelectedState.toSet(),
                 onOptionToggle = { option ->
-                    if (option in selectedState) {
-                        selectedState.remove(option)
+                    if (option in helpSelectedState) {
+                        helpSelectedState.remove(option)
                     } else {
-                        selectedState.add(option)
+                        helpSelectedState.add(option)
                     }
                 },
                 saveButtonAction = {
-                    onAssignHelps(selectedState.toSet())
+                    onAssignHelps(helpSelectedState.toSet())
                 },
                 cancelButtonAction = {
-                    // Revertimos a lo que viene de backend
-                    selectedState.clear()
-                    selectedState.addAll(assignedHelps)
+                    // We cancel the actions and take the values from backend
+                    helpSelectedState.clear()
+                    helpSelectedState.addAll(assignedHelps)
                 },
             )
         }
@@ -317,6 +364,9 @@ private fun OpenCaseDetailScreenPreview() {
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
+                availableViolences = emptyList(),
+                assignedViolences = emptySet(),
+                onAssignViolences = {},
                 availableHelps = emptyList(),
                 assignedHelps = emptySet(),
                 onAssignHelps = {},
@@ -362,6 +412,9 @@ private fun ClosedCaseDetailScreenPreview() {
 
                 // closed cases must not expose the close-case action again
                 isCaseClosed = true,
+                availableViolences = emptyList(),
+                assignedViolences = emptySet(),
+                onAssignViolences = {},
                 availableHelps = emptyList(),
                 assignedHelps = emptySet(),
                 onAssignHelps = {},

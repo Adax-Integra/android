@@ -10,6 +10,7 @@ import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
 import com.example.adaxintegra.data.remote.api.ReportApi
+import com.example.adaxintegra.data.remote.api.ViolenceApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +26,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val BASE_URL = "http://localhost:3001/"
+    private const val BASE_URL = "https://dev-api.adaxdigitales.com"
 
     // Server testing: use "https://dev-api.adaxdigitales.com", enable networkSecurityConfig
     // Local testing: use "http://localhost:3001/", enable networkSecurityConfig
@@ -60,8 +61,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi =
-        retrofit.create(CollaboratorApi::class.java)
+    fun provideCollaboratorApi(retrofit: Retrofit): CollaboratorApi = retrofit.create(CollaboratorApi::class.java)
 
     @Provides
     @Singleton
@@ -69,13 +69,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi =
-        retrofit.create(ExpedientApi::class.java)
+    fun provideExpedientApi(retrofit: Retrofit): ExpedientApi = retrofit.create(ExpedientApi::class.java)
 
     @Provides
     @Singleton
-    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi =
-        retrofit.create(ActivityLogApi::class.java)
+    fun provideActivityLogApi(retrofit: Retrofit): ActivityLogApi = retrofit.create(ActivityLogApi::class.java)
 
     @Provides
     @Singleton
@@ -83,8 +81,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi =
-        retrofit.create(PrivacyPolicyApi::class.java)
+    fun providePrivacyPolicyApi(retrofit: Retrofit): PrivacyPolicyApi = retrofit.create(PrivacyPolicyApi::class.java)
 
     @Provides
     @Singleton
@@ -93,4 +90,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideHelpApi(retrofit: Retrofit): HelpApi = retrofit.create(HelpApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideViolenceApi(retrofit: Retrofit): ViolenceApi = retrofit.create(ViolenceApi::class.java)
 }
