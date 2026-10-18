@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.GetCollaboratorDetailUseCase
 import com.example.adaxintegra.domain.usecases.UpdateCollaboratorStatusUseCase
+import com.example.adaxintegra.domain.usecases.UpdateCollaboratorProfileUseCase
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class CollaboratorDetailViewModel @Inject constructor(
     private val getCollaboratorDetailUseCase: GetCollaboratorDetailUseCase,
     private val updateCollaboratorStatusUseCase: UpdateCollaboratorStatusUseCase,
+    private val updateCollaboratorProfileUseCase: UpdateCollaboratorProfileUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CollaboratorDetailUiState())
     val uiState = _uiState.asStateFlow()
@@ -133,6 +135,89 @@ class CollaboratorDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // G-18: preserve the form on error; close only after backend success
+    fun openEditDialog() {
+        if (_uiState.value.collaborator == null) return
+        _uiState.update {
+            it.copy(showEditDialog = true, profileError = null)
+        }
+    }
+
+    fun dismissEditDialog() {
+        if (_uiState.value.isUpdatingProfile) return
+        _uiState.update {
+            it.copy(showEditDialog = false, profileError = null)
+        }
+    }
+
+    fun clearProfileUpdated() {
+        _uiState.update { it.copy(profileUpdated = false) }
+    }
+
+    fun saveProfile(name: String?, lastName: String?, email: String?) {
+        val collaborator = _uiState.value.collaborator ?: return
+        if (_uiState.value.isUpdatingProfile) return
+        if (name == null && lastName == null && email == null) return
+
+        viewModelScope.launch {
+            updateCollaboratorProfileUseCase(
+                userId = collaborator.userId,
+                name = name,
+                lastName = lastName,
+                email = email,
+            ).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _uiState.update {
+                            it.copy(isUpdatingProfile = true, profileError = null)
+                        }
+                    }
+                    is Result.Success -> {
+                        _uiState.update { state ->
+                            state.copy(
+                                collaborator = state.collaborator?.copy(
+                                    name = name ?: collaborator.name,
+                                    lastName = lastName ?: collaborator.lastName,
+                                    email = email ?: collaborator.email,
+                                ),
+                                showEditDialog = false,
+                                isUpdatingProfile = false,
+                                profileError = null,
+                                profileUpdated = true,
+                            )
+                        }
+                        // Refresh G-10 with the saved backend values
+                        loadCollaborator(collaborator.userId)
+                    }
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isUpdatingProfile = false,
+                                profileError = profileErrorMessage(result.exception),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun profileErrorMessage(e: Throwable): String = when {
+        e is HttpException && e.code() == 400 ->
+            "Revisa los datos ingresados e inténtalo de nuevo."
+        e is HttpException && e.code() == 401 ->
+            "Tu sesión expiró. Vuelve a iniciar sesión."
+        e is HttpException && e.code() == 403 ->
+            "Solo una administradora puede editar esta cuenta."
+        e is HttpException && e.code() == 404 ->
+            "No se encontró la colaboradora."
+        e is HttpException && e.code() == 409 ->
+            "El correo ya está registrado en otra cuenta."
+        e is IOException ->
+            "Sin conexión a internet. Tus datos siguen en el formulario."
+        else -> "No se pudieron guardar los cambios. Inténtalo de nuevo."
     }
 
     private fun errorMessage(e: Throwable): String = when {

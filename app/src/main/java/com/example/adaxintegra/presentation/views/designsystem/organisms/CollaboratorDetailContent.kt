@@ -107,6 +107,7 @@ fun CollaboratorDetailContent(
     collaborator: CollaboratorDetail,
     onCopy: (String) -> Unit,
     onChangeStatusClick: () -> Unit,
+    onEditClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val spacing = Spacing()
@@ -180,6 +181,13 @@ fun CollaboratorDetailContent(
         }
 
         DetailSection(title = "Contacto") {
+            // G-18: edit the collaborator without leaving G-10
+            AppButton(
+                text = "Editar",
+                onClick = onEditClick,
+                variant = ButtonVariant.Outlined,
+                modifier = Modifier.fillMaxWidth(),
+            )
             ContactRow(
                 icon = AppIcons.Email,
                 label = "Correo electrónico",

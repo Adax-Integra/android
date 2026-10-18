@@ -6,6 +6,8 @@ import com.example.adaxintegra.data.remote.dto.CreateCollaboratorRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCollaboratorResponseDto
 import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusRequestDto
 import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusResponseDto
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorProfileRequestDto
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorProfileResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -41,4 +43,12 @@ interface CollaboratorApi {
         @Path("userId") userId: String,
         @Body request: UpdateCollaboratorStatusRequestDto,
     ): UpdateCollaboratorStatusResponseDto
+
+    // G-18: admin updates collaborator profile
+    @PATCH("api/internal-users/{userId}")
+    suspend fun updateCollaboratorProfile(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String,
+        @Body request: UpdateCollaboratorProfileRequestDto,
+    ): UpdateCollaboratorProfileResponseDto
 }
