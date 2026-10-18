@@ -146,7 +146,7 @@ fun CaseCard(
                             // Show the complete case number
                             text = case.caseNumber
                                 ?.takeIf { it.isNotBlank() }
-                                ?: case.caseId.take(12),
+                                ?: "Sin número de caso",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,

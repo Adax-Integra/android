@@ -76,7 +76,6 @@ fun CollaboratorsScreen(
     // Same template as the other screens, so it follows the light/dark theme
     ScreenTemplate(
         title = "Gestión de Colaboradoras",
-        subtitle = "Administración de colaboradoras",
         onBack = onBack,
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {

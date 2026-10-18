@@ -72,7 +72,9 @@ fun CaseSummaryCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "ID: ${caseItem.caseId.take(8).uppercase()}",
+                text = caseItem.caseNumber
+                    ?.takeIf { it.isNotBlank() }
+                    ?: "Sin número de caso",
                 style = AppTextStyle.BodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,

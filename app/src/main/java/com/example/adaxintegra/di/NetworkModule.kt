@@ -11,6 +11,7 @@ import com.example.adaxintegra.data.remote.api.PrivacyPolicyApi
 import com.example.adaxintegra.data.remote.api.ProfileApi
 import com.example.adaxintegra.data.remote.api.RecordApi
 import com.example.adaxintegra.data.remote.api.ReportApi
+import com.example.adaxintegra.data.remote.api.ViolenceApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -94,4 +95,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideEventApi(retrofit: Retrofit): EventApi = retrofit.create(EventApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideViolenceApi(retrofit: Retrofit): ViolenceApi = retrofit.create(ViolenceApi::class.java)
 }
