@@ -666,6 +666,7 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        canCreateEvent = !isExternal,
                     )
                 }
             }

@@ -46,6 +46,7 @@ fun EventsScreen(
     onBack: () -> Unit,
     onEventClick: (String) -> Unit,
     onCreateEvent: () -> Unit = {},
+    canCreateEvent: Boolean = true,
     viewModel: EventsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,6 +61,7 @@ fun EventsScreen(
         onBack = onBack,
         onEventClick = onEventClick,
         onCreateEvent = onCreateEvent,
+        canCreateEvent = canCreateEvent,
         onRetry = { viewModel.loadEvents(EventScope.ALL) },
         onRefresh = viewModel::refresh,
     )
@@ -73,6 +75,7 @@ fun EventsContent(
     onBack: () -> Unit,
     onEventClick: (String) -> Unit,
     onCreateEvent: () -> Unit = {},
+    canCreateEvent: Boolean = true,
     onRetry: () -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -87,20 +90,22 @@ fun EventsContent(
         isRefreshing = uiState.isRefreshing,
         onRefresh = onRefresh,
         modifier = Modifier.padding(horizontal = spacing.medium),
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreateEvent,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-            ) {
-                AppIcon(
-                    imageVector = AppIcons.Add,
-                    contentDescription = "Agregar evento",
-                    size = IconSize.LargeIcon,
-                    tint = Color.White,
-                )
+        floatingActionButton = if (canCreateEvent) {
+            {
+                FloatingActionButton(
+                    onClick = onCreateEvent,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                ) {
+                    AppIcon(
+                        imageVector = AppIcons.Add,
+                        contentDescription = "Agregar evento",
+                        size = IconSize.LargeIcon,
+                        tint = Color.White,
+                    )
+                }
             }
-        },
+        } else null,
     ) {
         when {
             errorMessage != null && uiState.events.isEmpty() -> {
@@ -201,6 +206,7 @@ fun EventsContentPreview() {
         onBack = {},
         onEventClick = {},
         onCreateEvent = {},
+        canCreateEvent = true,
         onRetry = {},
         onRefresh = {},
     )
