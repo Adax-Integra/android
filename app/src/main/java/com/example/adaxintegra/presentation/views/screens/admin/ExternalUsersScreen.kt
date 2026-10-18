@@ -183,10 +183,20 @@ fun ExternalUsersScreen(
                 }
             }
 
-            // Pages of 10 accounts, as the backend sends them
-            if (uiState.total > 0) {
+            // Pagination: only show if page > 1 or total exceeds page limit
+            val showPagination = (!uiState.isLoading) &&
+                (uiState.page > 1 || uiState.total > uiState.limit)
+
+            if (showPagination) {
+                val totalPages = if (uiState.limit > 0 && uiState.total > 0) {
+                    (uiState.total + uiState.limit - 1) / uiState.limit
+                } else {
+                    1
+                }
+
                 PageSwitcher(
                     page = uiState.page,
+                    totalPages = totalPages,
                     canGoBack = uiState.canGoBack,
                     canGoNext = uiState.canGoNext,
                     onPreviousPage = viewModel::previousPage,

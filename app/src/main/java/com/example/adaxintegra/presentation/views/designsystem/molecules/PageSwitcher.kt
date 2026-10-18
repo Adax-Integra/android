@@ -31,6 +31,7 @@ fun PageSwitcher(
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     modifier: Modifier = Modifier,
+    totalPages: Int? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -65,8 +66,14 @@ fun PageSwitcher(
                 )
             }
 
+            val pageText = if ((totalPages != null) && (totalPages > 0)) {
+                "Página $page de $totalPages"
+            } else {
+                "Página $page"
+            }
+
             Text(
-                text = "Página $page",
+                text = pageText,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -97,6 +104,7 @@ fun PageSwitcher(
 fun PageSwitcherPreview() {
     PageSwitcher(
         page = 1,
+        totalPages = 5,
         canGoBack = true,
         canGoNext = true,
         onPreviousPage = {},

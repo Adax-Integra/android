@@ -261,17 +261,23 @@ fun CasesScreen(
                 }
             }
 
-            if (
-                !uiState.isLoading &&
+            val showPagination = !uiState.isLoading &&
                 uiState.error == null &&
-                uiState.total > uiState.limit
-            ) {
+                (uiState.page > 1 || uiState.total > uiState.limit)
+
+            if (showPagination) {
                 val canGoBack = uiState.page > 1
                 val canGoNext =
                     uiState.page.toLong() * uiState.limit < uiState.total
+                val totalPages = if (uiState.limit > 0 && uiState.total > 0) {
+                    (uiState.total + uiState.limit - 1) / uiState.limit
+                } else {
+                    1
+                }
 
                 PageSwitcher(
                     page = uiState.page,
+                    totalPages = totalPages,
                     canGoBack = canGoBack,
                     canGoNext = canGoNext,
                     onPreviousPage = onPreviousPage,

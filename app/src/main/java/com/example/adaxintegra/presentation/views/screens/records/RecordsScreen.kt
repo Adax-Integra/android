@@ -327,9 +327,15 @@ fun RecordsScreen(
                 val canGoBack = uiState.page > 1
                 val canGoNext = uiState.error == null &&
                     uiState.page.toLong() * uiState.limit < uiState.total
+                val totalPages = if (uiState.limit > 0 && uiState.total > 0) {
+                    (uiState.total + uiState.limit - 1) / uiState.limit
+                } else {
+                    1
+                }
 
                 PageSwitcher(
                     page = uiState.page,
+                    totalPages = totalPages,
                     canGoBack = canGoBack,
                     canGoNext = canGoNext,
                     onPreviousPage = onPreviousPage,
