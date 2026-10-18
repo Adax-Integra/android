@@ -19,7 +19,7 @@ object EventDateFormatter {
 
     private val detailDateFormatter = DateTimeFormatter.ofPattern("EEEE d 'de' MMMM, yyyy", locale)
 
-    private val dayAndTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM, h:mm a", locale)
+    private val dayMonthFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM", locale)
 
     // ex. "25" for the date badge
     fun day(instant: Instant): String =
@@ -33,9 +33,10 @@ object EventDateFormatter {
     fun longDate(instant: Instant): String =
         longDateFormatter.format(local(instant))
 
-    // ex "6:00 p.m." for the events list
+    // ex "6:00 p.m." for the events list.
+    // The spaces become non-breaking, so a line never ends between "12:00" and "p. m."
     fun time(instant: Instant): String =
-        timeFormatter.format(local(instant))
+        timeFormatter.format(local(instant)).replace(' ', '\u00A0')
 
     // ex. "Sábado 25 de octubre, 2026" for the detail screen
     fun detailDate(instant: Instant): String = detailDateFormatter.format(local(instant)).replaceFirstChar { it.uppercase(locale) }
@@ -43,7 +44,10 @@ object EventDateFormatter {
     // ex. "6:00 p.m. - 8:00 p.m.", events that end on another day
     fun timeRange(start: Instant, end: Instant): String {
         val sameDay = local(start).toLocalDate() == local(end).toLocalDate()
-        val formatter = if (sameDay) timeFormatter else dayAndTimeFormatter
-        return "${formatter.format(local(start))} - ${formatter.format(local(end))}"
+        if (sameDay) {
+            return "${time(start)} - ${time(end)}"
+        }
+        return "${dayMonthFormatter.format(local(start))}, ${time(start)} - " +
+            "${dayMonthFormatter.format(local(end))}, ${time(end)}"
     }
 }

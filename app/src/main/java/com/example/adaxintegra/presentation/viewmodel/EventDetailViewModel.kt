@@ -38,7 +38,7 @@ class EventDetailViewModel @Inject constructor(
             getEventsUseCase(EventScope.ALL).collect { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _uiState.update { it.copy(isLoading = true, error = null) }
+                        _uiState.update { it.copy(isLoading = true, error = null, isUnavailable = false) }
                     }
 
                     is Result.Success -> {
@@ -49,6 +49,7 @@ class EventDetailViewModel @Inject constructor(
                                 isLoading = false,
                                 // The event was disabled or already ended while it was open
                                 error = if (event == null) "Este evento ya no está disponible." else null,
+                                isUnavailable = event == null,
                             )
                         }
                     }

@@ -98,9 +98,10 @@ fun EventDetailContent(
                         text = errorMessage,
                         textAlign = TextAlign.Center,
                     )
+                    // An unavailable event cannot be loaded again, so the button goes back instead
                     AppButton(
-                        text = "Reintentar",
-                        onClick = onRetry,
+                        text = if (uiState.isUnavailable) "Regresar" else "Reintentar",
+                        onClick = if (uiState.isUnavailable) onBack else onRetry,
                         variant = ButtonVariant.Outlined,
                     )
                 }

@@ -7,4 +7,6 @@ data class EventDetailUiState(
     val event: Event? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+    // True when the event was disabled or already ended, retrying cannot bring it back
+    val isUnavailable: Boolean = false,
 )
