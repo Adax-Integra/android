@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.screens.records
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,13 +27,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +60,6 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwi
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
@@ -104,6 +105,9 @@ fun RecordsScreen(
     } else {
         RecordStatusUi.from(uiState.status)?.displayText ?: "Estado desconocido"
     }
+
+    val showPagination = (!uiState.isLoading) &&
+        (uiState.page > 1 || uiState.total > uiState.limit)
 
     // Keep search and filters visible while the listing loads or fails.
     ScreenTemplate(
@@ -170,17 +174,17 @@ fun RecordsScreen(
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
 
                     Spacer(modifier = Modifier.width(Spacing().extraSmall))
@@ -303,6 +307,9 @@ fun RecordsScreen(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(spacing.medium),
+                            contentPadding = PaddingValues(
+                                bottom = if (showPagination) 76.dp else spacing.medium,
+                            ),
                         ) {
                             items(
                                 items = uiState.records,
@@ -317,24 +324,25 @@ fun RecordsScreen(
                         }
                     }
                 }
-            }
 
-            // Allow returning from a later page even if its request fails.
-            val showPagination = !uiState.isLoading &&
-                (uiState.page > 1 || uiState.total > uiState.limit)
+                if (showPagination) {
+                    val totalPages = if ((uiState.limit > 0) && (uiState.total > 0)) {
+                        (uiState.total + uiState.limit - 1) / uiState.limit
+                    } else {
+                        1
+                    }
 
-            if (showPagination) {
-                val canGoBack = uiState.page > 1
-                val canGoNext = uiState.error == null &&
-                    uiState.page.toLong() * uiState.limit < uiState.total
-
-                PageSwitcher(
-                    page = uiState.page,
-                    canGoBack = canGoBack,
-                    canGoNext = canGoNext,
-                    onPreviousPage = onPreviousPage,
-                    onNextPage = onNextPage,
-                )
+                    PageSwitcher(
+                        page = uiState.page,
+                        totalPages = totalPages,
+                        canGoBack = uiState.page > 1,
+                        canGoNext = uiState.error == null &&
+                            uiState.page.toLong() * uiState.limit < uiState.total,
+                        onPreviousPage = onPreviousPage,
+                        onNextPage = onNextPage,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
             }
         }
     }
@@ -488,7 +496,7 @@ private fun RecordsScreenPreview() {
             onNextPage = {},
             onPreviousPage = {},
             onRecordClick = {},
-            onRegisterRecordClick = {}
+            onRegisterRecordClick = {},
         )
     }
 }
