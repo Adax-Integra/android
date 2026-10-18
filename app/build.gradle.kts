@@ -120,6 +120,10 @@ dependencies {
     implementation(libs.converter.gson)
 
     implementation(libs.okhttp.logging.interceptor)
+
+    // Coil: loads the event images from their URL (E-01)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
 
 // Automatically install the git hook before building
