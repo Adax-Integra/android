@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.screens.cases
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +46,6 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCar
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseFilterDialog
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -68,13 +69,17 @@ fun CasesScreen(
 
     val selectedUrgency = uiState.urgency.ifEmpty { "Todas" }
     val hasStatusFilter = onApplyFilters != null && uiState.status != CaseStatusFilter.ALL
-    val hasActiveFilters = uiState.search.isNotEmpty() || selectedUrgency != "Todas" || hasStatusFilter
+    val hasActiveFilters =
+        uiState.search.isNotEmpty() || selectedUrgency != "Todas" || hasStatusFilter
+
+    val showPagination = (!uiState.isLoading) &&
+        uiState.error == null &&
+        (uiState.page > 1 || uiState.total > uiState.limit)
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(
                     start = 16.dp,
@@ -243,6 +248,9 @@ fun CasesScreen(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(
+                                bottom = if (showPagination) 76.dp else 16.dp,
+                            ),
                         ) {
                             items(
                                 items = uiState.cases,
@@ -259,30 +267,26 @@ fun CasesScreen(
                         }
                     }
                 }
-            }
 
-            val showPagination = !uiState.isLoading &&
-                uiState.error == null &&
-                (uiState.page > 1 || uiState.total > uiState.limit)
+                if (showPagination) {
+                    val canGoBack = uiState.page > 1
+                    val canGoNext = uiState.page.toLong() * uiState.limit < uiState.total
+                    val totalPages = if ((uiState.limit > 0) && (uiState.total > 0)) {
+                        (uiState.total + uiState.limit - 1) / uiState.limit
+                    } else {
+                        1
+                    }
 
-            if (showPagination) {
-                val canGoBack = uiState.page > 1
-                val canGoNext =
-                    uiState.page.toLong() * uiState.limit < uiState.total
-                val totalPages = if (uiState.limit > 0 && uiState.total > 0) {
-                    (uiState.total + uiState.limit - 1) / uiState.limit
-                } else {
-                    1
+                    PageSwitcher(
+                        page = uiState.page,
+                        totalPages = totalPages,
+                        canGoBack = canGoBack,
+                        canGoNext = canGoNext,
+                        onPreviousPage = onPreviousPage,
+                        onNextPage = onNextPage,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
                 }
-
-                PageSwitcher(
-                    page = uiState.page,
-                    totalPages = totalPages,
-                    canGoBack = canGoBack,
-                    canGoNext = canGoNext,
-                    onPreviousPage = onPreviousPage,
-                    onNextPage = onNextPage,
-                )
             }
         }
     }

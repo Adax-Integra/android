@@ -22,12 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.ExternalUsersViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
-import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CollaboratorCard
@@ -54,15 +54,18 @@ private fun emptyText(searchQuery: String, hasStatusFilter: Boolean): String = w
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ExternalUsersScreen(
-    onBack: () -> Unit,
+    onBack: () -> Unit = {},
     onExternalUserClick: (String) -> Unit = {},
     viewModel: ExternalUsersViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showFilterDialog by rememberSaveable { mutableStateOf(false) }
     val spacing = Spacing()
+    var showFilterDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Loads the list when the screen is shown and when coming back to it
+    val showPagination = (!uiState.isLoading) &&
+        (uiState.page > 1 || uiState.total > uiState.limit)
+
+    // First load
     LaunchedEffect(Unit) {
         viewModel.loadExternalUsers()
     }
@@ -70,31 +73,18 @@ fun ExternalUsersScreen(
     ScreenTemplate(
         title = "Gestión de Externas",
         onBack = onBack,
-        modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = spacing.small),
+                .padding(spacing.medium),
             verticalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
-            // Search by name or email and Filtrar button
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.small),
-            ) {
-                SearchBar(
-                    query = uiState.searchQuery,
-                    onQueryChange = viewModel::onSearchQueryChange,
-                    placeholder = "Nombre o correo",
-                    modifier = Modifier.weight(1f),
-                )
-                AppButton(
-                    text = "Filtrar",
-                    onClick = { showFilterDialog = true },
-                    variant = ButtonVariant.Outlined,
-                )
-            }
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
+                placeholder = "Buscar por nombre o correo...",
+            )
 
             // Active status filter, with the option to remove it
             if (uiState.hasStatusFilter) {
@@ -138,7 +128,10 @@ fun ExternalUsersScreen(
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
+                            verticalArrangement = Arrangement.spacedBy(
+                                spacing.medium,
+                                Alignment.CenterVertically
+                            ),
                         ) {
                             Text(
                                 text = uiState.error ?: "",
@@ -166,7 +159,9 @@ fun ExternalUsersScreen(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(spacing.small),
-                            contentPadding = PaddingValues(bottom = spacing.medium),
+                            contentPadding = PaddingValues(
+                                bottom = if (showPagination) 76.dp else spacing.medium,
+                            ),
                         ) {
                             // Same card as the collaborators list (initials, name, email and status)
                             items(uiState.users) { user ->
@@ -181,27 +176,24 @@ fun ExternalUsersScreen(
                         }
                     }
                 }
-            }
 
-            // Pagination: only show if page > 1 or total exceeds page limit
-            val showPagination = (!uiState.isLoading) &&
-                (uiState.page > 1 || uiState.total > uiState.limit)
+                if (showPagination) {
+                    val totalPages = if ((uiState.limit > 0) && (uiState.total > 0)) {
+                        (uiState.total + uiState.limit - 1) / uiState.limit
+                    } else {
+                        1
+                    }
 
-            if (showPagination) {
-                val totalPages = if (uiState.limit > 0 && uiState.total > 0) {
-                    (uiState.total + uiState.limit - 1) / uiState.limit
-                } else {
-                    1
+                    PageSwitcher(
+                        page = uiState.page,
+                        totalPages = totalPages,
+                        canGoBack = uiState.canGoBack,
+                        canGoNext = uiState.canGoNext,
+                        onPreviousPage = viewModel::previousPage,
+                        onNextPage = viewModel::nextPage,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
                 }
-
-                PageSwitcher(
-                    page = uiState.page,
-                    totalPages = totalPages,
-                    canGoBack = uiState.canGoBack,
-                    canGoNext = uiState.canGoNext,
-                    onPreviousPage = viewModel::previousPage,
-                    onNextPage = viewModel::nextPage,
-                )
             }
         }
     }

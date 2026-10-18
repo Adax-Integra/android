@@ -34,19 +34,17 @@ fun PageSwitcher(
     totalPages: Int? = null,
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(
-            topStart = 16.dp,
-            topEnd = 16.dp,
-            bottomStart = 0.dp,
-            bottomEnd = 0.dp,
-        ),
+        modifier = modifier
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         color = Color.White,
+        shadowElevation = 6.dp,
+        tonalElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
