@@ -23,6 +23,12 @@ data class CaseDetailDto(
     val case_steps: List<CaseStepDto> = emptyList(),
     val case_violence: List<CaseDetailViolenceDto> = emptyList(),
     val case_help: List<CaseDetailHelpDto> = emptyList(),
+    val case_assignment: List<CaseDetailAssignmentDto>? = emptyList(),
+)
+
+data class CaseDetailAssignmentDto(
+    val deleted_at: String? = null,
+    val user: CaseDetailUserDto? = null,
 )
 
 // record information associated with the selected case

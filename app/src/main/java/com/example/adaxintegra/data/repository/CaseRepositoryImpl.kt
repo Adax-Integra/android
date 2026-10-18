@@ -3,6 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CaseApi
+import com.example.adaxintegra.data.remote.dto.AssignCollaboratorsRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseErrorDto
 import com.example.adaxintegra.domain.common.FieldValidationException
 import com.example.adaxintegra.domain.entities.CasePage
@@ -187,6 +188,14 @@ constructor(
         return FieldValidationException(
             fieldErrors = fieldErrors,
             message = parsed.error ?: "Invalid case data.",
+        )
+    }
+
+    override suspend fun assignCollaboratorsToCase(caseId: String, userIds: List<String>) {
+        api.assignCollaboratorsToCase(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = AssignCollaboratorsRequestDto(userIds = userIds),
         )
     }
 }

@@ -20,6 +20,21 @@ fun CaseDetailDto.toDomain(): CaseDetail {
             record?.user?.last_name,
         ).joinToString(" ").ifBlank { null }
 
+    // .orEmpty() convierte cualquier null a lista vacía evitando NullPointerException
+    val activeAssignments = case_assignment.orEmpty().filter { it.deleted_at == null }
+
+    val assignedNames = activeAssignments.mapNotNull { assignment ->
+        val user = assignment.user ?: return@mapNotNull null
+        listOfNotNull(user.name, user.last_name)
+            .joinToString(" ")
+            .trim()
+            .ifBlank { null }
+    }
+
+    val assignedIds = activeAssignments.mapNotNull { assignment ->
+        assignment.user?.user_id
+    }.toSet()
+
     return CaseDetail(
         caseId = case_id,
         caseNumber = case_number,
@@ -32,7 +47,7 @@ fun CaseDetailDto.toDomain(): CaseDetail {
         createdAt = parseCaseDetailDate(created_at),
         updatedAt = parseCaseDetailDate(updated_at),
         caseSteps =
-            case_steps.map { step ->
+            case_steps.orEmpty().map { step ->
                 CaseProgressStep(
                     stepNumber = step.step_number,
                     status = step.status,
@@ -40,7 +55,7 @@ fun CaseDetailDto.toDomain(): CaseDetail {
                 )
             },
         violenceList =
-            case_violence.mapNotNull { relation ->
+            case_violence.orEmpty().mapNotNull { relation ->
                 val violence = relation.violence_types
 
                 if (violence?.description.isNullOrBlank()) {
@@ -54,7 +69,7 @@ fun CaseDetailDto.toDomain(): CaseDetail {
                 }
             },
         helpList =
-            case_help.mapNotNull { relation ->
+            case_help.orEmpty().mapNotNull { relation ->
                 val help = relation.help_types ?: CaseDetailHelpTypeDto(
                     help_id = relation.help_id,
                     description = relation.description
@@ -69,6 +84,8 @@ fun CaseDetailDto.toDomain(): CaseDetail {
                     )
                 }
             },
+        assignedCollaboratorNames = assignedNames,
+        assignedCollaboratorIds = assignedIds,
     )
 }
 

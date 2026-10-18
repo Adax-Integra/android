@@ -30,4 +30,6 @@ interface CaseRepository {
     suspend fun createCase(userId: String, newCase: NewCase): Case
 
     suspend fun createCaseForExternalUser(userId: String, newCase: NewCase): Case
+
+    suspend fun assignCollaboratorsToCase(caseId: String, userIds: List<String>)
 }

@@ -25,6 +25,8 @@ import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AssignCollaboratorDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
@@ -48,6 +50,7 @@ fun CaseDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showCloseDialog by remember { mutableStateOf(false) }
+    var showAssignDialog by remember { mutableStateOf(false) }
 
     // reloads the selected case whenever its identifier changes
     LaunchedEffect(caseId) {
@@ -105,14 +108,12 @@ fun CaseDetailScreen(
                 location = null,
                 hasLawyer = case.hasLawyer ?: false,
                 description = case.description,
-
                 helpWanted = case.helpWanted,
-
-                // record information returned by the V-11 backend detail response
                 userName = case.userName,
                 recordId = case.recordId,
-
                 isCaseClosed = isCaseClosed,
+
+                onAssignCollaboratorsClick = { showAssignDialog = true },
 
                 availableViolences = uiState.availableViolences,
                 assignedViolences = case.violenceList.mapNotNull { caseViolence ->
@@ -165,6 +166,21 @@ fun CaseDetailScreen(
             },
         )
     }
+
+    if (showAssignDialog) {
+        AssignCollaboratorDialog(
+            collaborators = uiState.assignableCollaborators,
+            assignedIds = uiState.assignedCollaboratorIds,
+            isSaving = uiState.isAssigningCollaborators,
+            onConfirm = { newSelectedIds ->
+                viewModel.assignCollaborators(caseId, newSelectedIds.toList())
+                showAssignDialog = false
+            },
+            onDismiss = {
+                showAssignDialog = false
+            },
+        )
+    }
 }
 
 // renders the V-11 content independently from the ViewModel
@@ -185,6 +201,7 @@ private fun CaseDetailContent(
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    onAssignCollaboratorsClick: () -> Unit,
     availableViolences: List<Violence>,
     assignedViolences: Set<String>,
     onAssignViolences: (Set<String>) -> Unit,
@@ -309,6 +326,17 @@ private fun CaseDetailContent(
             )
         }
 
+        // R-10 Button to assign an intern
+        if (!isCaseClosed) {
+            item {
+                AppButton(
+                    text = "Asignar colaboradora",
+                    onClick = onAssignCollaboratorsClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
 
         // actions defined by the V-11 case detail acceptance criteria
         item {
@@ -364,6 +392,7 @@ private fun OpenCaseDetailScreenPreview() {
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
+                onAssignCollaboratorsClick = {},
                 availableViolences = emptyList(),
                 assignedViolences = emptySet(),
                 onAssignViolences = {},
@@ -410,8 +439,8 @@ private fun ClosedCaseDetailScreenPreview() {
                 userName = "María García López",
                 recordId = "EXP-2024-1024",
 
-                // closed cases must not expose the close-case action again
                 isCaseClosed = true,
+                onAssignCollaboratorsClick = {},
                 availableViolences = emptyList(),
                 assignedViolences = emptySet(),
                 onAssignViolences = {},

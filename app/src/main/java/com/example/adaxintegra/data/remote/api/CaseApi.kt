@@ -1,5 +1,6 @@
 package com.example.adaxintegra.data.remote.api
 
+import com.example.adaxintegra.data.remote.dto.AssignCollaboratorsRequestDto
 import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
 import com.example.adaxintegra.data.remote.dto.AssignHelpResponseDto
 import com.example.adaxintegra.data.remote.dto.AssignViolenceRequestDto
@@ -8,6 +9,7 @@ import com.example.adaxintegra.data.remote.dto.CaseDetailResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseListResponseDto
 import com.example.adaxintegra.data.remote.dto.CaseResponseDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseResponseDto
+import com.example.adaxintegra.data.remote.dto.CollaboratorListResponseDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseResponseDto
 import com.example.adaxintegra.data.remote.dto.UserCasesResponseDto
@@ -106,4 +108,16 @@ interface CaseApi {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
+
+    @GET("api/cases/assignable-collaborators")
+    suspend fun getAssignableCollaborators(
+        @Header("Authorization") authorization: String,
+    ): CollaboratorListResponseDto
+
+    @POST("api/cases/{caseId}/assignments")
+    suspend fun assignCollaboratorsToCase(
+        @Path("caseId") caseId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: AssignCollaboratorsRequestDto,
+    ): Unit
 }

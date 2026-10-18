@@ -3,10 +3,12 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.usecases.AssignCollaboratorsToCaseUseCase
 import com.example.adaxintegra.domain.usecases.AssignHelpsToCaseUseCase
 import com.example.adaxintegra.domain.usecases.AssignViolenceToCaseUseCase
 import com.example.adaxintegra.domain.usecases.CloseCaseUseCase
 import com.example.adaxintegra.domain.usecases.GetCaseDetailUseCase
+import com.example.adaxintegra.domain.usecases.GetCollaboratorsUseCase
 import com.example.adaxintegra.domain.usecases.GetHelpTypesUseCase
 import com.example.adaxintegra.domain.usecases.GetViolenceTypesUseCase
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailUiState
@@ -29,6 +31,8 @@ constructor(
     private val assignHelpsToCaseUseCase: AssignHelpsToCaseUseCase,
     private val getViolenceTypesUseCase: GetViolenceTypesUseCase,
     private val assignViolenceToCaseUseCase: AssignViolenceToCaseUseCase,
+    private val getCollaboratorsUseCase: GetCollaboratorsUseCase,
+    private val assignCollaboratorsToCaseUseCase: AssignCollaboratorsToCaseUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CaseDetailUiState())
     val uiState: StateFlow<CaseDetailUiState> = _uiState.asStateFlow()
@@ -38,6 +42,23 @@ constructor(
         loadCaseInternal(caseId, isRefresh = false)
         loadHelpTypes()
         loadViolenceTypes()
+        loadAssignableCollaborators()
+    }
+
+    private fun loadAssignableCollaborators() {
+        viewModelScope.launch {
+            getCollaboratorsUseCase().collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        _uiState.update { it.copy(assignableCollaborators = result.data) }
+                    }
+                    is Result.Error -> {
+                        println("Error loading collaborators: ${result.exception.message}")
+                    }
+                    else -> {}
+                }
+            }
+        }
     }
 
     private fun loadHelpTypes() {
@@ -157,6 +178,39 @@ constructor(
                             state.copy(
                                 isLoading = false,
                                 error = "No fue posible cerrar el caso.",
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun assignCollaborators(caseId: String, newIds: List<String>) {
+        if (newIds.isEmpty()) return
+        viewModelScope.launch {
+            assignCollaboratorsToCaseUseCase(caseId, newIds).collect { result ->
+                _uiState.update { state ->
+                    when (result) {
+                        is Result.Loading -> {
+                            state.copy(
+                                isAssigningCollaborators = true,
+                                assignCollaboratorsError = null,
+                            )
+                        }
+
+                        is Result.Success -> {
+                            state.copy(
+                                isAssigningCollaborators = false,
+                                assignCollaboratorsError = null,
+                                assignedCollaboratorIds = state.assignedCollaboratorIds + newIds,
+                            )
+                        }
+
+                        is Result.Error -> {
+                            state.copy(
+                                isAssigningCollaborators = false,
+                                assignCollaboratorsError = "No fue posible guardar las encargadas asignadas.",
                             )
                         }
                     }
