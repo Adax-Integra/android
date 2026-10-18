@@ -24,6 +24,7 @@ fun AdminScreen(
     onManageExpedientsClick: () -> Unit,
     modifier: Modifier = Modifier,
     onAuditLogClick: () -> Unit = {},
+    onManageExternalUsersClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -50,10 +51,19 @@ fun AdminScreen(
             onClick = onManageUsersClick,
         )
 
+        // G-16: list of every external account registered in the system
         MenuOptionCard(
-            title = "Gestionar expedientes",
-            subtitle = "Administra y crea las cuentas de las usuarias externas.",
+            title = "Gestión de externas",
+            subtitle = "Consulta las cuentas de las usuarias externas registradas.",
             icon = AppIcons.Profile,
+            onClick = onManageExternalUsersClick,
+        )
+
+        // Opens the records menu (cases, records and reports), same icon as the "Expedientes" tab
+        MenuOptionCard(
+            title = "Expedientes y casos",
+            subtitle = "Consulta los expedientes, casos y reportes de las usuarias externas.",
+            icon = AppIcons.Folder,
             onClick = onManageExpedientsClick,
         )
 

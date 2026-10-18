@@ -2,9 +2,12 @@ package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.remote.api.RecordApi
+import com.example.adaxintegra.data.remote.dto.UpdateExpedientStatusRequestDto
 import com.example.adaxintegra.domain.entities.RecordPage
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.RecordRepository
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class RecordRepositoryImpl @Inject constructor(
@@ -13,7 +16,8 @@ class RecordRepositoryImpl @Inject constructor(
 ) : RecordRepository {
 
     // Reads the current session token for each request
-    private fun authorizationHeader(): String {
+    private suspend fun authorizationHeader(): String {
+        val session = authRepository.session.filterNotNull().first()
         val token = authRepository.session.value?.token
 
         if (token.isNullOrBlank()) {
@@ -45,5 +49,18 @@ class RecordRepositoryImpl @Inject constructor(
 
         // Preserve the backend filter, order and pagination
         return response.data.toDomain()
+    }
+
+    suspend fun updateRecordStatus(recordId: String, status: String) {
+        val request = UpdateExpedientStatusRequestDto(status = status)
+        val response = api.updateRecordStatus(
+            recordId = recordId,
+            authorization = authorizationHeader(),
+            body = request
+        )
+
+        if (!response.success) {
+            throw IllegalStateException(response.message ?: "No se pudo actualizar el estatus.")
+        }
     }
 }
