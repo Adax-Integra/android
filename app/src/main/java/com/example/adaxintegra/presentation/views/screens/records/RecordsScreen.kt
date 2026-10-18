@@ -60,6 +60,11 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwi
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
@@ -74,11 +79,24 @@ fun RecordsScreen(
     onRetry: () -> Unit,
     onNextPage: () -> Unit,
     onPreviousPage: () -> Unit,
-    onRecordClick: (String) -> Unit,
+    onRecordClick: (recordId: String, userId: String, status: String) -> Unit,
     onRegisterRecordClick: () -> Unit,
     onRefresh: () -> Unit = {},
 ) {
     val spacing = Spacing()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                onRefresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
@@ -318,7 +336,7 @@ fun RecordsScreen(
                                 RecordCard(
                                     record = record,
                                     // V-10 receives the selected owner's ID.
-                                    onClick = { onRecordClick(record.userId) },
+                                    onClick = { onRecordClick(record.recordId, record.userId, record.status) },
                                 )
                             }
                         }

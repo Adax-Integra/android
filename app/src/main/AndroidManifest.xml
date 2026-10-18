@@ -9,8 +9,8 @@
          android:networkSecurityConfig="@xml/network_security_config" -->
     <application
         android:name=".AdaxApplication"
-        android:usesCleartextTraffic="false"
-        android:allowBackup="false"
+        android:usesCleartextTraffic="true"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"

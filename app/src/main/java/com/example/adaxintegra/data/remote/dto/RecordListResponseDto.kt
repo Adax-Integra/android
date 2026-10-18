@@ -18,22 +18,22 @@ data class RecordListDataDto(
 
 // maps API field names to Kotlin naming conventions
 data class RecordListItemDto(
-    @SerializedName("record_id")
+    @SerializedName(value = "id", alternate = ["record_id", "recordId"])
     val recordId: String,
 
-    @SerializedName("user_id")
+    @SerializedName(value = "user_id", alternate = ["userId"])
     val userId: String,
 
     val name: String,
 
-    @SerializedName("record_number")
-    val recordNumber: String?,
+    @SerializedName(value = "record_number", alternate = ["recordNumber"])
+    val recordNumber: String? = null,
 
     val status: String,
 
-    @SerializedName("active_cases_count")
-    val activeCasesCount: Int,
+    @SerializedName(value = "active_cases_count", alternate = ["activeCasesCount"])
+    val activeCasesCount: Int = 0,
 
-    @SerializedName("updated_at")
-    val updatedAt: String?,
+    @SerializedName(value = "updated_at", alternate = ["updatedAt"])
+    val updatedAt: String? = null,
 )
