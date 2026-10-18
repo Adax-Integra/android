@@ -48,7 +48,7 @@ fun ChangeStatusBottomSheet(
     onSaveStatus: (ExpedientStatus) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedStatus by remember { mutableStateOf(currentStatus) }
+    var selectedStatus by remember(currentStatus) { mutableStateOf(currentStatus) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -78,10 +78,12 @@ fun ChangeStatusBottomSheet(
             Spacer(modifier = Modifier.height(4.dp))
 
             ExpedientStatus.entries.forEach { option ->
-                val isAllowed = currentStatus.isTransitionAllowedTo(option) &&
-                    !(currentStatus == ExpedientStatus.UNDER_REVIEW && option == ExpedientStatus.COMPLETED)
-
                 val isSelected = selectedStatus == option
+                val isCurrent = option == currentStatus
+                val isAllowed = isCurrent || (
+                    currentStatus.isTransitionAllowedTo(option) &&
+                        !(currentStatus == ExpedientStatus.UNDER_REVIEW && option == ExpedientStatus.COMPLETED)
+                    )
 
                 val borderColor = when {
                     isSelected -> MaterialTheme.colorScheme.primary
@@ -157,7 +159,13 @@ fun ChangeStatusBottomSheet(
                 }
 
                 Button(
-                    onClick = { onSaveStatus(selectedStatus) },
+                    onClick = {
+                        if (selectedStatus == currentStatus) {
+                            onDismiss()
+                        } else {
+                            onSaveStatus(selectedStatus)
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),

@@ -24,9 +24,19 @@ enum class ExpedientStatus(
     }
 
     companion object {
-        fun fromLabel(label: String): ExpedientStatus {
-            return entries.firstOrNull { it.label.equals(label, ignoreCase = true) }
-                ?: NOT_STARTED
+        fun fromLabel(label: String): ExpedientStatus = from(label)
+
+        fun from(value: String?): ExpedientStatus {
+            if (value.isNullOrBlank()) return NOT_STARTED
+            val cleanValue = value.trim()
+
+            return entries.firstOrNull { status ->
+                status.code.equals(cleanValue, ignoreCase = true) ||
+                    status.label.equals(cleanValue, ignoreCase = true) ||
+                    status.name.equals(cleanValue, ignoreCase = true) ||
+                    status.code.replace("_", " ").equals(cleanValue.replace("_", " "), ignoreCase = true) ||
+                    status.name.replace("_", " ").equals(cleanValue.replace("_", " "), ignoreCase = true)
+            } ?: NOT_STARTED
         }
     }
 }

@@ -89,7 +89,6 @@ fun RecordFromUserContent(
     // Right now the name doesn't get through correctly because it is a hard coded UserID
     // When implementing V-05 it should pass the name correctly
     val userName = uiState.cases.firstOrNull()?.name ?: "Usuario"
-    var currentStatus by remember { mutableStateOf(ExpedientStatus.FOLLOWING) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
     ScreenTemplate(
@@ -124,12 +123,13 @@ fun RecordFromUserContent(
         if (showBottomSheet) {
             ChangeStatusBottomSheet(
                 userName = userName,
-                currentStatus = currentStatus,
+                currentStatus = uiState.currentStatus,
                 onDismiss = { showBottomSheet = false },
                 onSaveStatus = { selectedStatus ->
-                    currentStatus = selectedStatus
-                    onStatusChange(selectedStatus)
                     showBottomSheet = false
+                    if (selectedStatus != uiState.currentStatus) {
+                        onStatusChange(selectedStatus)
+                    }
                 }
             )
         }
