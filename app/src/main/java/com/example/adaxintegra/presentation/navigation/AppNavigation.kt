@@ -64,6 +64,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CreateCaseScreen
 import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScreen
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
+import com.example.adaxintegra.presentation.views.screens.events.CreateEvent
 import com.example.adaxintegra.presentation.views.screens.events.EventDetailScreen
 import com.example.adaxintegra.presentation.views.screens.events.EventsScreen
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
@@ -248,7 +249,8 @@ fun AppNavigation(
 
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
-                            currentRoute.startsWith("eventDetail") -> "home"
+                            currentRoute.startsWith("eventDetail") ||
+                            currentRoute.startsWith("createEvent") -> "home"
 
                         else -> currentRoute
                     }
@@ -666,7 +668,23 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onCreateEvent = {
+                            navController.navigate("createEvent") {
+                                launchSingleTop = true
+                            }
+                        },
                         canCreateEvent = !isExternal,
+                    )
+                }
+            }
+
+            // E-01: create a new event
+            composable("createEvent") {
+                if (hasValidSession && !isExternal) {
+                    CreateEvent(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
                     )
                 }
             }
