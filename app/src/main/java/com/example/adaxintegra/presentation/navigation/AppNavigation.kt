@@ -411,6 +411,8 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
+                            onEventClick = {},
+                            onSeeAllEventsClick = {},
                         )
                     } else {
                         InternalHomeScreen(
@@ -425,6 +427,8 @@ fun AppNavigation(
                                     launchSingleTop = true
                                 }
                             },
+                            onEventClick = {},
+                            onSeeAllEventsClick = {},
                         )
                     }
                 }

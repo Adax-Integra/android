@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.entities.Record
+import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.presentation.viewmodel.EventsUiState
+import com.example.adaxintegra.presentation.viewmodel.EventsViewModel
 import com.example.adaxintegra.presentation.viewmodel.InternalHomeUiState
 import com.example.adaxintegra.presentation.viewmodel.InternalHomeViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
@@ -39,6 +42,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.EventsCarousel
 
 // NV-04: home of the internal and admin users, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -46,22 +50,36 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordC
 fun InternalHomeScreen(
     onRecordClick: (String) -> Unit,
     onSeeAllRecordsClick: () -> Unit,
+    onEventClick: (String) -> Unit,
+    onSeeAllEventsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: InternalHomeViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.uiState.collectAsStateWithLifecycle()
 
     // Reloaded on every entry, so a record updated elsewhere moves to the top
     LaunchedEffect(Unit) {
         viewModel.loadHome()
+        // E-01: the carousel only shows the events of the current month
+        eventsViewModel.loadEvents(EventScope.MONTH)
     }
 
     InternalHomeContent(
         uiState = uiState,
+        eventsState = eventsState,
         onRecordClick = onRecordClick,
         onSeeAllRecordsClick = onSeeAllRecordsClick,
+        onEventClick = onEventClick,
+        onSeeAllEventsClick = onSeeAllEventsClick,
         onRetry = viewModel::loadRecentRecords,
-        onRefresh = viewModel::refresh,
+        onRetryEvents = eventsViewModel::loadEvents,
+        // Pulling the home down reloads the records and the events together
+        onRefresh = {
+            viewModel.refresh()
+            eventsViewModel.refresh()
+        },
         modifier = modifier,
     )
 }
@@ -71,9 +89,13 @@ fun InternalHomeScreen(
 @Composable
 fun InternalHomeContent(
     uiState: InternalHomeUiState,
+    eventsState: EventsUiState,
     onRecordClick: (String) -> Unit,
     onSeeAllRecordsClick: () -> Unit,
+    onEventClick: (String) -> Unit,
+    onSeeAllEventsClick: () -> Unit,
     onRetry: () -> Unit,
+    onRetryEvents: () -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -89,7 +111,7 @@ fun InternalHomeContent(
     }
 
     PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing,
+        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier.fillMaxSize(),
     ) {
@@ -181,10 +203,12 @@ fun InternalHomeContent(
                 }
             }
 
-            SectionTitle(text = "Eventos")
-
-            // NV-04: events are implemented in another user story, the section stays empty for now
-            Spacer(modifier = Modifier.height(spacing.extraLarge))
+            EventsCarousel(
+                uiState = eventsState,
+                onSeeAllClick = onSeeAllEventsClick,
+                onEventClick = onEventClick,
+                onRetry = onRetryEvents,
+            )
 
             SectionTitle(text = "Podcast")
 
@@ -226,9 +250,13 @@ fun InternalHomeContentPreview() {
                 ),
             ),
         ),
+        eventsState = EventsUiState(),
         onRecordClick = {},
         onSeeAllRecordsClick = {},
+        onEventClick = {},
+        onSeeAllEventsClick = {},
         onRetry = {},
+        onRetryEvents = {},
         onRefresh = {},
     )
 }
