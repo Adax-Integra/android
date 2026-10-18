@@ -8,5 +8,5 @@ interface EventRepository {
     suspend fun getEvents(scope: EventScope): List<Event>
 
     //disable an event
-    suspend fun diableEvent(eventId: String)
+    suspend fun disableEvent(eventId: String)
 }
