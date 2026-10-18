@@ -698,33 +698,36 @@ fun AppNavigation(
             }
 
             composable("profile") {
-                ProfileScreen(
-                    onPersonalDataClick = { navController.navigate("editProfile") {
-                        launchSingleTop = true
-                    }
-                                          },
-                    onUploadDocumentsClick = {
-                        if (hasValidSession && isExternal) {
-                            navController.navigate("uploadDocuments") {
+                if (hasValidSession) {
+                    ProfileScreen(
+                        onPersonalDataClick = {
+                            navController.navigate("editProfile") {
                                 launchSingleTop = true
                             }
-                        }
-                    },
-                    isExternal = isExternal,
-                    onSecurityClick = {
-                        navController.navigate("changePassword") {
-                            launchSingleTop = true
-                        }
-                    },
-                    onLogoutClick = viewModel::logout,
-                    isAdmin = isAdmin,
-                    onManageCollaboratorsClick = {
-                        navController.navigate("collaborators") {
-                            launchSingleTop = true
-                        }
-                    },
-                    viewModel = hiltViewModel(),
-                )
+                        },
+                        onUploadDocumentsClick = {
+                            if (hasValidSession && isExternal) {
+                                navController.navigate("uploadDocuments") {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        isExternal = isExternal,
+                        onSecurityClick = {
+                            navController.navigate("changePassword") {
+                                launchSingleTop = true
+                            }
+                        },
+                        onLogoutClick = viewModel::logout,
+                        isAdmin = isAdmin,
+                        onManageCollaboratorsClick = {
+                            navController.navigate("collaborators") {
+                                launchSingleTop = true
+                            }
+                        },
+                        viewModel = hiltViewModel(),
+                    )
+                }
             }
 
             composable("uploadDocuments") {
