@@ -487,8 +487,13 @@ private fun RecordsScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
+<<<<<<< Updated upstream
             onRecordClick = {},
             onRegisterRecordClick = {}
+=======
+            onRecordClick = { _, _, _ -> },
+            onRegisterRecordClick = {},
+>>>>>>> Stashed changes
         )
     }
 }
