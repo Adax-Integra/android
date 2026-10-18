@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,7 +26,10 @@ import com.example.adaxintegra.presentation.viewmodel.NewEventUiState
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AppDatePickerDialog
 import com.example.adaxintegra.presentation.views.designsystem.molecules.AppTimePickerDialog
 import com.example.adaxintegra.presentation.views.designsystem.molecules.DateField
+import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledDropdownField
+import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextArea
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.TimeField
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
@@ -45,6 +49,13 @@ fun CreateEvent(
     onEndDateSelected: (Calendar) -> Unit = {},
     onStartTimeSelected: (LocalTime) -> Unit = {},
     onEndTimeSelected: (LocalTime) -> Unit = {},
+    onModalityChange: (String) -> Unit = {},
+    onLocationChange: (String) -> Unit = {},
+    onLinkChange: (String) -> Unit = {},
+    onPhoneChange: (String) -> Unit = {},
+    onCountryCodeChange: (String) -> Unit = {},
+    onDescriptionChange: (String) -> Unit = {},
+    onNotesChange: (String) -> Unit = {},
 ) {
     // To know if it needs to show the start date
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -54,11 +65,19 @@ fun CreateEvent(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
 
-    // Local state variables for dates and times
+    // Local state variables for dates, times, modality, location, link, phone, description, notes
     var localStartDate by remember { mutableStateOf<Calendar?>(null) }
     var localEndDate by remember { mutableStateOf<Calendar?>(null) }
     var localStartTime by remember { mutableStateOf<LocalTime?>(null) }
     var localEndTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    var localModality by remember { mutableStateOf("") }
+    var localLocation by remember { mutableStateOf("") }
+    var localLink by remember { mutableStateOf("") }
+    var localPhone by remember { mutableStateOf("") }
+    var localCountryCode by remember { mutableStateOf("+52") }
+    var localDescription by remember { mutableStateOf("") }
+    var localNotes by remember { mutableStateOf("") }
 
     val startDateCalendar = uiState.startDate?.let { instant ->
         Calendar.getInstance().apply { timeInMillis = instant.toEpochMilli() }
@@ -72,6 +91,14 @@ fun CreateEvent(
 
     val endTimeLocal = uiState.endTime?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: localEndTime
 
+    val currentModality = uiState.modality.ifEmpty { localModality }
+    val currentLocation = uiState.location.ifEmpty { localLocation }
+    val currentLink = uiState.link.ifEmpty { localLink }
+    val currentPhone = uiState.phone.ifEmpty { localPhone }
+    val currentCountryCode = uiState.countryCode.ifEmpty { localCountryCode }
+    val currentDescription = uiState.description.ifEmpty { localDescription }
+    val currentNotes = uiState.notes.ifEmpty { localNotes }
+
     ScreenTemplate(
         title = "Nuevo evento",
         error = uiState.error,
@@ -83,6 +110,7 @@ fun CreateEvent(
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -142,6 +170,92 @@ fun CreateEvent(
                     modifier = Modifier.weight(1f),
                 )
             }
+
+            // Dropdown "Modalidad"
+            LabeledDropdownField(
+                label = "Modalidad",
+                selectedOption = currentModality.ifEmpty { null },
+                options = listOf("Presencial", "Virtual", "Mixto"),
+                onOptionSelected = {
+                    localModality = it
+                    onModalityChange(it)
+                },
+                placeholder = "Presencial",
+                error = uiState.modalityError,
+            )
+
+            // Field "Lugar"
+            LabeledTextField(
+                label = "Lugar",
+                value = currentLocation,
+                onValueChange = {
+                    localLocation = it
+                    onLocationChange(it)
+                },
+                placeholder = "Ej. Oficinas ADAX",
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                errorMessage = uiState.locationError,
+            )
+
+            // Field "Link (opcional)"
+            LabeledTextField(
+                label = "Link (opcional)",
+                value = currentLink,
+                onValueChange = {
+                    localLink = it
+                    onLinkChange(it)
+                },
+                placeholder = "https://meet.google.com/...",
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                errorMessage = uiState.linkError,
+            )
+
+            // Field "Teléfono (opcional)"
+            PhoneField(
+                label = "Teléfono (opcional)",
+                countryCode = currentCountryCode,
+                phoneValue = currentPhone,
+                onPhoneChange = {
+                    localPhone = it
+                    onPhoneChange(it)
+                },
+                onCountryCodeChange = {
+                    localCountryCode = it
+                    onCountryCodeChange(it)
+                },
+                placeholder = "55 1234 5678",
+                errorMessage = uiState.phoneError,
+            )
+
+            // Field "Descripción"
+            LabeledTextArea(
+                label = "Descripción",
+                value = currentDescription,
+                onValueChange = {
+                    localDescription = it
+                    onDescriptionChange(it)
+                },
+                placeholder = "Describe el evento...",
+                maxLength = 500,
+                minLines = 4,
+                error = uiState.descriptionError,
+            )
+
+            // Field "Notas (opcional)"
+            LabeledTextArea(
+                label = "Notas (opcional)",
+                value = currentNotes,
+                onValueChange = {
+                    localNotes = it
+                    onNotesChange(it)
+                },
+                placeholder = "Escribe notas adicionales...",
+                maxLength = 500,
+                minLines = 4,
+                error = uiState.notesError,
+            )
         }
 
         // Dialog for Start Date

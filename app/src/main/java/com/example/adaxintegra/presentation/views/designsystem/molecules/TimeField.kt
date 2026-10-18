@@ -20,6 +20,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -32,7 +33,7 @@ fun TimeField(
     errorMessage: String? = null,
 ) {
     val displayValue = if (value != null) {
-        value.format(DateTimeFormatter.ofPattern("HH:mm"))
+        value.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
     } else {
         ""
     }

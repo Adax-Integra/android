@@ -29,7 +29,7 @@ fun AppTimePickerDialog(
     title: String = "Selecciona una hora",
     initialHour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
     initialMinute: Int = Calendar.getInstance().get(Calendar.MINUTE),
-    is24Hour: Boolean = true,
+    is24Hour: Boolean = false,
 ) {
     val timePickerState = rememberTimePickerState(
         initialHour = initialHour,
