@@ -36,6 +36,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,6 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.adaxintegra.domain.entities.Record
 import com.example.adaxintegra.presentation.model.RecordStatusUi
 import com.example.adaxintegra.presentation.viewmodel.RecordsUiState
@@ -60,11 +64,6 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwi
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.DisposableEffect
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("ktlint:standard:function-naming")
@@ -276,7 +275,10 @@ fun RecordsScreen(
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
+                            verticalArrangement = Arrangement.spacedBy(
+                                spacing.small,
+                                Alignment.CenterVertically
+                            ),
                         ) {
                             Text(
                                 text = uiState.error,
@@ -296,7 +298,10 @@ fun RecordsScreen(
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterVertically),
+                            verticalArrangement = Arrangement.spacedBy(
+                                spacing.small,
+                                Alignment.CenterVertically
+                            ),
                         ) {
                             Text(
                                 text = when {
@@ -336,7 +341,13 @@ fun RecordsScreen(
                                 RecordCard(
                                     record = record,
                                     // V-10 receives the selected owner's ID.
-                                    onClick = { onRecordClick(record.recordId, record.userId, record.status) },
+                                    onClick = {
+                                        onRecordClick(
+                                            record.recordId,
+                                            record.userId,
+                                            record.status
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -513,7 +524,7 @@ private fun RecordsScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
-            onRecordClick = {},
+            onRecordClick = { _, _, _ -> },
             onRegisterRecordClick = {},
         )
     }
