@@ -57,6 +57,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScree
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ExternalUserDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ExternalUsersScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -229,7 +230,8 @@ fun AppNavigation(
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
                             currentRoute == "externalUsers" ||
-                            currentRoute.startsWith("collaboratorDetail") -> "admin"
+                            currentRoute.startsWith("collaboratorDetail") ||
+                            currentRoute.startsWith("externalUserDetail") -> "admin"
 
                         currentRoute.startsWith("case/") -> {
                             if (isExternal) "cases" else "records"
@@ -972,6 +974,11 @@ fun AppNavigation(
             composable("externalUsers") {
                 if (hasValidSession && isAdmin) {
                     ExternalUsersScreen(
+                        onExternalUserClick = { userId ->
+                            navController.navigate("externalUserDetail/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                         onBack = {
                             navController.popBackStack()
                         },
@@ -981,6 +988,22 @@ fun AppNavigation(
                 }
             }
 
+            // G-07: admin consults and edits an external user's profile
+            composable("externalUserDetail/{userId}") { entry ->
+                if (hasValidSession && isAdmin) {
+                    val userId = entry.arguments?.getString("userId")
+                    if (!userId.isNullOrBlank()) {
+                        ExternalUserDetailScreen(
+                            userId = userId,
+                            onBack = { navController.popBackStack() },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la externa")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
             // V-06: admin consults the activity log
             composable("activityLog") {
                 if (hasValidSession && isAdmin) {
