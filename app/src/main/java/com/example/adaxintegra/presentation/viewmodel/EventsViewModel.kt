@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okio.IOException
+import java.io.IOException
 import retrofit2.HttpException
 import javax.inject.Inject
 import com.example.adaxintegra.domain.common.Result
