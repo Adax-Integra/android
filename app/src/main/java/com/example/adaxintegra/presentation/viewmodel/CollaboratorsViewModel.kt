@@ -54,16 +54,32 @@ class CollaboratorsViewModel @Inject constructor(
         }
     }
 
+    // A new search or filter starts again from the first page
     fun onSearchQueryChange(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+        _uiState.update { it.copy(searchQuery = query, page = 1) }
     }
 
     fun applyStatusFilter(filter: CollaboratorStatusFilter) {
-        _uiState.update { it.copy(statusFilter = filter) }
+        _uiState.update { it.copy(statusFilter = filter, page = 1) }
     }
 
     fun clearStatusFilter() {
         applyStatusFilter(CollaboratorStatusFilter.ALL)
+    }
+
+    // G-06: the pages are calculated in the app because the backend sends the whole list
+    fun nextPage() {
+        val state = _uiState.value
+        if (state.canGoNext) {
+            _uiState.update { it.copy(page = state.currentPage + 1) }
+        }
+    }
+
+    fun previousPage() {
+        val state = _uiState.value
+        if (state.canGoBack) {
+            _uiState.update { it.copy(page = state.currentPage - 1) }
+        }
     }
 
     private fun errorMessage(e: Throwable): String = when {
