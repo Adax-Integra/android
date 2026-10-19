@@ -14,6 +14,9 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -22,17 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.entities.Case
+import com.example.adaxintegra.domain.entities.ExpedientStatus
 import com.example.adaxintegra.presentation.viewmodel.CasesFromUserUiState
 import com.example.adaxintegra.presentation.viewmodel.CasesFromUserViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.CaseCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.ExpedientStatusCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.ChangeStatusBottomSheet
 import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun RecordFromUser(
+    recordId: String,
     userId: String,
     viewModel: CasesFromUserViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
@@ -52,6 +59,12 @@ fun RecordFromUser(
         onCaseClick = onCaseClick,
         onCreateCaseClick = onCreateCaseClick,
         onDocumentsClick = onDocumentsClick,
+        onStatusChange = { newStatus ->
+            viewModel.updateStatus(
+                recordId = recordId,
+                newStatus = newStatus
+            )
+        }
     )
 }
 
@@ -63,8 +76,12 @@ fun RecordFromUserContent(
     onCaseClick: (String) -> Unit = {},
     onCreateCaseClick: () -> Unit = {},
     onDocumentsClick: () -> Unit = {},
+    onStatusChange: (ExpedientStatus) -> Unit = {}
 ) {
+    // Right now the name doesn't get through correctly because it is a hard coded UserID
+    // When implementing V-05 it should pass the name correctly
     val userName = uiState.cases.firstOrNull()?.name ?: "Usuario"
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     ScreenTemplate(
         title = "Casos de $userName",
@@ -84,6 +101,11 @@ fun RecordFromUserContent(
                 title = "Documentos",
                 subtitle = "INE y comprobante de domicilio",
                 onClick = onDocumentsClick,
+            )
+
+            ExpedientStatusCard(
+                currentStatus = uiState.currentStatus,
+                onEditClick = { showBottomSheet = true }
             )
 
             AppButton(
@@ -123,6 +145,20 @@ fun RecordFromUserContent(
                 }
             }
         }
+
+        if (showBottomSheet) {
+            ChangeStatusBottomSheet(
+                userName = userName,
+                currentStatus = uiState.currentStatus,
+                onDismiss = { showBottomSheet = false },
+                onSaveStatus = { selectedStatus ->
+                    showBottomSheet = false
+                    if (selectedStatus != uiState.currentStatus) {
+                        onStatusChange(selectedStatus)
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -148,4 +184,3 @@ private fun RecordFromUserEmptyPreview() {
         ),
     )
 }
-

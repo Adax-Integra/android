@@ -12,6 +12,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PATCH
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -36,6 +37,14 @@ interface EventApi {
     @POST("api/events")
     suspend fun createEvent(
         @Header("Authorization") authorization: String,
+        @Body request: CreateEventRequestDto,
+    ): CreateEventResponseDto
+
+    // E-02: internal/admin edit an event. The body has the same fields as creating it
+    @PUT("api/events/{eventId}")
+    suspend fun updateEvent(
+        @Header("Authorization") authorization: String,
+        @Path("eventId") eventId: String,
         @Body request: CreateEventRequestDto,
     ): CreateEventResponseDto
 

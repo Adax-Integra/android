@@ -3,18 +3,16 @@ package com.example.adaxintegra.presentation.views.screens.admin
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,6 +30,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyl
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PageSwitcher
 import com.example.adaxintegra.presentation.views.designsystem.molecules.SearchBar
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ActivityLogFilterDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ActivityLogTimelineItem
@@ -71,16 +70,19 @@ fun ActivityLogScreen(
     val spacing = Spacing()
     val entries = uiState.visibleEntries
 
+    // V-06: the page card is only shown when there is more than one page
+    val showPagination = !uiState.isLoading && uiState.lastPage > 1
+
+    // Same template and padding as the other lists
     ScreenTemplate(
         title = "Bitácora de cambios",
         subtitle = "Movimientos realizados en la aplicación",
         onBack = onBack,
-        modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = spacing.small),
+                .padding(spacing.medium),
             verticalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
             // Search box and Filtrar button.
@@ -100,6 +102,7 @@ fun ActivityLogScreen(
                     variant = ButtonVariant.Outlined,
                 )
             }
+
             // Active date filter, with the option to remove it
             if (uiState.hasDateFilter) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -115,100 +118,90 @@ fun ActivityLogScreen(
                     }
                 }
             }
-            when {
-                uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator(color = Purple)
-                    }
-                }
-                // The first page could not be loaded
-                uiState.error != null && uiState.entries.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
-                    ) {
-                        Text(text = uiState.error ?: "", style = AppTextStyle.BodyMedium)
-                        AppButton(text = "Reintentar", onClick = viewModel::loadFirstPage)
-                    }
-                }
-                entries.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = emptyText(uiState.searchQuery, uiState.hasDateFilter),
-                            style = AppTextStyle.BodyMedium,
-                            color = IconGrey,
-                        )
-                    }
-                }
-                else -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(entries) { index, entry ->
-                            // Date header when the day changes ("Hoy", "Ayer" or the date)
-                            val previous = if (index > 0) entries[index - 1] else null
-                            if (previous == null || !DateFormatter.isSameDay(previous.createdAt, entry.createdAt)) {
-                                Text(
-                                    text = DateFormatter.dayLabel(entry.createdAt),
-                                    style = AppTextStyle.LabelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = IconGrey,
-                                    modifier = Modifier.padding(top = spacing.small, bottom = spacing.extraSmall),
-                                )
-                            }
-                            ActivityLogTimelineItem(entry = entry)
-                            // The next page is requested when the last entry appears
-                            if (index == entries.lastIndex) {
-                                LaunchedEffect(entries.size) {
-                                    viewModel.loadNextPage()
-                                }
-                            }
+
+            // The list takes the free space and the page card floats over its bottom
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(color = Purple)
                         }
-                        if (uiState.isLoadingMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(spacing.medium),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = Purple,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                }
-                            }
+                    }
+
+                    // The page could not be loaded
+                    uiState.error != null -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
+                        ) {
+                            Text(text = uiState.error ?: "", style = AppTextStyle.BodyMedium)
+                            AppButton(text = "Reintentar", onClick = viewModel::retry)
                         }
-                        // Error while loading more pages: the list stays visible
-                        if (uiState.error != null) {
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(spacing.medium),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
+                    }
+
+                    entries.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = emptyText(uiState.searchQuery, uiState.hasDateFilter),
+                                style = AppTextStyle.BodyMedium,
+                                color = IconGrey,
+                            )
+                        }
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            // Space so the last entry is not hidden behind the page card
+                            contentPadding = PaddingValues(
+                                bottom = if (showPagination) 76.dp else spacing.medium,
+                            ),
+                        ) {
+                            itemsIndexed(entries) { index, entry ->
+                                // Date header when the day changes ("Hoy", "Ayer" or the date)
+                                val previous = if (index > 0) entries[index - 1] else null
+                                if (previous == null || !DateFormatter.isSameDay(previous.createdAt, entry.createdAt)) {
                                     Text(
-                                        text = uiState.error ?: "",
+                                        text = DateFormatter.dayLabel(entry.createdAt),
                                         style = AppTextStyle.LabelMedium,
-                                        color = MaterialTheme.colorScheme.error,
+                                        fontWeight = FontWeight.Bold,
+                                        color = IconGrey,
+                                        modifier = Modifier.padding(top = spacing.small, bottom = spacing.extraSmall),
                                     )
-                                    TextButton(onClick = viewModel::loadNextPage) {
-                                        Text(text = "Reintentar", color = Purple, fontWeight = FontWeight.Bold)
-                                    }
                                 }
+                                ActivityLogTimelineItem(entry = entry)
                             }
                         }
                     }
+                }
+
+                // V-06: pages of 10 entries, same floating card as the other lists
+                if (showPagination) {
+                    PageSwitcher(
+                        page = uiState.page,
+                        totalPages = uiState.lastPage,
+                        canGoBack = uiState.canGoBack,
+                        canGoNext = uiState.canGoNext,
+                        onPreviousPage = viewModel::previousPage,
+                        onNextPage = viewModel::nextPage,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
                 }
             }
         }
     }
+
     if (showFilterDialog) {
         ActivityLogFilterDialog(
             initialFrom = uiState.fromDate,

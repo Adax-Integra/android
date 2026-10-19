@@ -9,6 +9,7 @@ import com.example.adaxintegra.domain.usecases.CloseCaseUseCase
 import com.example.adaxintegra.domain.usecases.GetCaseDetailUseCase
 import com.example.adaxintegra.domain.usecases.GetHelpTypesUseCase
 import com.example.adaxintegra.domain.usecases.GetViolenceTypesUseCase
+import com.example.adaxintegra.domain.usecases.UpdateCaseStepUseCase
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ constructor(
     private val assignHelpsToCaseUseCase: AssignHelpsToCaseUseCase,
     private val getViolenceTypesUseCase: GetViolenceTypesUseCase,
     private val assignViolenceToCaseUseCase: AssignViolenceToCaseUseCase,
+    private val updateCaseStepUseCase: UpdateCaseStepUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CaseDetailUiState())
     val uiState: StateFlow<CaseDetailUiState> = _uiState.asStateFlow()
@@ -232,6 +234,45 @@ constructor(
                 // If the request was successful, refresh the case detail
                 if (result is Result.Success) {
                     refresh(caseId)
+                }
+            }
+        }
+    }
+
+    //updates case step
+    fun updateCaseStep(caseId: String, stepNumber: Int) {
+        if (_uiState.value.isUpdatingStep) return
+
+        viewModelScope.launch {
+            updateCaseStepUseCase(caseId, stepNumber).collect { result ->
+                _uiState.update { state ->
+                    when (result) {
+                        is Result.Loading -> {
+                            state.copy(
+                                isUpdatingStep = true,
+                                updateStepSuccess = false,
+                                updateStepError = null,
+                            )
+                        }
+
+                        is Result.Success -> {
+                            state.copy(
+                                case = result.data,
+                                isUpdatingStep = false,
+                                updateStepSuccess = true,
+                                updateStepError = null,
+                            )
+                        }
+
+                        is Result.Error -> {
+                            state.copy(
+                                isUpdatingStep = false,
+                                updateStepSuccess = false,
+                                updateStepError =
+                                    "No se pudo actualizar el progreso del caso.",
+                            )
+                        }
+                    }
                 }
             }
         }
