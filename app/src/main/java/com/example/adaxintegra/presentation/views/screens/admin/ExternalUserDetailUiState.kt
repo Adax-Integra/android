@@ -180,6 +180,9 @@ data class ExternalUserDetailUiState(
         }
 }
 
+// Emails are compared and sent without spaces and in lowercase
+fun cleanEmail(email: String): String = email.trim().lowercase()
+
 // Empty values are shown as "Sin dato"
 fun displayValue(value: String?): String = value?.trim()?.takeIf { it.isNotEmpty() } ?: EMPTY_VALUE
 
