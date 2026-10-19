@@ -26,10 +26,14 @@ data class CaseDetailDto(
     val case_assignment: List<CaseDetailAssignmentDto>? = null,
 )
 
+// R-12: the case detail sends only the user_id of each assigned collaborator,
+// the backend already leaves out the removed ones. user stays optional in case
+// the names are added later
 data class CaseDetailAssignmentDto(
-    val deleted_at: String? = null,
+    val user_id: String? = null,
     val user: CaseDetailUserDto? = null,
 )
+
 // record information associated with the selected case
 data class CaseDetailRecordDto(
     val record_id: String? = null,
