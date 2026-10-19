@@ -36,4 +36,8 @@ data class NewEventUiState(
     val isSuccess: Boolean = false,
     val toastMessage: String? = null,
     val error: String? = null,
+    // E-02: true when the form opens an existing event to edit it
+    val isEditing: Boolean = false,
+    // E-02: image the event already has, shown until a new one is picked
+    val currentImageUrl: String? = null,
 )

@@ -1,14 +1,19 @@
 package com.example.adaxintegra.presentation.viewmodel
 
 import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.common.Result as DomainResult
 import com.example.adaxintegra.domain.model.Event
+import com.example.adaxintegra.domain.model.EventScope
 import com.example.adaxintegra.domain.usecases.CreateEventUseCase
+import com.example.adaxintegra.domain.usecases.GetEventsUseCase
+import com.example.adaxintegra.domain.usecases.UpdateEventUseCase
 import com.example.adaxintegra.domain.usecases.UploadEventImageUseCase
 import com.example.adaxintegra.presentation.util.DocumentImageEncoder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,13 +31,26 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewEventViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val createEventUseCase: CreateEventUseCase,
+    private val updateEventUseCase: UpdateEventUseCase,
+    private val getEventsUseCase: GetEventsUseCase,
     private val uploadEventImageUseCase: UploadEventImageUseCase,
     private val documentImageEncoder: DocumentImageEncoder,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(NewEventUiState())
+    // E-02: the "editEvent/{eventId}" route sends the id, "createEvent" does not
+    private val editingEventId: String? = savedStateHandle.get<String>("eventId")
+
+    // E-02: event as it was loaded, its id and image are kept when saving
+    private var originalEvent: Event? = null
+
+    private val _uiState = MutableStateFlow(NewEventUiState(isEditing = editingEventId != null))
     val uiState: StateFlow<NewEventUiState> = _uiState.asStateFlow()
+
+    init {
+        editingEventId?.let { loadEvent(it) }
+    }
 
     fun onTitleChange(title: String) {
         _uiState.update {
@@ -187,7 +205,73 @@ class NewEventViewModel @Inject constructor(
         }
     }
 
-    fun createEvent() {
+    // E-02: there is no endpoint for one event, so it is searched in the active ones
+    private fun loadEvent(eventId: String) {
+        viewModelScope.launch {
+            getEventsUseCase(EventScope.ALL).collect { result ->
+                when (result) {
+                    is DomainResult.Loading -> _uiState.update { it.copy(isLoading = true, error = null) }
+
+                    is DomainResult.Success -> {
+                        val event = result.data.find { it.id == eventId }
+                        if (event == null) {
+                            _uiState.update {
+                                it.copy(isLoading = false, error = "Este evento ya no está disponible.")
+                            }
+                        } else {
+                            originalEvent = event
+                            _uiState.update { it.withEvent(event).copy(isLoading = false) }
+                        }
+                    }
+
+                    is DomainResult.Error -> _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = parseErrorMessage(result.exception).generalError,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // E-02: copies the saved event into the fields, in the local time of the phone
+    private fun NewEventUiState.withEvent(event: Event): NewEventUiState {
+        val zone = ZoneId.systemDefault()
+        val start = event.startsAt.atZone(zone)
+        val end = event.endsAt.atZone(zone)
+        val (countryCode, phone) = splitPhone(event.phone)
+
+        return copy(
+            title = event.title,
+            startDate = toCalendar(start.toLocalDate()),
+            endDate = toCalendar(end.toLocalDate()),
+            startTime = start.toLocalTime().withSecond(0).withNano(0),
+            endTime = end.toLocalTime().withSecond(0).withNano(0),
+            modality = event.modality,
+            location = event.location.orEmpty(),
+            link = event.link.orEmpty(),
+            countryCode = countryCode,
+            phone = phone,
+            description = event.description,
+            notes = event.notes.orEmpty(),
+            currentImageUrl = event.imageUrl,
+        )
+    }
+
+    // E-02: the backend saves the country code plus 10 digits, the form shows them apart
+    private fun splitPhone(phone: String?): Pair<String, String> {
+        if (phone.isNullOrBlank() || phone.length <= 10) return "+52" to phone.orEmpty()
+        return phone.dropLast(10) to phone.takeLast(10)
+    }
+
+    // E-02: the date pickers work with a Calendar at midnight of that day
+    private fun toCalendar(date: LocalDate): Calendar = Calendar.getInstance().apply {
+        clear()
+        set(date.year, date.monthValue - 1, date.dayOfMonth)
+    }
+
+    fun saveEvent() {
         val state = _uiState.value
 
         var hasError = false
@@ -332,34 +416,45 @@ class NewEventViewModel @Inject constructor(
             imageUrl = null,
         )
 
+        if (state.isEditing) {
+            // The form loaded nothing (the load failed), so there is nothing to update
+            val original = originalEvent ?: return
+            submit(updateEventUseCase(event.copy(id = original.id, imageUrl = original.imageUrl)))
+        } else {
+            submit(createEventUseCase(event))
+        }
+    }
+
+    // E-01/E-02: sends the event and, when a new image was picked, uploads it after
+    private fun submit(request: Flow<DomainResult<Event>>) {
         viewModelScope.launch {
-            createEventUseCase(event).collect { result ->
+            request.collect { result ->
                 when (result) {
-                    is Result.Loading -> _uiState.update { it.copy(isLoading = true, error = null) }
-                    is Result.Success -> {
-                        val createdEvent = result.data
+                    is DomainResult.Loading -> _uiState.update { it.copy(isLoading = true, error = null) }
+                    is DomainResult.Success -> {
+                        val savedEvent = result.data
                         val imageFile = _uiState.value.selectedImageFile
 
-                        if (imageFile != null && createdEvent.id.isNotBlank()) {
+                        if (imageFile != null && savedEvent.id.isNotBlank()) {
                             uploadEventImageUseCase(
-                                createdEvent.id,
+                                savedEvent.id,
                                 imageFile
                             ).collect { imgResult ->
                                 _uiState.update { current ->
                                     when (imgResult) {
-                                        is Result.Loading -> current.copy(
+                                        is DomainResult.Loading -> current.copy(
                                             isImageUploading = true,
                                             isLoading = true
                                         )
 
-                                        is Result.Success -> current.copy(
+                                        is DomainResult.Success -> current.copy(
                                             isLoading = false,
                                             isImageUploading = false,
                                             isSuccess = true,
                                             error = null,
                                         )
 
-                                        is Result.Error -> current.copy(
+                                        is DomainResult.Error -> current.copy(
                                             isLoading = false,
                                             isImageUploading = false,
                                             error = parseErrorMessage(imgResult.exception).generalError,
@@ -378,7 +473,7 @@ class NewEventViewModel @Inject constructor(
                         }
                     }
 
-                    is Result.Error -> {
+                    is DomainResult.Error -> {
                         val parsed = parseErrorMessage(result.exception)
                         _uiState.update { current ->
                             current.copy(
@@ -415,6 +510,7 @@ class NewEventViewModel @Inject constructor(
     )
 
     private fun parseErrorMessage(e: Throwable): ParsedError {
+        val action = if (_uiState.value.isEditing) "actualizar" else "registrar"
         if (e is HttpException) {
             val errorBody = e.response()?.errorBody()?.string() ?: ""
             if (e.code() == 400 || errorBody.contains("http:// or https://")) {
@@ -434,17 +530,17 @@ class NewEventViewModel @Inject constructor(
             }
             val msg = when (e.code()) {
                 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
-                403 -> "No tienes permiso para registrar este evento."
+                403 -> "No tienes permiso para $action este evento."
                 404 -> "El evento no existe o se encuentra deshabilitado."
                 429 -> "Has superado el límite de 20 eventos por hora desde esta IP."
                 500 -> "Error interno en el servidor. Inténtalo de nuevo más tarde."
-                else -> e.message() ?: "Ocurrió un error al registrar el evento"
+                else -> e.message() ?: "Ocurrió un error al $action el evento"
             }
             return ParsedError(generalError = msg)
         }
         val msg = when (e) {
             is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
-            else -> e.message ?: "Ocurrió un error al registrar el evento"
+            else -> e.message ?: "Ocurrió un error al $action el evento"
         }
         return ParsedError(generalError = msg)
     }

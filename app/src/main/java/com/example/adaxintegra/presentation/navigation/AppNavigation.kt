@@ -250,7 +250,8 @@ fun AppNavigation(
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
                             currentRoute.startsWith("eventDetail") ||
-                            currentRoute.startsWith("createEvent") -> "home"
+                            currentRoute.startsWith("createEvent") ||
+                            currentRoute.startsWith("editEvent") -> "home"
 
                         else -> currentRoute
                     }
@@ -692,6 +693,20 @@ fun AppNavigation(
                 }
             }
 
+            // E-02: internal/admin edit an event with the same form used to create it
+            composable("editEvent/{eventId}") {
+                if (hasValidSession && (isInternal || isAdmin)) {
+                    NewEventScreen(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onEventCreated = {
+                            navController.popBackStack()
+                        },
+                    )
+                }
+            }
+
             // E-01: detail of one event, opened from the carousel or the events screen
             composable("eventDetail/{eventId}") { entry ->
                 if (hasValidSession) {
@@ -704,6 +719,11 @@ fun AppNavigation(
                                 navController.popBackStack()
                             },
                             canDisableEvents = isInternal || isAdmin,
+                            onEditEvent = {
+                                navController.navigate("editEvent/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         Text("No se encontró el identificador del evento")

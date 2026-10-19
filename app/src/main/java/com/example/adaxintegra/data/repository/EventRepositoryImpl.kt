@@ -63,6 +63,21 @@ class EventRepositoryImpl @Inject constructor(
             ?: throw IllegalStateException("Error al procesar la respuesta del servidor")
     }
 
+    // E-02: sends the whole event again, the backend validates it like a new one
+    override suspend fun updateEvent(event: Event): Event {
+        val response = api.updateEvent(
+            authorization = authorizationHeader(),
+            eventId = event.id,
+            request = event.toCreateDto(),
+        )
+        val data = response.data
+            ?: throw IllegalStateException(response.error ?: "Error al actualizar el evento")
+        // The PUT response has no image, so the current one is kept
+        val domainEvent = data.toDomain()
+            ?: throw IllegalStateException("Error al procesar la respuesta del servidor")
+        return domainEvent.copy(imageUrl = event.imageUrl)
+    }
+
     override suspend fun uploadEventImage(eventId: String, imageFile: UploadDocumentFile): String {
         val requestBody = imageFile.bytes.toRequestBody(imageFile.mimeType.toMediaType())
         val part = MultipartBody.Part.createFormData("image", imageFile.fileName, requestBody)

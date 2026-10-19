@@ -23,7 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -42,6 +44,7 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.DateFie
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledDropdownField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextArea
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
+import com.example.adaxintegra.presentation.views.designsystem.molecules.EventImage
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.TimeField
 import com.example.adaxintegra.presentation.views.designsystem.organisms.DocumentUploadSection
@@ -112,13 +115,13 @@ fun NewEventScreen(
         onPickImageFromFiles = {
             filesPicker.launch(IMAGE_MIME_TYPES)
         },
-        onCreateEventClick = viewModel::createEvent,
+        onCreateEventClick = viewModel::saveEvent,
     )
 
     if (uiState.isSuccess) {
         SuccessDialog(
-            title = "Evento creado",
-            message = "El evento fue registrado con éxito.",
+            title = if (uiState.isEditing) "Evento actualizado" else "Evento creado",
+            message = if (uiState.isEditing) "Los cambios fueron guardados con éxito." else "El evento fue registrado con éxito.",
             onConfirm = {
                 viewModel.dismissSuccess()
                 onEventCreated()
@@ -160,7 +163,7 @@ fun CreateEvent(
     val focusManager = LocalFocusManager.current
 
     ScreenTemplate(
-        title = "Nuevo evento",
+        title = if (uiState.isEditing) "Editar evento" else "Nuevo evento",
         error = uiState.error,
         isLoading = uiState.isLoading,
         onBack = onBackClick,
@@ -301,12 +304,25 @@ fun CreateEvent(
                 errorMessage = uiState.notesError,
             )
 
+            // E-02: the current image is shown until a new one is picked
+            val currentImageUrl = uiState.currentImageUrl
+            if (currentImageUrl != null && uiState.selectedImageFile == null) {
+                EventImage(
+                    imageUrl = currentImageUrl,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                )
+            }
+
             // Field "Imagen del evento (opcional)"
             DocumentUploadSection(
                 title = "Imagen del evento (opcional)",
                 note = "Agrega una imagen promocional para el evento. Formatos permitidos: JPG o PNG de máximo 5 MB.",
                 fileName = uiState.selectedImageName ?: "imagen-evento.jpg",
-                isUploaded = uiState.selectedImageFile != null,
+                // E-02: an event that already has an image starts as uploaded, so it can be replaced
+                isUploaded = uiState.selectedImageFile != null || currentImageUrl != null,
                 isUploading = uiState.isImageUploading,
                 onPickFromGallery = onPickImageFromGallery,
                 onPickFromFiles = onPickImageFromFiles,
@@ -316,7 +332,7 @@ fun CreateEvent(
             Spacer(modifier = Modifier.height(8.dp))
 
             AppButton(
-                text = "Crear evento",
+                text = if (uiState.isEditing) "Guardar cambios" else "Crear evento",
                 onClick = onCreateEventClick,
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
