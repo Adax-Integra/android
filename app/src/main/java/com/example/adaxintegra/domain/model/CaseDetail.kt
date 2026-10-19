@@ -17,4 +17,7 @@ data class CaseDetail(
     val caseSteps: List<CaseProgressStep>,
     val violenceList: List<Violence>,
     val helpList: List<Helps>,
+    val assignedCollaboratorIds: List<String> = emptyList(),
+    val assignedCollaboratorNames: List<String> = emptyList(),
+    val assignmentsLoaded: Boolean = false,
 )

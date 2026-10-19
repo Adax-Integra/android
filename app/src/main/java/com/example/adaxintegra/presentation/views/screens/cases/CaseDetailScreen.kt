@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import com.example.adaxintegra.domain.model.CollaboratorSummary
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AssignCollaboratorDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +56,7 @@ fun CaseDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showCloseDialog by remember { mutableStateOf(false) }
+    var showAssignDialog by remember { mutableStateOf(false) }
 
     // reloads the selected case whenever its identifier changes
     LaunchedEffect(caseId) {
@@ -148,6 +155,11 @@ fun CaseDetailScreen(
                 },
                 onBack = onBack,
                 onEdit = onEdit,
+                onAssignCollaboratorsClick = {
+                    showAssignDialog = true
+                    viewModel.clearCollaboratorsFeedback()
+                    viewModel.loadAssignableCaseCollaborators()
+                },
                 onRequestClose = {
                     showCloseDialog = true
                 },
@@ -162,6 +174,84 @@ fun CaseDetailScreen(
         }
     }
 
+    LaunchedEffect(uiState.collaboratorsSaved) {
+        if (uiState.collaboratorsSaved && showAssignDialog) {
+            showAssignDialog = false
+            viewModel.clearCollaboratorsFeedback()
+        }
+    }
+
+    if (showAssignDialog && !isCaseClosed) {
+        if (case == null || !case.assignmentsLoaded || !uiState.assignableCollaboratorsLoaded) {
+            AlertDialog(
+                onDismissRequest = { showAssignDialog = false },
+                title = { Text("Administrar colaboradoras") },
+                text = {
+                    Text(
+                        when {
+                            case?.assignmentsLoaded != true ->
+                                "No se pudieron verificar las asignaciones actuales."
+                            uiState.isLoadingAssignableCollaborators ->
+                                "Cargando colaboradoras..."
+                            else ->
+                                uiState.assignableCollaboratorsError
+                                    ?: "No fue posible cargar las colaboradoras."
+                        },
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (case?.assignmentsLoaded == true) {
+                                viewModel.loadAssignableCaseCollaborators()
+                            } else {
+                                viewModel.refresh(caseId)
+                            }
+                        },
+                        enabled = !uiState.isLoadingAssignableCollaborators,
+                    ) {
+                        Text("Reintentar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAssignDialog = false }) {
+                        Text("Cancelar")
+                    }
+                },
+            )
+        } else {
+            val catalog = uiState.assignableCollaborators
+            val missingAssigned = case.assignedCollaboratorIds.mapIndexedNotNull { index, id ->
+                if (catalog.any { it.userId == id }) {
+                    null
+                } else {
+                    CollaboratorSummary(
+                        userId = id,
+                        name = case.assignedCollaboratorNames.getOrNull(index)
+                            ?.ifBlank { "Colaboradora asignada" }
+                            ?: "Colaboradora asignada",
+                        lastName = "",
+                        email = null,
+                        isActive = false,
+                    )
+                }
+            }
+
+            AssignCollaboratorDialog(
+                collaborators = catalog + missingAssigned,
+                assignedIds = case.assignedCollaboratorIds.toSet(),
+                isSaving = uiState.isSavingCollaborators,
+                errorMessage = uiState.saveCollaboratorsError,
+                onConfirm = { ids ->
+                    viewModel.saveCaseCollaborators(caseId, ids)
+                },
+                onDismiss = {
+                    showAssignDialog = false
+                    viewModel.clearCollaboratorsFeedback()
+                },
+            )
+        }
+    }
     // displays the V-11 confirmation interface before requesting the closure
     if (showCloseDialog) {
         CaseCloseDialog(
@@ -211,6 +301,7 @@ private fun CaseDetailContent(
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onRequestClose: () -> Unit,
+    onAssignCollaboratorsClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier =
@@ -338,6 +429,16 @@ private fun CaseDetailContent(
             )
         }
 
+        if (!isCaseClosed) {
+            item {
+                AppButton(
+                    text = "Administrar colaboradoras",
+                    onClick = onAssignCollaboratorsClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
         // actions defined by the V-11 case detail acceptance criteria
         item {
             Row(
@@ -400,6 +501,7 @@ private fun OpenCaseDetailScreenPreview() {
                 onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
+                onAssignCollaboratorsClick = {},
                 onRequestClose = {},
                 caseSteps = TODO(),
                 isUpdatingStep = TODO(),
@@ -453,6 +555,7 @@ private fun ClosedCaseDetailScreenPreview() {
                 onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
+                onAssignCollaboratorsClick = {},
                 onRequestClose = {},
             )
         }

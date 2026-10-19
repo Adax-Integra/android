@@ -23,6 +23,15 @@ data class CaseDetailDto(
     val case_steps: List<CaseStepDto> = emptyList(),
     val case_violence: List<CaseDetailViolenceDto> = emptyList(),
     val case_help: List<CaseDetailHelpDto> = emptyList(),
+    val case_assignment: List<CaseDetailAssignmentDto>? = null,
+)
+
+// R-12: the case detail sends only the user_id of each assigned collaborator,
+// the backend already leaves out the removed ones. user stays optional in case
+// the names are added later
+data class CaseDetailAssignmentDto(
+    val user_id: String? = null,
+    val user: CaseDetailUserDto? = null,
 )
 
 // record information associated with the selected case

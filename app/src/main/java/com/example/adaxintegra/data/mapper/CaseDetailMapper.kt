@@ -1,5 +1,6 @@
 package com.example.adaxintegra.data.mapper
 
+import com.example.adaxintegra.data.remote.dto.CaseDetailAssignmentDto
 import com.example.adaxintegra.data.remote.dto.CaseDetailDto
 import com.example.adaxintegra.data.remote.dto.CaseDetailHelpTypeDto
 import com.example.adaxintegra.domain.model.CaseDetail
@@ -12,6 +13,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+// R-12: the id comes as user_id, or inside user if the backend sends the names
+private fun CaseDetailAssignmentDto.assignedUserId(): String? {
+    val id = user_id ?: user?.user_id
+    return id?.takeIf { it.isNotBlank() }
+}
+
 // converts the V-11 backend response into the case detail domain model
 fun CaseDetailDto.toDomain(): CaseDetail {
     val userName =
@@ -19,6 +26,18 @@ fun CaseDetailDto.toDomain(): CaseDetail {
             record?.user?.name,
             record?.user?.last_name,
         ).joinToString(" ").ifBlank { null }
+
+    // R-12: the backend only sends the collaborators that are still assigned
+    val assignments = case_assignment.orEmpty()
+    val identifiedAssignments = assignments.mapNotNull { assignment ->
+        val id = assignment.assignedUserId() ?: return@mapNotNull null
+        val name = listOfNotNull(assignment.user?.name, assignment.user?.last_name)
+            .joinToString(" ").trim()
+        id to name
+    }.distinctBy { it.first }
+
+    val assignedIds = identifiedAssignments.map { it.first }
+    val assignedNames = identifiedAssignments.map { it.second }
 
     return CaseDetail(
         caseId = case_id,
@@ -53,6 +72,11 @@ fun CaseDetailDto.toDomain(): CaseDetail {
                     )
                 }
             },
+        assignedCollaboratorIds = assignedIds,
+        assignedCollaboratorNames = assignedNames,
+        // The assignments are valid when the list came and every entry has its id
+        assignmentsLoaded = case_assignment != null &&
+            assignments.all { it.assignedUserId() != null },
         helpList =
             case_help.mapNotNull { relation ->
                 val help = relation.help_types ?: CaseDetailHelpTypeDto(
