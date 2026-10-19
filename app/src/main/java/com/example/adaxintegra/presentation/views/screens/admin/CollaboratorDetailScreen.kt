@@ -145,6 +145,7 @@ fun CollaboratorDetailScreen(
 
         AlertDialog(
             onDismissRequest = viewModel::dismissStatusDialog,
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
                     text = title,

@@ -68,6 +68,7 @@ fun EditCollaboratorDialog(
     val emailError = when {
         emailChanged && !Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""").matches(newEmail) ->
             "Ingresa un correo válido."
+
         newEmail.length > 128 -> "Máximo 128 caracteres."
         else -> null
     }
@@ -81,6 +82,7 @@ fun EditCollaboratorDialog(
             onDismissRequest = {
                 if (!isSaving) onCancel()
             },
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
                     text = "Editar colaboradora",
@@ -149,6 +151,7 @@ fun EditCollaboratorDialog(
             onDismissRequest = {
                 if (!isSaving) confirming = false
             },
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
                     text = "Confirmar cambios",
