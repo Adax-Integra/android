@@ -28,9 +28,9 @@ import com.example.adaxintegra.presentation.util.EventDateFormatter
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.EventDateBadge
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
-import com.example.adaxintegra.ui.theme.LightOrange
 import com.example.adaxintegra.ui.theme.LightPurple
 import com.example.adaxintegra.ui.theme.Purple
+import com.example.adaxintegra.ui.theme.PurplePink
 import com.example.adaxintegra.ui.theme.White
 import java.time.Instant
 
@@ -57,7 +57,7 @@ fun EventListCard(
                     .height(140.dp),
             )
             EventDateBadge(
-                day = EventDateFormatter.day(event.startsAt),
+                day = EventDateFormatter.day(event.startsAt, event.endsAt),
                 month = EventDateFormatter.shortMonth(event.startsAt),
                 modifier = Modifier.padding(10.dp),
             )
@@ -81,13 +81,13 @@ fun EventListCard(
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = EventDateFormatter.time(event.startsAt),
+                    text = EventDateFormatter.shortDateRange(event.startsAt, event.endsAt),
                     style = AppTextStyle.LabelMedium,
                     fontWeight = FontWeight.Bold,
                     color = Purple,
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(LightOrange)
+                        .background(PurplePink.copy(alpha = 0.2f))
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
