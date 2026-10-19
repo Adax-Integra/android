@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +36,8 @@ fun ProfileHeaderCard(
     modifier: Modifier = Modifier,
     initials: String? = null,
     createdAt: String? = null,
+    // B-01: content under the name, like the verification badge of the external user
+    accessory: (@Composable () -> Unit)? = null,
 ) {
     val displayInitials = initials ?: calculateInitials(name)
 
@@ -88,6 +91,10 @@ fun ProfileHeaderCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                if (accessory != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    accessory()
                 }
             }
         }
