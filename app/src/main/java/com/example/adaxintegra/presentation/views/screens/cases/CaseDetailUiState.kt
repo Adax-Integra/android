@@ -16,4 +16,7 @@ data class CaseDetailUiState(
     val availableViolences: List<Violence> = emptyList(),
     val isAssigningViolences: Boolean = false,
     val assignViolencesError: String? = null,
+    val isUpdatingStep: Boolean = false,
+    val updateStepSuccess: Boolean = false,
+    val updateStepError: String? = null,
 )

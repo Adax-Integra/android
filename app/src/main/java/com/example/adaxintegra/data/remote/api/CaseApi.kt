@@ -10,6 +10,8 @@ import com.example.adaxintegra.data.remote.dto.CaseResponseDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseResponseDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseResponseDto
+import com.example.adaxintegra.data.remote.dto.UpdateCaseStepRequestDto
+import com.example.adaxintegra.data.remote.dto.UpdateCaseStepResponseDto
 import com.example.adaxintegra.data.remote.dto.UserCasesResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -106,4 +108,12 @@ interface CaseApi {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
+
+    //r-13 update case steps
+    @PATCH("api/cases/{caseId}/step")
+    suspend fun updateCaseStep(
+        @Path("caseId") caseId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: UpdateCaseStepRequestDto,
+    ): UpdateCaseStepResponseDto
 }
