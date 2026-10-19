@@ -31,4 +31,19 @@ class EventRepositoryImpl @Inject constructor(
         val items = response.data ?: emptyList()
         return items.mapNotNull { it.toDomain() }
     }
+
+    //disable events
+    override suspend fun disableEvent(eventId: String) {
+        val response = api.disableEvent(
+            eventId = eventId,
+            authorizationHeader()
+        )
+
+        //throw an error even if theres data but the event id is missing
+        if (!response.success || response.data?.eventId == null) {
+            throw IllegalStateException(
+                "No se pudo desactivar el evento"
+            )
+        }
+    }
 }

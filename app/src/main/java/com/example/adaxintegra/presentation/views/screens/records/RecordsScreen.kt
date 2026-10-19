@@ -513,7 +513,7 @@ private fun RecordsScreenPreview() {
             onRetry = {},
             onNextPage = {},
             onPreviousPage = {},
-            onRecordClick = {},
+            onRecordClick = { _, _, _ -> },
             onRegisterRecordClick = {},
         )
     }

@@ -6,4 +6,7 @@ import com.example.adaxintegra.domain.model.EventScope
 interface EventRepository {
     // E-01: returns the active events of the scope, sorted by start date
     suspend fun getEvents(scope: EventScope): List<Event>
+
+    //disable an event
+    suspend fun disableEvent(eventId: String)
 }
