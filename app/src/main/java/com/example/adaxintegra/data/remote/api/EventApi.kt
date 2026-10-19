@@ -2,6 +2,7 @@ package com.example.adaxintegra.data.remote.api
 
 import com.example.adaxintegra.data.remote.dto.CreateEventRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateEventResponseDto
+import com.example.adaxintegra.data.remote.dto.DisableEventResponseDto
 import com.example.adaxintegra.data.remote.dto.EventListResponseDto
 import com.example.adaxintegra.data.remote.dto.UploadEventImageResponseDto
 import okhttp3.MultipartBody
@@ -24,6 +25,13 @@ interface EventApi {
         @Header("Authorization") authorization: String,
         @Query("scope") scope: String,
     ): EventListResponseDto
+
+    //disable an event
+    @PATCH("api/events/{eventId}/disable")
+    suspend fun disableEvent(
+        @Path("eventId") eventId: String,
+        @Header("Authorization") authorization: String,
+    ): DisableEventResponseDto
 
     @POST("api/events")
     suspend fun createEvent(

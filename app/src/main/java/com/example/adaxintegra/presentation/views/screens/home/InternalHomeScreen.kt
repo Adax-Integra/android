@@ -42,6 +42,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.EventsCarousel
 
 // NV-04: home of the internal and admin users, reached from the bottom nav bar and after signing in
@@ -215,6 +216,16 @@ fun InternalHomeContent(
             PodcastCard(
                 onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
                 onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
+            )
+
+            // NV-04: same social networks card as the external home
+            SectionTitle(text = "Redes sociales")
+
+            SocialMediaCard(
+                onFacebookClick = { HomeLinks.open(context, HomeLinks.FACEBOOK_URL) },
+                onInstagramClick = { HomeLinks.open(context, HomeLinks.INSTAGRAM_URL) },
+                onXClick = { HomeLinks.open(context, HomeLinks.X_URL) },
+                onTikTokClick = { HomeLinks.open(context, HomeLinks.TIKTOK_URL) },
             )
 
             Spacer(modifier = Modifier.height(spacing.large))

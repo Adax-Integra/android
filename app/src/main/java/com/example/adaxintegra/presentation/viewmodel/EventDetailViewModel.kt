@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.domain.usecases.DisableEventUseCase
 import com.example.adaxintegra.domain.usecases.GetEventsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EventDetailViewModel @Inject constructor(
     private val getEventsUseCase: GetEventsUseCase,
+    private val disableEventUseCase: DisableEventUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EventDetailUiState())
     val uiState = _uiState.asStateFlow()
@@ -68,9 +70,64 @@ class EventDetailViewModel @Inject constructor(
         currentEventId?.let { loadEvent(it) }
     }
 
+    //adding disabling event method in here since it is working on the same foundation
+    fun disableEvent() {
+        val eventId = _uiState.value.event?.id ?: return
+
+        //prevent duplicate requests
+        if (_uiState.value.isDisabling) return
+
+        viewModelScope.launch {
+            disableEventUseCase(eventId).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _uiState.update {
+                            it.copy(
+                                isDisabling = true,
+                                disableError = false,
+                                disableSuccess = false,
+                            )
+                        }
+                    }
+
+                    is Result.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isDisabling = false,
+                                disableSuccess = true,
+                                disableError = false,
+                            )
+                        }
+                    }
+
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isDisabling = false,
+                                disableSuccess = false,
+                                disableError = true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun clearDisableFeedback() {
+        _uiState.update {
+            it.copy(
+                disableSuccess = false,
+                disableError = false,
+            )
+        }
+    }
+
     private fun errorMessage(e: Throwable): String = when {
         e is HttpException && e.code() == 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
         e is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
         else -> "No se pudo cargar el evento."
     }
 }
+
+

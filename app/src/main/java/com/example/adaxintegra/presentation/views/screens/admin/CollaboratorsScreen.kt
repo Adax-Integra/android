@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.presentation.viewmodel.AddCollaboratorViewModel
@@ -67,22 +68,25 @@ fun CollaboratorsScreen(
     val spacing = Spacing()
     val collaborators = listState.visibleCollaborators
 
+    // G-06: the page card is only shown when there is more than one page,
+    // an empty list (first load) always has a single page
+    val showPagination = listState.lastPage > 1
+
     // G-04: loads the list when the screen is shown and when coming back from the detail,
     // so a status changed there is updated in the list
     LaunchedEffect(Unit) {
         listViewModel.loadCollaborators()
     }
 
-    // Same template as the other screens, so it follows the light/dark theme
+    // Same template and padding as the other lists
     ScreenTemplate(
         title = "Gestión de Colaboradoras",
         onBack = onBack,
-        modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = spacing.small),
+                .padding(spacing.medium),
             verticalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
             // Search by name or email and Filtrar button
@@ -135,7 +139,7 @@ fun CollaboratorsScreen(
                 )
             }
 
-            // The list takes the free space so the page buttons stay at the bottom
+            // The list takes the free space and the page card floats over its bottom
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -180,7 +184,10 @@ fun CollaboratorsScreen(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(spacing.small),
-                            contentPadding = PaddingValues(bottom = spacing.medium),
+                            // Space so the last card is not hidden behind the page card
+                            contentPadding = PaddingValues(
+                                bottom = if (showPagination) 76.dp else spacing.medium,
+                            ),
                         ) {
                             items(collaborators) { collaborator ->
                                 CollaboratorCard(
@@ -194,17 +201,19 @@ fun CollaboratorsScreen(
                         }
                     }
                 }
-            }
 
-            // G-06: pages of 10 collaborators, as in the other lists
-            if (listState.filteredCollaborators.isNotEmpty()) {
-                PageSwitcher(
-                    page = listState.currentPage,
-                    canGoBack = listState.canGoBack,
-                    canGoNext = listState.canGoNext,
-                    onPreviousPage = listViewModel::previousPage,
-                    onNextPage = listViewModel::nextPage,
-                )
+                // G-06: pages of 10 collaborators, same floating card as the other lists
+                if (showPagination) {
+                    PageSwitcher(
+                        page = listState.currentPage,
+                        totalPages = listState.lastPage,
+                        canGoBack = listState.canGoBack,
+                        canGoNext = listState.canGoNext,
+                        onPreviousPage = listViewModel::previousPage,
+                        onNextPage = listViewModel::nextPage,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
             }
         }
     }

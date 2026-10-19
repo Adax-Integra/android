@@ -703,6 +703,7 @@ fun AppNavigation(
                             onBack = {
                                 navController.popBackStack()
                             },
+                            canDisableEvents = isInternal || isAdmin,
                         )
                     } else {
                         Text("No se encontró el identificador del evento")
