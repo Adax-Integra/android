@@ -5,6 +5,7 @@ import com.example.adaxintegra.data.remote.api.CaseApi
 import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
 import com.example.adaxintegra.data.remote.dto.AssignViolenceRequestDto
 import com.example.adaxintegra.data.remote.dto.CloseCaseDataDto
+import com.example.adaxintegra.data.remote.dto.UpdateCaseStepRequestDto
 import com.example.adaxintegra.domain.model.CaseDetail
 import com.example.adaxintegra.domain.repository.AuthRepository
 import javax.inject.Inject
@@ -85,5 +86,24 @@ constructor(
             request = request
         )
         return response.success
+    }
+
+    //r-13 update case step
+    suspend fun updateCaseStep(
+        caseId: String,
+        stepNumber: Int,
+    ): CaseDetail {
+        val response = api. updateCaseStep(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = UpdateCaseStepRequestDto(
+                stepNumber = stepNumber,
+            ),
+        )
+        if (!response.success) {
+            throw IllegalStateException("No se pudo actualizar el progreso del caso.")
+        }
+
+        return response.data.toDomain()
     }
 }
