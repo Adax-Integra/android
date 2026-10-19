@@ -59,14 +59,6 @@ fun AdminScreen(
             onClick = onManageExternalUsersClick,
         )
 
-        // Opens the records menu (cases, records and reports), same icon as the "Expedientes" tab
-        MenuOptionCard(
-            title = "Expedientes y casos",
-            subtitle = "Consulta los expedientes, casos y reportes de las usuarias externas.",
-            icon = AppIcons.Folder,
-            onClick = onManageExpedientsClick,
-        )
-
         MenuOptionCard(
             title = "Bitácora de cambios",
             subtitle = "Consulta el historial de actividades e incidencias en el sistema.",
