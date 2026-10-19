@@ -1,10 +1,13 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.Event
 import com.example.adaxintegra.domain.usecases.CreateEventUseCase
+import com.example.adaxintegra.domain.usecases.UploadEventImageUseCase
+import com.example.adaxintegra.presentation.util.DocumentImageEncoder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class NewEventViewModel @Inject constructor(
     private val createEventUseCase: CreateEventUseCase,
+    private val uploadEventImageUseCase: UploadEventImageUseCase,
+    private val documentImageEncoder: DocumentImageEncoder,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewEventUiState())
@@ -153,6 +158,35 @@ class NewEventViewModel @Inject constructor(
         }
     }
 
+    fun onToastShown() {
+        _uiState.update { it.copy(toastMessage = null) }
+    }
+
+    fun onImagePicked(uri: Uri) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isImageUploading = true, imageUploadError = null, error = null) }
+            try {
+                val encodedFile = documentImageEncoder.encode(uri, "imagen-evento.jpg")
+                _uiState.update {
+                    it.copy(
+                        selectedImageFile = encodedFile,
+                        selectedImageName = "imagen-evento.jpg",
+                        isImageUploading = false,
+                        imageUploadError = null,
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isImageUploading = false,
+                        imageUploadError = e.message ?: "Error al procesar la imagen",
+                        error = e.message ?: "Error al procesar la imagen",
+                    )
+                }
+            }
+        }
+    }
+
     fun createEvent() {
         val state = _uiState.value
 
@@ -196,7 +230,11 @@ class NewEventViewModel @Inject constructor(
             modalityError = "Selecciona una modalidad"
             hasError = true
         } else {
-            if (state.modality.equals("Presencial", ignoreCase = true) && state.location.isBlank()) {
+            if (state.modality.equals(
+                    "Presencial",
+                    ignoreCase = true
+                ) && state.location.isBlank()
+            ) {
                 locationError = "Ingresa el lugar para modalidad presencial"
                 hasError = true
             }
@@ -296,21 +334,59 @@ class NewEventViewModel @Inject constructor(
 
         viewModelScope.launch {
             createEventUseCase(event).collect { result ->
-                _uiState.update { current ->
-                    when (result) {
-                        is Result.Loading -> current.copy(isLoading = true, error = null)
-                        is Result.Success -> current.copy(
-                            isLoading = false,
-                            isSuccess = true,
-                            error = null,
-                        )
-                        is Result.Error -> {
-                            val parsed = parseErrorMessage(result.exception)
+                when (result) {
+                    is Result.Loading -> _uiState.update { it.copy(isLoading = true, error = null) }
+                    is Result.Success -> {
+                        val createdEvent = result.data
+                        val imageFile = _uiState.value.selectedImageFile
+
+                        if (imageFile != null && createdEvent.id.isNotBlank()) {
+                            uploadEventImageUseCase(
+                                createdEvent.id,
+                                imageFile
+                            ).collect { imgResult ->
+                                _uiState.update { current ->
+                                    when (imgResult) {
+                                        is Result.Loading -> current.copy(
+                                            isImageUploading = true,
+                                            isLoading = true
+                                        )
+
+                                        is Result.Success -> current.copy(
+                                            isLoading = false,
+                                            isImageUploading = false,
+                                            isSuccess = true,
+                                            error = null,
+                                        )
+
+                                        is Result.Error -> current.copy(
+                                            isLoading = false,
+                                            isImageUploading = false,
+                                            error = parseErrorMessage(imgResult.exception).generalError,
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isSuccess = true,
+                                    error = null,
+                                )
+                            }
+                        }
+                    }
+
+                    is Result.Error -> {
+                        val parsed = parseErrorMessage(result.exception)
+                        _uiState.update { current ->
                             current.copy(
                                 isLoading = false,
                                 error = parsed.generalError,
                                 linkError = parsed.fieldErrors["link"] ?: current.linkError,
-                                locationError = parsed.fieldErrors["location"] ?: current.locationError,
+                                locationError = parsed.fieldErrors["location"]
+                                    ?: current.locationError,
                             )
                         }
                     }
@@ -358,7 +434,8 @@ class NewEventViewModel @Inject constructor(
             }
             val msg = when (e.code()) {
                 401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
-                403 -> "No tienes permiso para registrar eventos."
+                403 -> "No tienes permiso para registrar este evento."
+                404 -> "El evento no existe o se encuentra deshabilitado."
                 429 -> "Has superado el límite de 20 eventos por hora desde esta IP."
                 500 -> "Error interno en el servidor. Inténtalo de nuevo más tarde."
                 else -> e.message() ?: "Ocurrió un error al registrar el evento"

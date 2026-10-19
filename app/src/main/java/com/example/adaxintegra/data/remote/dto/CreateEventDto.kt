@@ -21,11 +21,10 @@ data class CreateEventRequestDto(
     val description: String,
     @SerializedName("notes")
     val notes: String? = null,
-    // TODO(e-04)implement the part to add the image
 )
 
 data class CreateEventResponseDataDto(
-    @SerializedName("eventId")
+    @SerializedName(value = "eventId")
     val eventId: String?,
     @SerializedName("title")
     val title: String?,
@@ -45,7 +44,6 @@ data class CreateEventResponseDataDto(
     val description: String?,
     @SerializedName("notes")
     val notes: String?,
-    // TODO(e-04)implement the part to add the image
 )
 
 data class CreateEventResponseDto(

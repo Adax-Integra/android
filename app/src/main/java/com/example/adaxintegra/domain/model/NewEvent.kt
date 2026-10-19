@@ -10,5 +10,4 @@ data class NewEvent(
     val phone: String? = null,
     val description: String,
     val notes: String? = null,
-    // TODO(e-04) the image implementations is missing
 )

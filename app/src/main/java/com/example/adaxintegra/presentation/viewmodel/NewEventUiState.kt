@@ -1,5 +1,6 @@
 package com.example.adaxintegra.presentation.viewmodel
 
+import com.example.adaxintegra.domain.model.UploadDocumentFile
 import java.time.LocalTime
 import java.util.Calendar
 
@@ -27,9 +28,12 @@ data class NewEventUiState(
     val descriptionError: String? = null,
     val notes: String = "",
     val notesError: String? = null,
-    val hasAddedImage: Boolean = false,
-    val hasAddedImageError: Boolean = false,
+    val selectedImageFile: UploadDocumentFile? = null,
+    val selectedImageName: String? = null,
+    val isImageUploading: Boolean = false,
+    val imageUploadError: String? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
+    val toastMessage: String? = null,
     val error: String? = null,
 )

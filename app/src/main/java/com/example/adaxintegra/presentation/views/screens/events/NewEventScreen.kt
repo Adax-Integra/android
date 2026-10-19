@@ -1,5 +1,9 @@
 package com.example.adaxintegra.presentation.views.screens.events
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,12 +18,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -38,12 +44,15 @@ import com.example.adaxintegra.presentation.views.designsystem.molecules.Labeled
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.TimeField
+import com.example.adaxintegra.presentation.views.designsystem.organisms.DocumentUploadSection
 import com.example.adaxintegra.presentation.views.designsystem.organisms.SuccessDialog
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import java.time.LocalTime
 import java.util.Calendar
 import java.util.TimeZone
+
+private val IMAGE_MIME_TYPES = arrayOf("image/jpeg", "image/png")
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -53,6 +62,32 @@ fun NewEventScreen(
     viewModel: NewEventViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState.toastMessage) {
+        uiState.toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.onToastShown()
+        }
+    }
+
+    val galleryPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                viewModel.onImagePicked(uri)
+            }
+        },
+    )
+
+    val filesPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            if (uri != null) {
+                viewModel.onImagePicked(uri)
+            }
+        },
+    )
 
     CreateEvent(
         uiState = uiState,
@@ -69,6 +104,14 @@ fun NewEventScreen(
         onCountryCodeChange = viewModel::onCountryCodeChange,
         onDescriptionChange = viewModel::onDescriptionChange,
         onNotesChange = viewModel::onNotesChange,
+        onPickImageFromGallery = {
+            galleryPicker.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+            )
+        },
+        onPickImageFromFiles = {
+            filesPicker.launch(IMAGE_MIME_TYPES)
+        },
         onCreateEventClick = viewModel::createEvent,
     )
 
@@ -102,6 +145,8 @@ fun CreateEvent(
     onCountryCodeChange: (String) -> Unit = {},
     onDescriptionChange: (String) -> Unit = {},
     onNotesChange: (String) -> Unit = {},
+    onPickImageFromGallery: () -> Unit = {},
+    onPickImageFromFiles: () -> Unit = {},
     onCreateEventClick: () -> Unit = {},
 ) {
     // To know if it needs to show the start date
@@ -256,6 +301,18 @@ fun CreateEvent(
                 error = uiState.notesError,
             )
 
+            // Field "Imagen del evento (opcional)"
+            DocumentUploadSection(
+                title = "Imagen del evento (opcional)",
+                note = "Agrega una imagen promocional para el evento. Formatos permitidos: JPG o PNG de máximo 5 MB.",
+                fileName = uiState.selectedImageName ?: "imagen-evento.jpg",
+                isUploaded = uiState.selectedImageFile != null,
+                isUploading = uiState.isImageUploading,
+                onPickFromGallery = onPickImageFromGallery,
+                onPickFromFiles = onPickImageFromFiles,
+                onDownload = {},
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             AppButton(
@@ -297,8 +354,10 @@ fun CreateEvent(
         // Dialog for Start Time
         if (showStartTimePicker) {
             AppTimePickerDialog(
-                initialHour = uiState.startTime?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-                initialMinute = uiState.startTime?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
+                initialHour = uiState.startTime?.hour ?: Calendar.getInstance()
+                    .get(Calendar.HOUR_OF_DAY),
+                initialMinute = uiState.startTime?.minute ?: Calendar.getInstance()
+                    .get(Calendar.MINUTE),
                 onTimeSelected = { hour, minute ->
                     val time = LocalTime.of(hour, minute)
                     onStartTimeSelected(time)
@@ -311,8 +370,10 @@ fun CreateEvent(
         // Dialog for End Time
         if (showEndTimePicker) {
             AppTimePickerDialog(
-                initialHour = uiState.endTime?.hour ?: Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-                initialMinute = uiState.endTime?.minute ?: Calendar.getInstance().get(Calendar.MINUTE),
+                initialHour = uiState.endTime?.hour ?: Calendar.getInstance()
+                    .get(Calendar.HOUR_OF_DAY),
+                initialMinute = uiState.endTime?.minute ?: Calendar.getInstance()
+                    .get(Calendar.MINUTE),
                 onTimeSelected = { hour, minute ->
                     val time = LocalTime.of(hour, minute)
                     onEndTimeSelected(time)

@@ -1,4 +1,4 @@
-.package com.example.adaxintegra.presentation.views.designsystem.molecules
+package com.example.adaxintegra.presentation.views.designsystem.molecules
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
