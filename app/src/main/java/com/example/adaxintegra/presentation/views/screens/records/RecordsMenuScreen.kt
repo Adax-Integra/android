@@ -25,6 +25,7 @@ fun RecordsMenuScreen(
     onAllRecordsClick: () -> Unit = {},
     onReportsClick: () -> Unit = {},
     onMyCasesCLick: () -> Unit = {},
+    onExternalUsersClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -73,6 +74,16 @@ fun RecordsMenuScreen(
             onClick = onMyCasesCLick,
             icon = AppIcons.Profile,
         )
+
+        // B-02: The staff reviews the verifications from the list
+        onExternalUsersClick?.let { onClick ->
+            MenuOptionCard(
+                title = "Cuentas externas",
+                subtitle = "Control de cuentas",
+                onClick = onClick,
+                icon = AppIcons.Profile,
+            )
+        }
     }
 }
 
