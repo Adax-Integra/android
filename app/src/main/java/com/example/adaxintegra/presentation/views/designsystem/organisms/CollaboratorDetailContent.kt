@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -75,12 +76,6 @@ private fun formatDate(date: String?): String {
     return "$day ${MONTHS[parts[1].toInt() - 1]} ${parts[0]}"
 }
 
-// "jul 2024", used in the "Desde" text of the header
-private fun formatMonthYear(date: String?): String? {
-    val parts = dateParts(date) ?: return null
-    return "${MONTHS[parts[1].toInt() - 1]} ${parts[0]}"
-}
-
 // The backend sends the role name in English, the screen shows it in Spanish
 private fun roleText(role: String?): String = when (role) {
     "internal" -> "Colaboradora"
@@ -112,7 +107,6 @@ fun CollaboratorDetailContent(
 ) {
     val spacing = Spacing()
     val fullName = "${collaborator.name} ${collaborator.lastName}".trim()
-    val sinceText = formatMonthYear(collaborator.joinedAt)
     val statusColor = if (collaborator.isActive) ActiveColor else InactiveColor
     val statusText = if (collaborator.isActive) "Activa" else "Inactiva"
     val statusDescription = if (collaborator.isActive) {
@@ -128,7 +122,8 @@ fun CollaboratorDetailContent(
             .padding(vertical = spacing.small),
         verticalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
-        // Header: initials, name, role, date of entry and status
+        // Header: initials, name, role with status and the edit button.
+        // The date of entry is only in "Datos organizacionales", so it is not repeated here
         DetailCard {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -165,29 +160,25 @@ fun CollaboratorDetailContent(
                         horizontalArrangement = Arrangement.spacedBy(spacing.small),
                     ) {
                         RoleBadge(text = roleText(collaborator.role))
-
-                        if (sinceText != null) {
-                            Text(
-                                text = "Desde $sinceText",
-                                style = AppTextStyle.LabelSmall,
-                                color = IconGrey,
-                            )
-                        }
+                        StatusText(text = statusText, color = statusColor)
                     }
+                }
 
-                    StatusText(text = statusText, color = statusColor)
+                // G-18: the edition changes the name and the email, so it is next to the name
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.align(Alignment.Top),
+                ) {
+                    AppIcon(
+                        imageVector = AppIcons.Edit,
+                        contentDescription = "Editar datos de la colaboradora",
+                        tint = Purple,
+                    )
                 }
             }
         }
 
         DetailSection(title = "Contacto") {
-            // G-18: edit the collaborator without leaving G-10
-            AppButton(
-                text = "Editar",
-                onClick = onEditClick,
-                variant = ButtonVariant.Outlined,
-                modifier = Modifier.fillMaxWidth(),
-            )
             ContactRow(
                 icon = AppIcons.Email,
                 label = "Correo electrónico",

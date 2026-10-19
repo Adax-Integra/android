@@ -57,6 +57,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.ActivityLogScree
 import com.example.adaxintegra.presentation.views.screens.admin.AdminScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
+import com.example.adaxintegra.presentation.views.screens.admin.ExternalUserDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ExternalUsersScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
@@ -230,7 +231,8 @@ fun AppNavigation(
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
                             currentRoute == "externalUsers" ||
-                            currentRoute.startsWith("collaboratorDetail") -> "admin"
+                            currentRoute.startsWith("collaboratorDetail") ||
+                            currentRoute.startsWith("externalUserDetail") -> "admin"
 
                         currentRoute.startsWith("case/") -> {
                             if (isExternal) "cases" else "records"
@@ -250,7 +252,8 @@ fun AppNavigation(
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
                             currentRoute.startsWith("eventDetail") ||
-                            currentRoute.startsWith("createEvent") -> "home"
+                            currentRoute.startsWith("createEvent") ||
+                            currentRoute.startsWith("editEvent") -> "home"
 
                         else -> currentRoute
                     }
@@ -692,6 +695,20 @@ fun AppNavigation(
                 }
             }
 
+            // E-02: internal/admin edit an event with the same form used to create it
+            composable("editEvent/{eventId}") {
+                if (hasValidSession && (isInternal || isAdmin)) {
+                    NewEventScreen(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onEventCreated = {
+                            navController.popBackStack()
+                        },
+                    )
+                }
+            }
+
             // E-01: detail of one event, opened from the carousel or the events screen
             composable("eventDetail/{eventId}") { entry ->
                 if (hasValidSession) {
@@ -704,6 +721,11 @@ fun AppNavigation(
                                 navController.popBackStack()
                             },
                             canDisableEvents = isInternal || isAdmin,
+                            onEditEvent = {
+                                navController.navigate("editEvent/$eventId") {
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     } else {
                         Text("No se encontró el identificador del evento")
@@ -995,6 +1017,11 @@ fun AppNavigation(
             composable("externalUsers") {
                 if (hasValidSession && isAdmin) {
                     ExternalUsersScreen(
+                        onExternalUserClick = { userId ->
+                            navController.navigate("externalUserDetail/$userId") {
+                                launchSingleTop = true
+                            }
+                        },
                         onBack = {
                             navController.popBackStack()
                         },
@@ -1004,6 +1031,22 @@ fun AppNavigation(
                 }
             }
 
+            // G-07: admin consults and edits an external user's profile
+            composable("externalUserDetail/{userId}") { entry ->
+                if (hasValidSession && isAdmin) {
+                    val userId = entry.arguments?.getString("userId")
+                    if (!userId.isNullOrBlank()) {
+                        ExternalUserDetailScreen(
+                            userId = userId,
+                            onBack = { navController.popBackStack() },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la externa")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
             // V-06: admin consults the activity log
             composable("activityLog") {
                 if (hasValidSession && isAdmin) {

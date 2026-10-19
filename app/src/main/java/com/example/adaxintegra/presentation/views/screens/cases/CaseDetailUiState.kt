@@ -24,4 +24,7 @@ data class CaseDetailUiState(
     val isSavingCollaborators: Boolean = false,
     val saveCollaboratorsError: String? = null,
     val collaboratorsSaved: Boolean = false,
+    val isUpdatingStep: Boolean = false,
+    val updateStepSuccess: Boolean = false,
+    val updateStepError: String? = null,
 )

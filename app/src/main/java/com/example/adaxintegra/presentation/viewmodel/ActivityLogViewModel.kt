@@ -25,45 +25,68 @@ class ActivityLogViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ActivityLogUiState())
     val uiState: StateFlow<ActivityLogUiState> = _uiState.asStateFlow()
 
-    // Last page received from the backend
-    private var currentPage = 0
-
-    // Request in progress, so a new filter cancels the previous load
+    // Request in progress, so a new page or filter cancels the previous load
     private var loadJob: Job? = null
 
     init {
-        loadFirstPage()
+        loadPage(1)
     }
 
-    // Loads the log from the beginning with the current date filter
-    fun loadFirstPage() {
+    // V-06: page buttons, same as the other lists
+    fun nextPage() {
+        val state = _uiState.value
+        if (!state.canGoNext || state.isLoading) return
+        loadPage(state.page + 1)
+    }
+
+    fun previousPage() {
+        val state = _uiState.value
+        if (!state.canGoBack || state.isLoading) return
+        loadPage(state.page - 1)
+    }
+
+    // Tries again the page that could not be loaded
+    fun retry() {
+        loadPage(_uiState.value.page)
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    // A new filter starts again from the first page
+    fun applyDateFilter(from: Date?, to: Date?) {
+        _uiState.update { it.copy(fromDate = from, toDate = to) }
+        loadPage(1)
+    }
+
+    fun clearDateFilter() {
+        applyDateFilter(null, null)
+    }
+
+    // Loads one page of the log with the current date filter
+    private fun loadPage(page: Int) {
         loadJob?.cancel()
         val state = _uiState.value
 
         loadJob = viewModelScope.launch {
-            getActivityLogUseCase(1, state.fromDate, state.toDate).collect { result ->
+            getActivityLogUseCase(page, state.fromDate, state.toDate).collect { result ->
                 _uiState.update { current ->
                     when (result) {
-                        // V-06 fix: starts from zero, so entries of the previous filter are not
-                        // shown and a cancelled "load more" does not block the next pages
-                        is Result.Loading -> current.copy(
-                            entries = emptyList(),
-                            hasNextPage = false,
-                            isLoading = true,
-                            isLoadingMore = false,
-                            error = null,
+                        is Result.Loading -> current.copy(isLoading = true, error = null)
+
+                        is Result.Success -> current.copy(
+                            entries = result.data.entries,
+                            page = result.data.page,
+                            total = result.data.total,
+                            limit = result.data.limit,
+                            isLoading = false,
                         )
 
-                        is Result.Success -> {
-                            currentPage = result.data.page
-                            current.copy(
-                                entries = result.data.entries,
-                                hasNextPage = result.data.hasNextPage,
-                                isLoading = false,
-                            )
-                        }
-
+                        // The page is kept, so "Reintentar" asks for the same page
                         is Result.Error -> current.copy(
+                            entries = emptyList(),
+                            page = page,
                             isLoading = false,
                             error = errorMessage(result.exception),
                         )
@@ -71,48 +94,6 @@ class ActivityLogViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    // Acceptance criteria: scroll without problems, the next page loads at the end of the list
-    fun loadNextPage() {
-        val state = _uiState.value
-        if (!state.hasNextPage || state.isLoading || state.isLoadingMore) return
-
-        loadJob = viewModelScope.launch {
-            getActivityLogUseCase(currentPage + 1, state.fromDate, state.toDate).collect { result ->
-                _uiState.update { current ->
-                    when (result) {
-                        is Result.Loading -> current.copy(isLoadingMore = true, error = null)
-                        is Result.Success -> {
-                            currentPage = result.data.page
-                            current.copy(
-                                entries = current.entries + result.data.entries,
-                                hasNextPage = result.data.hasNextPage,
-                                isLoadingMore = false,
-                            )
-                        }
-
-                        is Result.Error -> current.copy(
-                            isLoadingMore = false,
-                            error = errorMessage(result.exception),
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    fun onSearchQueryChange(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-    }
-
-    fun applyDateFilter(from: Date?, to: Date?) {
-        _uiState.update { it.copy(fromDate = from, toDate = to) }
-        loadFirstPage()
-    }
-
-    fun clearDateFilter() {
-        applyDateFilter(null, null)
     }
 
     private fun errorMessage(e: Throwable): String = when {

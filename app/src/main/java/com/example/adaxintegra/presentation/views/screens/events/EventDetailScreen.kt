@@ -61,6 +61,8 @@ fun EventDetailScreen(
     eventId: String,
     onBack: () -> Unit,
     canDisableEvents: Boolean = false,
+    // E-02: opens the form to edit this event
+    onEditEvent: () -> Unit = {},
     viewModel: EventDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,6 +78,7 @@ fun EventDetailScreen(
         canDisableEvents = canDisableEvents,
         onDisableEvent = viewModel::disableEvent,
         onClearDisableFeedback = viewModel::clearDisableFeedback,
+        onEditEvent = onEditEvent,
     )
 }
 
@@ -89,6 +92,7 @@ fun EventDetailContent(
     canDisableEvents: Boolean = false,
     onDisableEvent: () -> Unit = {},
     onClearDisableFeedback: () -> Unit = {},
+    onEditEvent: () -> Unit = {},
 ) {
     val spacing = Spacing()
     val event = uiState.event
@@ -132,9 +136,7 @@ fun EventDetailContent(
 
                             AppButton(
                                 text = "Modificar evento",
-                                onClick = {
-                                    //connect this to edit screen e-02
-                                },
+                                onClick = onEditEvent,
                                 modifier = Modifier.fillMaxWidth(),
                                 variant = ButtonVariant.Primary,
                             )
