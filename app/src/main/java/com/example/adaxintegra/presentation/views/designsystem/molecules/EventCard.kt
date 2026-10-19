@@ -62,7 +62,7 @@ fun EventCard(
                     .height(80.dp),
             )
             EventDateBadge(
-                day = EventDateFormatter.day(event.startsAt),
+                day = EventDateFormatter.day(event.startsAt, event.endsAt),
                 month = EventDateFormatter.shortMonth(event.startsAt),
                 modifier = Modifier.padding(8.dp),
             )
@@ -107,8 +107,9 @@ fun EventCard(
                 )
             }
             Text(
-                text = EventDateFormatter.longDate(event.startsAt),
+                text = EventDateFormatter.dateRange(event.startsAt, event.endsAt),
                 style = AppTextStyle.LabelSmall,
+                color = LightPurple,
                 maxLines = 1,
             )
         }
@@ -155,7 +156,7 @@ fun EventCardPreview() {
             description = "Alza tu voz, no estás sola.",
             notes = null,
             startsAt = Instant.parse("2026-10-25T18:00:00Z"),
-            endsAt = Instant.parse("2026-10-25T20:00:00Z"),
+            endsAt = Instant.parse("2026-10-28T20:00:00Z"),
             modality = "Presencial",
             location = "Plaza de la Constitución",
             link = null,

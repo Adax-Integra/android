@@ -1,6 +1,8 @@
 package com.example.adaxintegra.data.local
 
 import android.content.Context
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.example.adaxintegra.domain.model.UserSession
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
@@ -14,9 +16,16 @@ import javax.inject.Singleton
 class SessionPreferences @Inject constructor(
     @ApplicationContext context: Context,
 ) {
-    private val preferences = context.getSharedPreferences(
-        "session_preferences",
-        Context.MODE_PRIVATE,
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val preferences = EncryptedSharedPreferences.create(
+        context,
+        "session_preferences_secure",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
     private val gson = Gson()

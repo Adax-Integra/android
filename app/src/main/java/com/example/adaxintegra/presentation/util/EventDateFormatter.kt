@@ -21,13 +21,46 @@ object EventDateFormatter {
 
     private val dayMonthFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM", locale)
 
-    // ex. "25" for the date badge
-    fun day(instant: Instant): String =
-        local(instant).dayOfMonth.toString()
+    // ex. "25" or "15-18" for the date badge
+    fun day(start: Instant, end: Instant): String {
+        val startLocal = local(start)
+        val endLocal = local(end)
+        return if (startLocal.toLocalDate() == endLocal.toLocalDate()) {
+            startLocal.dayOfMonth.toString()
+        } else {
+            "${startLocal.dayOfMonth}-${endLocal.dayOfMonth}"
+        }
+    }
 
     // ex. "OCT" for the date badge, Java writes "oct." so the dot is removed
     fun shortMonth(instant: Instant): String =
         shortMonthFormatter.format(local(instant)).replace(".", "").uppercase(locale)
+
+    // ex. "15-18 oct" for the events list card
+    fun shortDateRange(start: Instant, end: Instant): String {
+        val startLocal = local(start)
+        val endLocal = local(end)
+        val month = shortMonthFormatter.format(startLocal).replace(".", "").lowercase(locale)
+        val range = if (startLocal.toLocalDate() == endLocal.toLocalDate()) {
+            startLocal.dayOfMonth.toString()
+        } else {
+            "${startLocal.dayOfMonth}-${endLocal.dayOfMonth}"
+        }
+        return "$range $month"
+    }
+
+    // ex. "15 - 18 oct 2026" for the home carousel card
+    fun dateRange(start: Instant, end: Instant): String {
+        val startLocal = local(start)
+        val endLocal = local(end)
+        val month = shortMonthFormatter.format(startLocal).replace(".", "").lowercase(locale)
+        val year = startLocal.year
+        return if (startLocal.toLocalDate() == endLocal.toLocalDate()) {
+            "${startLocal.dayOfMonth} $month $year"
+        } else {
+            "${startLocal.dayOfMonth} - ${endLocal.dayOfMonth} $month $year"
+        }
+    }
 
     // ex. "25 de octubre, 2026"
     fun longDate(instant: Instant): String =
