@@ -4,25 +4,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.domain.model.Case
-import com.example.adaxintegra.domain.model.Violence
-import com.example.adaxintegra.presentation.model.CaseStatusUi
-import com.example.adaxintegra.presentation.util.DateFormatter
+import com.example.adaxintegra.domain.model.CaseProgressStep
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
-import com.example.adaxintegra.presentation.views.designsystem.molecules.StatusRow
+import com.example.adaxintegra.presentation.views.designsystem.organisms.timeline.HorizontalCaseProgress
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.Black
 import com.example.adaxintegra.ui.theme.IconGrey
@@ -36,6 +40,7 @@ import java.util.Date
 @Composable
 fun CurrentCaseCard(
     currentCase: Case?,
+    caseSteps: List<CaseProgressStep> = emptyList(),
     onCaseClick: (String) -> Unit,
     onRegisterCaseClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -47,22 +52,45 @@ fun CurrentCaseCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(White)
-            .then(
-                //Only a card that already has a case is worth tapping
-                if (currentCase != null) {
-                    Modifier.clickable { onCaseClick(currentCase.caseId) }
-                } else {
-                    Modifier
-                },
-            ).padding(20.dp),
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = "Tu caso en curso",
-            style = AppTextStyle.TitleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Black,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Tu caso en curso",
+                modifier = Modifier.weight(1f),
+                style = AppTextStyle.TitleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Black,
+            )
+
+            //V-07: only a card that already has a case can open its progress
+            if (currentCase != null) {
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                        .clickable { onCaseClick(currentCase.caseId) }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = "Ver detalles",
+                        style = AppTextStyle.LabelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    AppIcon(
+                        imageVector = AppIcons.ChevronRight,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
 
         when {
             isLoading -> {
@@ -97,31 +125,16 @@ fun CurrentCaseCard(
             }
 
             else -> {
-                //Same three lines CaseSummaryCard shows in V-04, so the case reads the same
-                val status = CaseStatusUi.from(currentCase.state)
-
-                Text(
-                    text = currentCase.caseNumber
-                        ?.takeIf { it.isNotBlank() }
-                        ?: "Sin número de caso",
-                    style = AppTextStyle.BodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-
-                Text(
-                    text = currentCase.violenceList
-                        .orEmpty()
-                        .joinToString(", ") { it.type }
-                        .ifBlank { "Sin tipo registrado" },
-                    style = AppTextStyle.BodyMedium,
-                    fontWeight = FontWeight.Normal,
-                )
-
-                StatusRow(
-                    statusText = status?.displayText ?: currentCase.state ?: "Sin estado",
-                    statusColor = status?.color ?: IconGrey,
-                    updatedAt = DateFormatter.relative(currentCase.updatedAt),
-                )
+                if (caseSteps.isEmpty()) {
+                    Text(
+                        text = "Este caso todavía no tiene pasos registrados.",
+                        style = AppTextStyle.BodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = IconGrey,
+                    )
+                } else {
+                    HorizontalCaseProgress(caseSteps = caseSteps)
+                }
             }
         }
     }
@@ -141,10 +154,15 @@ fun CurrentCaseCardPreviewWithCase() {
                 description = "Descripción de prueba",
                 helpWanted = "Asesoría legal",
                 hasLawyer = false,
-                violenceList = listOf(Violence(id = "1", type = "Psicológica", severity = 6)),
+                violenceList = emptyList(),
                 helpList = null,
                 createdAt = Date(),
                 updatedAt = Date(),
+            ),
+            caseSteps = listOf(
+                CaseProgressStep(stepNumber = 1, status = "completed"),
+                CaseProgressStep(stepNumber = 2, status = "in_progress"),
+                CaseProgressStep(stepNumber = 3, status = "not_started"),
             ),
             onCaseClick = {},
             onRegisterCaseClick = {},
