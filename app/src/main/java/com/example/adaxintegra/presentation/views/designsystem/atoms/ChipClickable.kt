@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,11 @@ fun ChipClickable(
     leadingIcon: @Composable (() -> Unit)? = null,
     selected: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(size = 4.dp)
+    val shape = RoundedCornerShape(size = 16.dp)
+
+    val backgroundColor = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else Color.Transparent
+    val contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
 
     // If not given an icon, we use by default the checkmark
     val effectiveTrailingIcon: @Composable (() -> Unit)? = when {
@@ -37,7 +42,7 @@ fun ChipClickable(
                 AppIcon(
                     imageVector = AppIcons.CheckMark,
                     contentDescription = "Selected",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = contentColor,
                 )
             }
         }
@@ -48,23 +53,14 @@ fun ChipClickable(
     val chipModifier = modifier
         .clip(shape)
         .clickable { onClick() }
-        .height(28.dp)
-        .then(
-            if (selected) {
-                Modifier.background(
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
-                    shape = shape,
-                )
-            } else {
-                Modifier
-            }
-        )
+        .height(36.dp)
+        .background(color = backgroundColor, shape = shape)
         .border(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = borderColor,
             shape = shape,
         )
-        .padding(horizontal = 10.dp, vertical = 4.dp)
+        .padding(horizontal = 14.dp, vertical = 6.dp)
 
     Box(
         modifier = chipModifier,
@@ -77,8 +73,8 @@ fun ChipClickable(
             effectiveTrailingIcon?.invoke()
             Text(
                 text = text,
-                style = AppTextStyle.LabelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTextStyle.LabelMedium,
+                color = contentColor,
                 fontWeight = FontWeight.Bold,
             )
         }
