@@ -194,6 +194,15 @@ class ExternalUserDetailViewModel @Inject constructor(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
+    // B-02: the review screen sends back the status the backend saved,
+    // so the badge changes without loading the profile again
+    fun onVerificationDecided(status: String) {
+        _uiState.update { state ->
+            val profile = state.profile ?: return@update state
+            state.copy(profile = profile.copy(verificationStatus = status))
+        }
+    }
+
     // The detail and the form start with what the backend has now
     private fun apply(profile: ExternalUserProfile) {
         val data = profile.toForm()

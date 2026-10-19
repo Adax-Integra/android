@@ -3,6 +3,7 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.ExternalUserApi
+import com.example.adaxintegra.data.remote.dto.ReviewVerificationRequestDto
 import com.example.adaxintegra.domain.model.ExternalUserPage
 import com.example.adaxintegra.domain.model.ExternalUserProfile
 import com.example.adaxintegra.domain.model.ExternalUserProfileUpdate
@@ -61,5 +62,19 @@ class ExternalUserRepositoryImpl @Inject constructor(
         )
         val data = response.data ?: throw IllegalStateException("Empty response from server")
         return data.toDomain()
+    }
+
+    override suspend fun reviewVerification(
+        userId: String,
+        status: String,
+        reason: String?,
+    ): String {
+        val response = api.reviewVerification(
+            authorization = authorizationHeader(),
+            userId = userId,
+            request = ReviewVerificationRequestDto(status = status, reason = reason),
+        )
+        return response.data?.verificationStatus
+            ?: throw IllegalStateException("Empty response from server")
     }
 }

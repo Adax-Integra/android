@@ -7,12 +7,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -37,8 +35,6 @@ import com.example.adaxintegra.domain.model.ExternalUserProfile
 import com.example.adaxintegra.domain.model.toForm
 import com.example.adaxintegra.presentation.viewmodel.ExternalUserDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
-import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitle
@@ -47,6 +43,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.atoms.VerificationStatus
 import com.example.adaxintegra.presentation.views.designsystem.molecules.ConsentCheckboxRow
 import com.example.adaxintegra.presentation.views.designsystem.molecules.FormActions
+import com.example.adaxintegra.presentation.views.designsystem.molecules.InfoBanner
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextArea
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
@@ -61,18 +58,27 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.Purple
 
 // G-07: the admin reviews the data of an external user and edits the email,
-// the phone and the address
+// the phone and the address.
+// B-02: the internal staff only sees the data and opens the verification review
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ExternalUserDetailScreen(
     userId: String,
     onBack: () -> Unit,
+    canEdit: Boolean = true,
+    decidedStatus: String? = null,
+    onReviewClick: () -> Unit = {},
     viewModel: ExternalUserDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
         viewModel.loadProfile(userId)
+    }
+
+    // Coming back from the review, the badge shows the status that was saved
+    LaunchedEffect(decidedStatus) {
+        decidedStatus?.let(viewModel::onVerificationDecided)
     }
 
     // The system back closes the form first, same as the arrow of the header
@@ -103,6 +109,8 @@ fun ExternalUserDetailScreen(
 
                 else -> ProfileDetailContent(
                     uiState = uiState,
+                    canEdit = canEdit,
+                    onReviewClick = onReviewClick,
                     onEditClick = viewModel::startEditing,
                 )
             }
@@ -173,10 +181,13 @@ fun ExternalUserDetailScreen(
 @Composable
 private fun ProfileDetailContent(
     uiState: ExternalUserDetailUiState,
+    canEdit: Boolean,
+    onReviewClick: () -> Unit,
     onEditClick: () -> Unit,
 ) {
     val spacing = Spacing()
     val saved = uiState.saved
+    val status = VerificationStatus.from(uiState.profile?.verificationStatus)
 
     Column(
         modifier = Modifier
@@ -189,7 +200,7 @@ private fun ProfileDetailContent(
             initials = uiState.initials,
             name = uiState.displayName,
             email = displayValue(saved.email),
-            status = VerificationStatus.from(uiState.profile?.verificationStatus),
+            status = status,
         )
 
         RegistrationSection(uiState = uiState)
@@ -206,11 +217,23 @@ private fun ProfileDetailContent(
             ProfileInfoRow(label = "Municipio/Localidad", value = displayValue(saved.municipality))
         }
 
-        AppButton(
-            text = "Editar datos",
-            onClick = onEditClick,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // B-02: only an account under review can be approved or rejected
+        if (status == VerificationStatus.IN_REVIEW) {
+            AppButton(
+                text = "Revisar verificación",
+                onClick = onReviewClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // Only the admin can edit, the backend answers 403 to the internal staff
+        if (canEdit) {
+            AppButton(
+                text = "Editar datos",
+                onClick = onEditClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -324,22 +347,6 @@ private fun EditProfileContent(
     }
 }
 
-// Light purple box with the info icon, above the form
-@Suppress("ktlint:standard:function-naming")
-@Composable
-private fun InfoBanner(text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Purple.copy(alpha = 0.08f), RoundedCornerShape(12.dp))
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        AppIcon(imageVector = AppIcons.Info, tint = Purple)
-        Text(text = text, style = AppTextStyle.BodySmall)
-    }
-}
-
 // Shown when the first load fails, the detail can not be drawn without the profile
 @Suppress("ktlint:standard:function-naming")
 @Composable
@@ -383,6 +390,8 @@ private fun ProfileDetailContentPreview() {
     AdaxIntegraTheme {
         ProfileDetailContent(
             uiState = ExternalUserDetailUiState(profile = profile, saved = profile.toForm()),
+            canEdit = true,
+            onReviewClick = {},
             onEditClick = {},
         )
     }
