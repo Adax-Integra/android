@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.CaseProgressStep
 import com.example.adaxintegra.domain.model.HelpType
 import com.example.adaxintegra.domain.model.Violence
 import com.example.adaxintegra.presentation.model.CaseStatusUi
@@ -30,6 +31,7 @@ import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDes
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHelpCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseProgressUpdateCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseRecordSummaryCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CheckboxesInDropdown
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
@@ -117,14 +119,17 @@ fun CaseDetailScreen(
                 availableViolences = uiState.availableViolences,
                 assignedViolences = case.violenceList.mapNotNull { caseViolence ->
                     val match = uiState.availableViolences.find {
-                        it.id == caseViolence.id || it.type.trim().equals(caseViolence.type.trim(), ignoreCase = true)
+                        it.id == caseViolence.id || it.type.trim()
+                            .equals(caseViolence.type.trim(), ignoreCase = true)
                     }
                     match?.type ?: caseViolence.type.takeIf { it.isNotBlank() }
                 }.toSet(),
                 onAssignViolences = { selectedDescriptions ->
                     val violenceIds = uiState.availableViolences
                         .filter { available ->
-                            selectedDescriptions.any { sel -> sel.trim().equals(available.type.trim(), ignoreCase = true) }
+                            selectedDescriptions.any { sel ->
+                                sel.trim().equals(available.type.trim(), ignoreCase = true)
+                            }
                         }
                         .map { it.id }
                     viewModel.assignViolences(caseId, violenceIds)
@@ -145,6 +150,13 @@ fun CaseDetailScreen(
                 onEdit = onEdit,
                 onRequestClose = {
                     showCloseDialog = true
+                },
+                caseSteps = case.caseSteps,
+                isUpdatingStep = uiState.isUpdatingStep,
+                updateStepSuccess = uiState.updateStepSuccess,
+                updateStepError = uiState.updateStepError,
+                onUpdateStep = { stepNumber ->
+                    viewModel.updateCaseStep(case.caseId, stepNumber)
                 },
             )
         }
@@ -191,6 +203,11 @@ private fun CaseDetailContent(
     availableHelps: List<HelpType>,
     assignedHelps: Set<String>,
     onAssignHelps: (Set<String>) -> Unit,
+    caseSteps: List<CaseProgressStep>,
+    isUpdatingStep: Boolean,
+    updateStepSuccess: Boolean,
+    updateStepError: String?,
+    onUpdateStep: (Int) -> Unit,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onRequestClose: () -> Unit,
@@ -310,7 +327,16 @@ private fun CaseDetailContent(
         }
 
         //add case step progress update selector
-
+        item {
+            CaseProgressUpdateCard(
+                caseSteps = caseSteps,
+                isUpdating = isUpdatingStep,
+                updateSuccess = updateStepSuccess,
+                updateError = updateStepError,
+                isCaseClosed = isCaseClosed,
+                onUpdateStep = onUpdateStep,
+            )
+        }
 
         // actions defined by the V-11 case detail acceptance criteria
         item {
@@ -332,7 +358,7 @@ private fun CaseDetailContent(
 }
 
 // mock values are used only to validate the open-case V-11 layout
-@Suppress("ktlint:standard:function-naming")
+/*@Suppress("ktlint:standard:function-naming")
 @Preview(
     name = "V-11 Open Case Detail",
     showBackground = true,
@@ -375,6 +401,11 @@ private fun OpenCaseDetailScreenPreview() {
                 onBack = {},
                 onEdit = {},
                 onRequestClose = {},
+                caseSteps = TODO(),
+                isUpdatingStep = TODO(),
+                updateStepSuccess = TODO(),
+                updateStepError = TODO(),
+                onUpdateStep = TODO(),
             )
         }
     }
@@ -426,4 +457,4 @@ private fun ClosedCaseDetailScreenPreview() {
             )
         }
     }
-}
+}*/
