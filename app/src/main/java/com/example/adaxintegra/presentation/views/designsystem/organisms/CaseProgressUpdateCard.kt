@@ -50,10 +50,19 @@ fun CaseProgressUpdateCard(
         caseSteps.sortedBy { it.stepNumber }
     }
 
+    //find step in progress. if none, choose highest completed step
+    //lowest step pending if none of the other 2 are found
     val currentStep = remember(caseSteps) {
         caseSteps
-            .filter { it.status.equals("Completado", ignoreCase = true) }
-            .maxOfOrNull { it.stepNumber }
+            .firstOrNull {
+                it.status.equals("En progreso", ignoreCase = true)
+            }
+            ?.stepNumber
+            ?: caseSteps
+                .filter {
+                    it.status.equals("Completado", ignoreCase = true)
+                }
+                .maxOfOrNull { it.stepNumber }
             ?: caseSteps.minOfOrNull { it.stepNumber }
             ?: 1
     }
