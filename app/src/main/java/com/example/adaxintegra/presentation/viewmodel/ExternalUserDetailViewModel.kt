@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.model.ExternalUserProfile
-import com.example.adaxintegra.domain.model.ExternalUserProfileUpdate
+import com.example.adaxintegra.domain.model.toForm
+import com.example.adaxintegra.domain.usecases.GetCountriesUseCase
 import com.example.adaxintegra.domain.usecases.GetExternalProfileUseCase
 import com.example.adaxintegra.domain.usecases.UpdateExternalProfileUseCase
 import com.example.adaxintegra.presentation.views.screens.admin.ExternalUserDetailUiState
-
+import com.example.adaxintegra.presentation.views.screens.admin.MAX_REASON_LENGTH
+import com.example.adaxintegra.presentation.views.screens.admin.cleanEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,49 +19,47 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
+// G-07: shows the data of an external user and lets the admin edit the text fields
+// The detail and the edit form share this ViewModel
 @HiltViewModel
 class ExternalUserDetailViewModel @Inject constructor(
     private val getExternalProfileUseCase: GetExternalProfileUseCase,
     private val updateExternalProfileUseCase: UpdateExternalProfileUseCase,
+    private val getCountriesUseCase: GetCountriesUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ExternalUserDetailUiState())
     val uiState: StateFlow<ExternalUserDetailUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
 
+    // Coming back to the screen does not reload, apply() already has the new data
     fun loadProfile(userId: String) {
+        if (_uiState.value.profile != null) {
+            return
+        }
         loadJob?.cancel()
-        _uiState.update { it.copy(isLoading = true, error = null) }
+        _uiState.update { it.copy(loadError = null) }
+
+        // The catalog is only needed to edit, so it loads apart and a failure
+        // does not block the detail
+        if (_uiState.value.countries.isEmpty()) {
+            viewModelScope.launch {
+                val countries = getCountriesUseCase()
+                _uiState.update { it.copy(countries = countries) }
+            }
+        }
 
         loadJob = viewModelScope.launch {
             getExternalProfileUseCase(userId).collect { result ->
                 when (result) {
-                    is Result.Loading -> _uiState.update {
-                        it.copy(isLoading = true, error = null)
-                    }
+                    is Result.Loading -> Unit
 
-                    is Result.Success -> _uiState.update {
-                        it.copy(
-                            profile = result.data,
-                            isLoading = false,
-                            isEditing = false,
-                            email = result.data.email.orEmpty(),
-                            phone = result.data.phone.orEmpty(),
-                            country = result.data.country.orEmpty(),
-                            state = result.data.state.orEmpty(),
-                            municipality = result.data.municipality.orEmpty(),
-                            error = null,
-                        )
-                    }
+                    is Result.Success -> apply(result.data)
 
                     is Result.Error -> _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = errorMessage(result.exception),
-                        )
+                        it.copy(loadError = "No se pudo cargar la información de la externa.")
                     }
                 }
             }
@@ -67,198 +67,171 @@ class ExternalUserDetailViewModel @Inject constructor(
     }
 
     fun startEditing() {
-        _uiState.update { current ->
-            val profile = current.profile ?: return@update current
-            current.copy(
-                isEditing = true,
-                showConfirmation = false,
-                email = profile.email.orEmpty(),
-                phone = profile.phone.orEmpty(),
-                country = profile.country.orEmpty(),
-                state = profile.state.orEmpty(),
-                municipality = profile.municipality.orEmpty(),
+        _uiState.update {
+            it.copy(
+                form = it.saved,
                 reason = "",
-                consentConfirmed = false,
-                error = null,
-                successMessage = null,
+                hasConsent = false,
+                showErrors = false,
+                takenEmail = null,
+                isEditing = true,
             )
         }
     }
 
     fun cancelEditing() {
         _uiState.update {
-            it.copy(
-                isEditing = false,
-                showConfirmation = false,
-                reason = "",
-                consentConfirmed = false,
-                error = null,
-            )
+            it.copy(isEditing = false, isShowingConfirmation = false)
         }
     }
 
     fun onEmailChange(value: String) {
-        _uiState.update { it.copy(email = value, error = null) }
+        _uiState.update { it.copy(form = it.form.copy(email = value)) }
     }
 
+    fun onCountryCodeChange(value: String) {
+        _uiState.update { it.copy(form = it.form.copy(countryCode = value)) }
+    }
+
+    // Only digits, at most the 10 of the number
     fun onPhoneChange(value: String) {
-        _uiState.update { it.copy(phone = value, error = null) }
+        val digits = value.filter { it.isDigit() }.take(10)
+        _uiState.update { it.copy(form = it.form.copy(phone = digits)) }
     }
 
-    fun onCountryChange(value: String) {
-        _uiState.update { it.copy(country = value, error = null) }
+    // A new country invalidates the selected state and the municipality
+    fun selectCountry(country: String) {
+        _uiState.update {
+            if (country == it.form.country) {
+                it
+            } else {
+                it.copy(form = it.form.copy(country = country, state = null, municipality = ""))
+            }
+        }
     }
 
-    fun onStateChange(value: String) {
-        _uiState.update { it.copy(state = value, error = null) }
+    // A new state invalidates the municipality
+    fun selectState(state: String) {
+        _uiState.update {
+            if (state == it.form.state) {
+                it
+            } else {
+                it.copy(form = it.form.copy(state = state, municipality = ""))
+            }
+        }
     }
 
     fun onMunicipalityChange(value: String) {
-        _uiState.update { it.copy(municipality = value, error = null) }
+        _uiState.update { it.copy(form = it.form.copy(municipality = value)) }
     }
 
     fun onReasonChange(value: String) {
-        _uiState.update { it.copy(reason = value.take(500), error = null) }
+        _uiState.update { it.copy(reason = value.take(MAX_REASON_LENGTH)) }
     }
 
-    fun onConsentChange(confirmed: Boolean) {
-        _uiState.update { it.copy(consentConfirmed = confirmed, error = null) }
+    fun onConsentChange(checked: Boolean) {
+        _uiState.update { it.copy(hasConsent = checked) }
     }
 
-    private fun validationError(s: ExternalUserDetailUiState): String? {
-        val p = s.profile ?: return "No se encontró el perfil."
-
-        val fields = listOf(
-            s.email.trim() to p.email.orEmpty().trim(),
-            s.phone.trim() to p.phone.orEmpty().trim(),
-            s.country.trim() to p.country.orEmpty().trim(),
-            s.state.trim() to p.state.orEmpty().trim(),
-            s.municipality.trim() to p.municipality.orEmpty().trim(),
-        )
-        if (fields.none { (new, old) -> new != old }) return "No hay cambios para guardar."
-
-        val emailRegex = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
-        if (fields[0].first != fields[0].second && !emailRegex.matches(fields[0].first))
-            return "Ingresa un correo electrónico válido."
-
-        val phoneRegex = Regex("""^\+\d{1,3}\d{10}$""")
-        if (fields[1].first != fields[1].second && !phoneRegex.matches(fields[1].first))
-            return "El teléfono debe incluir prefijo internacional y 10 dígitos."
-
-        if (fields.drop(2).any { (new, old) -> new != old && new.isBlank() })
-            return "Los campos de domicilio modificados no pueden quedar vacíos."
-
-        if (s.reason.isBlank()) return "Escribe el motivo del cambio."
-        if (!s.consentConfirmed) return "Debes confirmar la autorización de la externa."
-
-        return null
-    }
-
-    fun requestConfirmation() {
+    // Without changes there is nothing to save, so it leaves like the back button.
+    // Otherwise the first tap reveals the invalid fields
+    fun onSaveTapped() {
         val current = _uiState.value
-        if (!current.isEditing || current.isSaving) return
-
-        val error = validationError(current)
-
-        _uiState.update {
-            it.copy(
-                showConfirmation = error == null,
-                error = error,
-            )
+        if (current.isSaving) {
+            return
         }
-    }
-
-    fun dismissConfirmation() {
-        _uiState.update {
-            it.copy(showConfirmation = false)
-        }
-    }
-
-    private fun buildUpdate(s: ExternalUserDetailUiState): ExternalUserProfileUpdate {
-        val original = requireNotNull(s.profile)
-
-        fun changed(value: String, previous: String?): String? {
-            val cleaned = value.trim()
-            return cleaned.takeIf { it != previous.orEmpty().trim() }
-        }
-
-        return ExternalUserProfileUpdate(
-            email = changed(s.email, original.email),
-            phone = changed(s.phone, original.phone),
-            country = changed(s.country, original.country),
-            state = changed(s.state, original.state),
-            municipality = changed(s.municipality, original.municipality),
-            reason = s.reason.trim(),
-            consentConfirmed = s.consentConfirmed,
-        )
-    }
-
-    fun confirmAndSave() {
-        val current = _uiState.value
-        if (!current.showConfirmation || current.isSaving) return
-
-        val profile = current.profile ?: return
-        val error = validationError(current)
-
-        if (error != null) {
-            _uiState.update { it.copy(showConfirmation = false, error = error) }
+        if (current.changes.isEmpty()) {
+            cancelEditing()
             return
         }
 
-        val update = buildUpdate(current)
+        val withErrors = current.copy(showErrors = true)
+        _uiState.value = withErrors.copy(isShowingConfirmation = withErrors.isFormValid)
+    }
+
+    fun dismissConfirmation() {
+        _uiState.update { it.copy(isShowingConfirmation = false) }
+    }
+
+    fun confirm() {
+        val current = _uiState.value
+        val profile = current.profile ?: return
+        if (current.isSaving || !current.isFormValid) {
+            return
+        }
+
         _uiState.update {
-            it.copy(isSaving = true, showConfirmation = false, error = null)
+            it.copy(isShowingConfirmation = false, isSaving = true, errorMessage = null)
         }
 
         viewModelScope.launch {
-            updateExternalProfileUseCase(profile.userId, update).collect { result ->
+            updateExternalProfileUseCase(profile.userId, current.toUpdate()).collect { result ->
                 when (result) {
-                    is Result.Loading -> _uiState.update {
-                        it.copy(isSaving = true)
+                    is Result.Loading -> Unit
+
+                    is Result.Success -> {
+                        apply(result.data)
+                        _uiState.update {
+                            it.copy(
+                                isSaving = false,
+                                isEditing = false,
+                                isShowingSuccessToast = true,
+                            )
+                        }
                     }
 
-                    is Result.Success -> _uiState.update {
-                        it.copy(
-                            profile = result.data,
-                            isSaving = false,
-                            isEditing = false,
-                            showConfirmation = false,
-                            reason = "",
-                            consentConfirmed = false,
-                            successMessage = "Datos actualizados correctamente.",
-                            error = null,
-                        )
-                    }
-
-                    is Result.Error -> _uiState.update {
-                        it.copy(
-                            isSaving = false,
-                            error = errorMessage(result.exception),
-                        )
-                    }
+                    is Result.Error -> handle(result.exception)
                 }
             }
         }
     }
 
-    fun clearSuccessMessage() {
-        _uiState.update { it.copy(successMessage = null) }
+    fun onToastShown() {
+        _uiState.update { it.copy(isShowingSuccessToast = false) }
     }
 
-    private fun errorMessage(e: Throwable): String = when {
-        e is HttpException && e.code() == 400 ->
-            "Los datos no son válidos. Revisa los cambios."
-        e is HttpException && e.code() == 401 ->
-            "Tu sesión expiró. Vuelve a iniciar sesión."
-        e is HttpException && e.code() == 403 ->
-            "No tienes permiso para modificar esta cuenta."
-        e is HttpException && e.code() == 404 ->
-            "No se encontró la cuenta externa."
-        e is HttpException && e.code() == 409 ->
-            "El correo electrónico ya está registrado."
-        e is IOException ->
-            "Sin conexión a internet. Inténtalo de nuevo."
-        else ->
-            "Ocurrió un error. Inténtalo de nuevo."
+    fun onErrorDismissed() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    // The detail and the form start with what the backend has now
+    private fun apply(profile: ExternalUserProfile) {
+        val data = profile.toForm()
+        _uiState.update {
+            it.copy(profile = profile, saved = data, form = data, loadError = null)
+        }
+    }
+
+    private fun handle(exception: Throwable) {
+        val code = (exception as? HttpException)?.code()
+
+        _uiState.update {
+            when (code) {
+                // The email field gets the red outline with the message
+                409 -> it.copy(
+                    isSaving = false,
+                    takenEmail = cleanEmail(it.form.email),
+                    showErrors = true,
+                )
+
+                401 -> it.copy(isSaving = false, errorMessage = "Tu sesión expiró. Vuelve a iniciar sesión.")
+
+                403 -> it.copy(isSaving = false, errorMessage = "No tienes permiso para modificar estos datos.")
+
+                404 -> it.copy(isSaving = false, errorMessage = "La cuenta de la externa no está disponible.")
+
+                400 -> it.copy(isSaving = false, errorMessage = "Revisa los datos e intenta de nuevo.")
+
+                null -> it.copy(
+                    isSaving = false,
+                    errorMessage = "No pudimos guardar los cambios. Revisa tu conexión e intenta de nuevo.",
+                )
+
+                else -> it.copy(
+                    isSaving = false,
+                    errorMessage = "No pudimos guardar los cambios. Intenta de nuevo más tarde.",
+                )
+            }
+        }
     }
 }
