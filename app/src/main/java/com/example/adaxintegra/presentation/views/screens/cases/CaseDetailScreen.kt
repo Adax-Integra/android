@@ -309,6 +309,8 @@ private fun CaseDetailContent(
             )
         }
 
+        //add case step progress update selector
+
 
         // actions defined by the V-11 case detail acceptance criteria
         item {
