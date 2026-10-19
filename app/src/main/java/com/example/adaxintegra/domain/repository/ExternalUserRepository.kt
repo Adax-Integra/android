@@ -10,4 +10,7 @@ interface ExternalUserRepository {
 
     suspend fun getExternalProfile(userId: String): ExternalUserProfile
     suspend fun updateExternalProfile(userId: String, update: ExternalUserProfileUpdate): ExternalUserProfile
+
+    // B-02: returns the verification status the backend saved
+    suspend fun reviewVerification(userId: String, status: String, reason: String?): String
 }
