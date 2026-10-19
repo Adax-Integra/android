@@ -1,8 +1,11 @@
 package com.example.adaxintegra.data.repository
 
 import com.example.adaxintegra.data.mapper.toDomain
+import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.ExternalUserApi
 import com.example.adaxintegra.domain.model.ExternalUserPage
+import com.example.adaxintegra.domain.model.ExternalUserProfile
+import com.example.adaxintegra.domain.model.ExternalUserProfileUpdate
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.ExternalUserRepository
 import javax.inject.Inject
@@ -33,6 +36,28 @@ class ExternalUserRepositoryImpl @Inject constructor(
             status = status,
             // Newest accounts first
             sort = "recent",
+        )
+        val data = response.data ?: throw IllegalStateException("Empty response from server")
+        return data.toDomain()
+    }
+
+    override suspend fun getExternalProfile(userId: String): ExternalUserProfile {
+        val response = api.getExternalProfile(
+            authorization = authorizationHeader(),
+            userId = userId,
+        )
+        val data = response.data ?: throw IllegalStateException("Empty response from server")
+        return data.toDomain()
+    }
+
+    override suspend fun updateExternalProfile(
+        userId: String,
+        update: ExternalUserProfileUpdate,
+    ): ExternalUserProfile {
+        val response = api.updateExternalProfile(
+            authorization = authorizationHeader(),
+            userId = userId,
+            request = update.toRequestDto(),
         )
         val data = response.data ?: throw IllegalStateException("Empty response from server")
         return data.toDomain()

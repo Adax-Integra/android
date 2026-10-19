@@ -56,6 +56,7 @@ fun CollaboratorCard(
     isActive: Boolean,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    showChevron: Boolean = true,
 ) {
     // Theme colors so the card is readable in light and dark mode
     Card(
@@ -122,11 +123,13 @@ fun CollaboratorCard(
             StatusBadge(isActive = isActive)
 
             // G-10: the arrow shows that the card opens the detail of the collaborator
-            AppIcon(
-                imageVector = AppIcons.ChevronRight,
-                contentDescription = null,
-                tint = Purple,
-            )
+            if (showChevron){
+                AppIcon(
+                    imageVector = AppIcons.ChevronRight,
+                    contentDescription = null,
+                    tint = Purple,
+                )
+            }
         }
     }
 }

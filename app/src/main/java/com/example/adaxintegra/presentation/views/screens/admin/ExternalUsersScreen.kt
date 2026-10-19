@@ -38,8 +38,7 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 import com.example.adaxintegra.ui.theme.IconGrey
 import com.example.adaxintegra.ui.theme.Purple
 
-private fun countText(total: Int): String =
-    if (total == 1) "1 Externa" else "$total Externas"
+private fun countText(total: Int): String = if (total == 1) "1 Externa" else "$total Externas"
 
 // Message when there is nothing to show
 private fun emptyText(searchQuery: String, hasStatusFilter: Boolean): String = when {
@@ -130,7 +129,7 @@ fun ExternalUsersScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(
                                 spacing.medium,
-                                Alignment.CenterVertically
+                                Alignment.CenterVertically,
                             ),
                         ) {
                             Text(
@@ -170,7 +169,12 @@ fun ExternalUsersScreen(
                                     lastName = user.lastName,
                                     email = user.email,
                                     isActive = user.isActive,
-                                    onClick = { onExternalUserClick(user.userId) },
+                                    onClick = {
+                                        if (user.isActive) {
+                                            onExternalUserClick(user.userId)
+                                        }
+                                    },
+                                    showChevron = user.isActive,
                                 )
                             }
                         }
