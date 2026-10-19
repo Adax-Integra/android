@@ -13,4 +13,5 @@ fun ProfileViewDto.toDomain(): ProfileView = ProfileView(
     birthDate = birthDate ?: "",
     phone = phone ?: "",
     createdAt = createdAt ?: "",
+    verificationStatus = verificationStatus,
 )
