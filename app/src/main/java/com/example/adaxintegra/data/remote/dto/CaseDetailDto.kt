@@ -17,6 +17,8 @@ data class CaseDetailDto(
     val has_lawyer: Boolean? = null,
     val state: String? = null,
     val record_id: String? = null,
+    @SerializedName(value = "record_number", alternate = ["recordNumber", "expedient_number", "expedientNumber"])
+    val record_number: String? = null,
     val created_at: String? = null,
     val updated_at: String? = null,
     val record: CaseDetailRecordDto? = null,
@@ -36,7 +38,10 @@ data class CaseDetailAssignmentDto(
 
 // record information associated with the selected case
 data class CaseDetailRecordDto(
+    @SerializedName(value = "record_id", alternate = ["recordId"])
     val record_id: String? = null,
+    @SerializedName(value = "record_number", alternate = ["recordNumber", "expedient_number", "expedientNumber"])
+    val record_number: String? = null,
     val user: CaseDetailUserDto? = null,
 )
 

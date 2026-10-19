@@ -119,7 +119,7 @@ fun CaseDetailScreen(
 
                 // record information returned by the V-11 backend detail response
                 userName = case.userName,
-                recordId = case.recordId,
+                recordId = case.recordNumber?.takeIf { it.isNotBlank() } ?: case.recordId,
 
                 isCaseClosed = isCaseClosed,
 
@@ -489,7 +489,7 @@ private fun OpenCaseDetailScreenPreview() {
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
-                recordId = "EXP-2024-1024",
+                recordId = "EXP-2026-1024",
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
@@ -543,7 +543,7 @@ private fun ClosedCaseDetailScreenPreview() {
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
-                recordId = "EXP-2024-1024",
+                recordId = "EXP-2026-1024",
 
                 // closed cases must not expose the close-case action again
                 isCaseClosed = true,

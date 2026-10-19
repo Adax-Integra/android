@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
-import com.example.adaxintegra.presentation.views.designsystem.atoms.CaseEditButton
 import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 
@@ -29,7 +28,7 @@ fun CaseRecordSummaryCard(
     recordId: String,
     createdAt: String,
     updatedAt: String,
-    onEdit: () -> Unit,
+    onEdit: () -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -71,9 +70,6 @@ fun CaseRecordSummaryCard(
                     )
                 }
 
-                CaseEditButton(
-                    onClick = onEdit,
-                )
             }
 
             Row(

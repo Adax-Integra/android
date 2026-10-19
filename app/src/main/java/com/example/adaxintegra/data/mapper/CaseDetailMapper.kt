@@ -39,6 +39,11 @@ fun CaseDetailDto.toDomain(): CaseDetail {
     val assignedIds = identifiedAssignments.map { it.first }
     val assignedNames = identifiedAssignments.map { it.second }
 
+    val recordNum = record?.record_number
+        ?.takeIf { it.isNotBlank() }
+        ?: record_number
+        ?.takeIf { it.isNotBlank() }
+
     return CaseDetail(
         caseId = case_id,
         caseNumber = case_number,
@@ -47,6 +52,7 @@ fun CaseDetailDto.toDomain(): CaseDetail {
         helpWanted = written_helps_wanted,
         hasLawyer = has_lawyer,
         recordId = record?.record_id ?: record_id,
+        recordNumber = recordNum,
         userName = userName,
         createdAt = parseCaseDetailDate(created_at),
         updatedAt = parseCaseDetailDate(updated_at),
