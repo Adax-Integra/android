@@ -255,8 +255,12 @@ fun AppNavigation(
                             if (isExternal) "cases" else "records"
                         }
 
-                        // R-06: "Mis documentos" is opened from the profile
-                        currentRoute == "uploadDocuments" -> "profile"
+                        // R-06: "Mis documentos" is opened from the profile.
+                        // B-01: the verification notice of the home opens it too
+                        currentRoute == "uploadDocuments" -> {
+                            val previousRoute = navController.previousBackStackEntry?.destination?.route
+                            if (previousRoute == "home") "home" else "profile"
+                        }
 
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
@@ -471,6 +475,12 @@ fun AppNavigation(
                             },
                             onSeeAllEventsClick = {
                                 navController.navigate("events") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            // B-01: "Subir documentos" of the verification notice
+                            onUploadDocumentsClick = {
+                                navController.navigate("uploadDocuments") {
                                     launchSingleTop = true
                                 }
                             },
