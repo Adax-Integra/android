@@ -50,7 +50,7 @@ fun CountryCodeSelector(
     Box {
         Row(
             modifier = Modifier
-                .clickable { expanded = true }
+                .clickable(enabled = enabled) { expanded = true }
                 .padding(start = 12.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
