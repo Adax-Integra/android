@@ -28,6 +28,7 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVaria
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CollaboratorDetailContent
+import com.example.adaxintegra.presentation.views.designsystem.organisms.EditCollaboratorDialog
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.Purple
 
@@ -55,6 +56,18 @@ fun CollaboratorDetailScreen(
     // Reloads the collaborator whenever the selected one changes
     LaunchedEffect(userId) {
         viewModel.loadCollaborator(userId)
+    }
+
+    // G-18: show success only after the backend confirms the update
+    LaunchedEffect(uiState.profileUpdated) {
+        if (uiState.profileUpdated) {
+            Toast.makeText(
+                context,
+                "Datos actualizados correctamente",
+                Toast.LENGTH_SHORT,
+            ).show()
+            viewModel.clearProfileUpdated()
+        }
     }
 
     // Copies the text and confirms it with a short message
@@ -98,9 +111,21 @@ fun CollaboratorDetailScreen(
                     collaborator = collaborator,
                     onCopy = copyText,
                     onChangeStatusClick = viewModel::openStatusDialog,
+                    onEditClick = viewModel::openEditDialog,
                 )
             }
         }
+    }
+
+    // G-18: reuse the existing G-10 screen and the new edit dialog
+    if (uiState.showEditDialog && collaborator != null) {
+        EditCollaboratorDialog(
+            collaborator = collaborator,
+            isSaving = uiState.isUpdatingProfile,
+            error = uiState.profileError,
+            onSave = viewModel::saveProfile,
+            onCancel = viewModel::dismissEditDialog,
+        )
     }
 
     // G-04: confirmation before changing the status, the text depends on the current one
@@ -120,6 +145,7 @@ fun CollaboratorDetailScreen(
 
         AlertDialog(
             onDismissRequest = viewModel::dismissStatusDialog,
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
                     text = title,

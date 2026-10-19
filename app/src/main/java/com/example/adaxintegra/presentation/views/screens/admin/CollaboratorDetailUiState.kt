@@ -11,4 +11,9 @@ data class CollaboratorDetailUiState(
     val showStatusDialog: Boolean = false,
     val isUpdatingStatus: Boolean = false,
     val statusError: String? = null,
+    // G-18 profile editing
+    val showEditDialog: Boolean = false,
+    val isUpdatingProfile: Boolean = false,
+    val profileError: String? = null,
+    val profileUpdated: Boolean = false,
 )

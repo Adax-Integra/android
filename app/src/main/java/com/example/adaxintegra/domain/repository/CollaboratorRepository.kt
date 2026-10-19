@@ -17,4 +17,12 @@ interface CollaboratorRepository {
 
     // G-04: changes the status of the account and returns the new one
     suspend fun updateCollaboratorStatus(userId: String, isActive: Boolean): Boolean
+
+    // G-18: null means the field was not modified
+    suspend fun updateCollaboratorProfile(
+        userId: String,
+        name: String?,
+        lastName: String?,
+        email: String?,
+    )
 }
