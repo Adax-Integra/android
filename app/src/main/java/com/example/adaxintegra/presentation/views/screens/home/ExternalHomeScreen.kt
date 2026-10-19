@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.presentation.viewmodel.CaseProgressViewModel
 import com.example.adaxintegra.presentation.viewmodel.EventsViewModel
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.VerificationStatusViewModel
@@ -43,10 +44,12 @@ fun ExternalHomeScreen(
     viewModel: ExternalCasesViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel(),
     verificationViewModel: VerificationStatusViewModel = hiltViewModel(),
+    progressViewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.uiState.collectAsStateWithLifecycle()
     val verificationStatus by verificationViewModel.status.collectAsStateWithLifecycle()
+    val progressState by progressViewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
     val context = LocalContext.current
 
@@ -66,13 +69,19 @@ fun ExternalHomeScreen(
         !"closed".equals(case.state, ignoreCase = true)
     }
 
+    // V-07: the case list doesn't bring the steps, so the case in progress is fetched by id (same as iOS)
+    LaunchedEffect(currentCase?.caseId) {
+        currentCase?.caseId?.let { progressViewModel.loadCase(it) }
+    }
+
     PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing,
+        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing || progressState.isRefreshing,
         // Pulling the home down reloads the cases and the events together
         onRefresh = {
             viewModel.refresh()
             eventsViewModel.refresh()
             verificationViewModel.load()
+            currentCase?.let { progressViewModel.refresh(it.caseId) }
         },
         modifier = modifier
             .fillMaxSize(),
@@ -100,10 +109,11 @@ fun ExternalHomeScreen(
 
             CurrentCaseCard(
                 currentCase = currentCase,
+                caseSteps = progressState.case?.caseSteps.orEmpty(),
                 onCaseClick = onCaseClick,
                 onRegisterCaseClick = onRegisterCaseClick,
-                isLoading = uiState.isLoading,
-                error = uiState.error,
+                isLoading = uiState.isLoading || progressState.isLoading,
+                error = uiState.error ?: progressState.error,
             )
 
             EventsCarousel(
