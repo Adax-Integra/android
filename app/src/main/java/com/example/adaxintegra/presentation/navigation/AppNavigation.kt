@@ -33,11 +33,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
-import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
@@ -59,6 +59,7 @@ import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorDeta
 import com.example.adaxintegra.presentation.views.screens.admin.CollaboratorsScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ExternalUserDetailScreen
 import com.example.adaxintegra.presentation.views.screens.admin.ExternalUsersScreen
+import com.example.adaxintegra.presentation.views.screens.admin.VerificationReviewScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseDetailScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CaseProgressScreen
 import com.example.adaxintegra.presentation.views.screens.cases.CasesScreen
@@ -80,6 +81,9 @@ import com.example.adaxintegra.presentation.views.screens.reports.ReportSelectRa
 import io.ktor.client.utils.EmptyContent.status
 import java.net.URLDecoder
 import java.net.URLEncoder
+
+// B-02: key that the review screen uses to send the new status back to the detail
+private const val VERIFICATION_RESULT_KEY = "verificationResult"
 
 // general navigation routes, provides screens
 @Suppress("ktlint:standard:function-naming")
@@ -227,12 +231,17 @@ fun AppNavigation(
                         // G-03: collaborators screen is opened from the admin section (NV-02)
                         // V-06: activity log is opened from the admin section
                         // G-10: the collaborator detail keeps the admin tab selected
-                        // G-16: the external users list is opened from the admin section
                         currentRoute == "collaborators" ||
                             currentRoute == "activityLog" ||
-                            currentRoute == "externalUsers" ||
-                            currentRoute.startsWith("collaboratorDetail") ||
-                            currentRoute.startsWith("externalUserDetail") -> "admin"
+                            currentRoute.startsWith("collaboratorDetail") -> "admin"
+
+                        // G-16 / B-02: the admin opens the external accounts from the admin
+                        // section and the internal staff from the records menu
+                        currentRoute == "externalUsers" ||
+                            currentRoute.startsWith("externalUserDetail") ||
+                            currentRoute.startsWith("verificationReview") -> {
+                            if (isAdmin) "admin" else "records"
+                        }
 
                         currentRoute.startsWith("case/") -> {
                             if (isExternal) "cases" else "records"
@@ -279,31 +288,31 @@ fun AppNavigation(
             enterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeIn()
             },
             exitTransition = {
                 slideOutHorizontally(
                     targetOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeOut()
             },
             popEnterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeIn()
             },
             popExitTransition = {
                 slideOutHorizontally(
                     targetOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeOut()
             },
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
+            Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -513,6 +522,13 @@ fun AppNavigation(
                         },
                         onMyCasesCLick = {
                             navController.navigate("myCases") {
+                                launchSingleTop = true
+                            }
+                        },
+
+                        // B-02: the internal staff reviews the verifications from here
+                        onExternalUsersClick = {
+                            navController.navigate("externalUsers") {
                                 launchSingleTop = true
                             }
                         },
@@ -1013,9 +1029,10 @@ fun AppNavigation(
                 }
             }
 
-            // G-16: admin consults the list of external accounts
+            // G-16: admin consults the list of external accounts.
+            // B-02: the internal staff opens it too, to review the verifications
             composable("externalUsers") {
-                if (hasValidSession && isAdmin) {
+                if (hasValidSession && canViewAllCases) {
                     ExternalUsersScreen(
                         onExternalUserClick = { userId ->
                             navController.navigate("externalUserDetail/$userId") {
@@ -1031,14 +1048,50 @@ fun AppNavigation(
                 }
             }
 
-            // G-07: admin consults and edits an external user's profile
+            // G-07: admin consults and edits an external user's profile.
+            // B-02: the internal staff only consults it and reviews the verification
             composable("externalUserDetail/{userId}") { entry ->
-                if (hasValidSession && isAdmin) {
+                if (hasValidSession && canViewAllCases) {
                     val userId = entry.arguments?.getString("userId")
+                    // Status that the review screen leaves after a decision
+                    val decidedStatus by entry.savedStateHandle
+                        .getStateFlow<String?>(VERIFICATION_RESULT_KEY, null)
+                        .collectAsStateWithLifecycle()
+
                     if (!userId.isNullOrBlank()) {
                         ExternalUserDetailScreen(
                             userId = userId,
                             onBack = { navController.popBackStack() },
+                            canEdit = isAdmin,
+                            decidedStatus = decidedStatus,
+                            onReviewClick = {
+                                navController.navigate("verificationReview/$userId") {
+                                    launchSingleTop = true
+                                }
+                            },
+                        )
+                    } else {
+                        Text("No se encontró el identificador de la externa")
+                    }
+                } else {
+                    Text("No tienes permiso para acceder a esta pantalla.")
+                }
+            }
+
+            // B-02: internal staff or admin approves or rejects the identity verification
+            composable("verificationReview/{userId}") { entry ->
+                if (hasValidSession && canViewAllCases) {
+                    val userId = entry.arguments?.getString("userId")
+                    if (!userId.isNullOrBlank()) {
+                        VerificationReviewScreen(
+                            userId = userId,
+                            onBack = { navController.popBackStack() },
+                            onDecision = { status ->
+                                navController.previousBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set(VERIFICATION_RESULT_KEY, status)
+                                navController.popBackStack()
+                            },
                         )
                     } else {
                         Text("No se encontró el identificador de la externa")
