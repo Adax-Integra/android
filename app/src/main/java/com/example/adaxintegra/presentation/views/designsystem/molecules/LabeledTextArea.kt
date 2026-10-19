@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,13 +27,16 @@ fun LabeledTextArea(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     minLines: Int = 4,
+    errorMessage: String? = null,
     error: String? = null,
 ) {
+    val displayError = errorMessage ?: error
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (displayError != null) Color.Red else Color.Gray,
             fontWeight = FontWeight.Medium,
         )
 
@@ -50,6 +52,7 @@ fun LabeledTextArea(
             placeholder = placeholder,
             singleLine = false,
             minLines = minLines,
+            isError = displayError != null,
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -58,12 +61,13 @@ fun LabeledTextArea(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (error != null) {
+            if (displayError != null) {
                 Text(
-                    text = error,
+                    text = displayError,
                     modifier = Modifier.weight(1f),
-                    style = AppTextStyle.LabelSmall,
-                    color = MaterialTheme.colorScheme.error,
+                    style = AppTextStyle.BodySmall,
+                    color = Color.Red,
+                    fontWeight = FontWeight.Normal,
                 )
             } else {
                 Spacer(modifier = Modifier.weight(1f))

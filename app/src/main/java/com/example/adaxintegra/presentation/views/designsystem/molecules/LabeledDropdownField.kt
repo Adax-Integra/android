@@ -10,7 +10,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -37,15 +36,17 @@ fun LabeledDropdownField(
     onOptionSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "Selecciona una opción",
+    errorMessage: String? = null,
     error: String? = null,
 ){
     var expanded by remember { mutableStateOf(false) }
+    val displayError = errorMessage ?: error
 
     Column(modifier = modifier.fillMaxWidth()){
         Text(
             text = label,
             style = AppTextStyle.BodySmall,
-            color = Color.Gray,
+            color = if (displayError != null) Color.Red else Color.Gray,
             fontWeight = FontWeight.Medium,
         )
 
@@ -60,6 +61,7 @@ fun LabeledDropdownField(
                 value = selectedOption ?: "",
                 onValueChange = {},
                 readOnly = true,
+                isError = displayError != null,
                 placeholder = {
                     Text(
                         text = placeholder,
@@ -81,6 +83,8 @@ fun LabeledDropdownField(
                     unfocusedBorderColor = Color.LightGray,
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black,
+                    errorBorderColor = Color.Red,
+                    errorContainerColor = Color.White,
                 ),
             )
 
@@ -102,12 +106,13 @@ fun LabeledDropdownField(
             }
         }
 
-        if (error != null){
+        if (displayError != null){
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = error,
-                style = AppTextStyle.LabelSmall,
-                color = MaterialTheme.colorScheme.error,
+                text = displayError,
+                style = AppTextStyle.BodySmall,
+                color = Color.Red,
+                fontWeight = FontWeight.Normal,
             )
         }
     }
