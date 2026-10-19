@@ -4,6 +4,8 @@ import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CollaboratorApi
 import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorStatusRequestDto
+import com.example.adaxintegra.data.remote.dto.CollaboratorProfileFieldsDto
+import com.example.adaxintegra.data.remote.dto.UpdateCollaboratorProfileRequestDto
 import com.example.adaxintegra.domain.model.Collaborator
 import com.example.adaxintegra.domain.model.CollaboratorDetail
 import com.example.adaxintegra.domain.model.CollaboratorSummary
@@ -61,5 +63,29 @@ class CollaboratorRepositoryImpl @Inject constructor(
         )
         val status = response.data ?: throw IllegalStateException("Empty response from server")
         return status.isActive ?: isActive
+    }
+
+    // G-18: uses the existing session and Retrofit client
+    override suspend fun updateCollaboratorProfile(
+        userId: String,
+        name: String?,
+        lastName: String?,
+        email: String?,
+    ) {
+        val response = api.updateCollaboratorProfile(
+            authorization = authorizationHeader(),
+            userId = userId,
+            request = UpdateCollaboratorProfileRequestDto(
+                profile = CollaboratorProfileFieldsDto(
+                    name = name,
+                    lastName = lastName,
+                    email = email,
+                ),
+            ),
+        )
+
+        if (!response.success) {
+            throw IllegalStateException("No se pudo actualizar la colaboradora")
+        }
     }
 }
