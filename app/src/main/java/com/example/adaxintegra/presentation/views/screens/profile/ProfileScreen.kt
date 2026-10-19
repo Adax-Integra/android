@@ -32,6 +32,8 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.presentation.views.designsystem.atoms.VerificationBadge
+import com.example.adaxintegra.presentation.views.designsystem.atoms.VerificationStatus
 import com.example.adaxintegra.presentation.views.designsystem.organisms.AppHeader
 import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.ProfileHeaderCard
@@ -118,6 +120,16 @@ fun ProfileScreen(
                             // header card that includes the name of profile
                             ProfileHeaderCard(
                                 name = "${profile.name} ${profile.lastName}".trim().ifBlank { "Usuario" },
+                                // B-01: only the external user has an identity verification
+                                accessory = if (isExternal) {
+                                    {
+                                        VerificationBadge(
+                                            status = VerificationStatus.from(profile.verificationStatus),
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
                             )
 
                             Spacer(modifier = Modifier.height(20.dp))

@@ -33,11 +33,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.adaxintegra.R
 import com.example.adaxintegra.presentation.viewmodel.AppViewModel
-import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.CasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.LoginViewModel
 import com.example.adaxintegra.presentation.viewmodel.MyCasesViewModel
 import com.example.adaxintegra.presentation.viewmodel.PendingVerificationViewModel
+import com.example.adaxintegra.presentation.viewmodel.PrivacyPolicyViewModel
 import com.example.adaxintegra.presentation.viewmodel.RecordsViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterExpedientViewModel
 import com.example.adaxintegra.presentation.viewmodel.RegisterViewModel
@@ -246,8 +246,12 @@ fun AppNavigation(
                             if (isExternal) "cases" else "records"
                         }
 
-                        // R-06: "Mis documentos" is opened from the profile
-                        currentRoute == "uploadDocuments" -> "profile"
+                        // R-06: "Mis documentos" is opened from the profile.
+                        // B-01: the verification notice of the home opens it too
+                        currentRoute == "uploadDocuments" -> {
+                            val previousRoute = navController.previousBackStackEntry?.destination?.route
+                            if (previousRoute == "home") "home" else "profile"
+                        }
 
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
@@ -279,31 +283,31 @@ fun AppNavigation(
             enterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeIn()
             },
             exitTransition = {
                 slideOutHorizontally(
                     targetOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeOut()
             },
             popEnterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeIn()
             },
             popExitTransition = {
                 slideOutHorizontally(
                     targetOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(300)
+                    animationSpec = tween(300),
                 ) + fadeOut()
             },
             modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
+            Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
         ) {
             composable("session") {
                 SessionLoadingScreen()
@@ -462,6 +466,12 @@ fun AppNavigation(
                             },
                             onSeeAllEventsClick = {
                                 navController.navigate("events") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            // B-01: "Subir documentos" of the verification notice
+                            onUploadDocumentsClick = {
+                                navController.navigate("uploadDocuments") {
                                     launchSingleTop = true
                                 }
                             },
