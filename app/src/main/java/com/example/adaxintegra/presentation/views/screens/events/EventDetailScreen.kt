@@ -2,6 +2,7 @@ package com.example.adaxintegra.presentation.views.screens.events
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,9 +20,16 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +60,7 @@ import java.time.Instant
 fun EventDetailScreen(
     eventId: String,
     onBack: () -> Unit,
+    canDisableEvents: Boolean = false,
     viewModel: EventDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,6 +73,9 @@ fun EventDetailScreen(
         uiState = uiState,
         onBack = onBack,
         onRetry = viewModel::retry,
+        canDisableEvents = canDisableEvents,
+        onDisableEvent = viewModel::disableEvent,
+        onClearDisableFeedback = viewModel::clearDisableFeedback,
     )
 }
 
@@ -74,10 +86,14 @@ fun EventDetailContent(
     uiState: EventDetailUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    canDisableEvents: Boolean = false,
+    onDisableEvent: () -> Unit = {},
+    onClearDisableFeedback: () -> Unit = {},
 ) {
     val spacing = Spacing()
     val event = uiState.event
     val errorMessage = uiState.error
+    var showDisableConfirmation by remember { mutableStateOf(false) }
 
     ScreenTemplate(
         title = "Detalle del evento",
@@ -86,13 +102,55 @@ fun EventDetailContent(
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
         when {
-            event != null -> EventDetailBody(event = event)
+            event != null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    //event details in scrolling area
+                    Box(modifier = Modifier.weight(1f)) {
+                        EventDetailBody(event = event)
+                    }
+
+                    if (canDisableEvents) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = spacing.small),
+                            verticalArrangement = Arrangement.spacedBy(spacing.small),
+                        ) {
+                            AppButton(
+                                text = "Eliminar evento",
+                                onClick = { onClearDisableFeedback()
+                                    showDisableConfirmation = true
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                variant = ButtonVariant.Outlined,
+                                enabled = !uiState.isDisabling,
+                                isLoading = uiState.isDisabling,
+                            )
+
+                            AppButton(
+                                text = "Modificar evento",
+                                onClick = {
+                                    //connect this to edit screen e-02
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                variant = ButtonVariant.Primary,
+                            )
+                        }
+                    }
+                }
+            }
 
             errorMessage != null -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
+                    verticalArrangement = Arrangement.spacedBy(
+                        spacing.medium,
+                        Alignment.CenterVertically
+                    ),
                 ) {
                     Text(
                         text = errorMessage,
@@ -107,6 +165,36 @@ fun EventDetailContent(
                 }
             }
         }
+    }
+    if (showDisableConfirmation) {
+        DeleteEventConfirmationDialog(
+            onConfirm = {
+                showDisableConfirmation = false
+                onDisableEvent()
+            },
+            onDismiss = {
+                showDisableConfirmation = false
+            },
+            isLoading = uiState.isDisabling,
+        )
+    }
+
+    if (uiState.disableSuccess) {
+        DeleteEventSuccessDialog(
+            onDismiss = {
+                onClearDisableFeedback()
+                onBack()
+            },
+        )
+    }
+
+    if (uiState.disableError) {
+        DeleteEventErrorDialog(
+            onDismiss = {
+                onDisableEvent()
+                onBack()
+            },
+        )
     }
 }
 
@@ -202,6 +290,120 @@ private fun EventDetailBody(event: Event) {
 
         Spacer(modifier = Modifier.height(spacing.medium))
     }
+}
+
+//pop up to confirm deletion of an event
+@Composable
+fun DeleteEventConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    isLoading: Boolean = false,
+) {
+    AlertDialog(
+        onDismissRequest = {
+            if (!isLoading) onDismiss()
+        },
+        title = {
+            Text(
+                text = "Eliminar evento",
+                style = AppTextStyle.TitleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = "¿Estás seguro de que deseas eliminar este evento?",
+                style = AppTextStyle.BodyMedium,
+                fontWeight = FontWeight.Normal,
+            )
+        },
+        confirmButton = {
+            Button(onClick = onConfirm,
+                enabled = !isLoading,) {
+                Text(
+                    text = if (isLoading) "Eliminando..." else "Eliminar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss,
+                enabled = !isLoading,) {
+                Text(
+                    text = "Cancelar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Normal,
+                )
+            }
+        },
+    )
+}
+
+//pop up for successful event deletion
+@Composable
+fun DeleteEventSuccessDialog(
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Evento eliminado",
+                style = AppTextStyle.TitleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = "Evento eliminado correctamente.",
+                style = AppTextStyle.BodyMedium,
+                )
+        },
+        confirmButton = {
+            Button(onClick = onDismiss,) {
+                Text(
+                    text = "Aceptar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        },
+    )
+}
+
+//error deleting event
+//pop up for successful event deletion
+@Composable
+fun DeleteEventErrorDialog(
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Error eliminando evento",
+                style = AppTextStyle.TitleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = "No se pudo eliminar el evento. Inténtalo de nuevo.",
+                style = AppTextStyle.BodyMedium,
+            )
+        },
+        confirmButton = {
+            Button(onClick = onDismiss,) {
+                Text(
+                    text = "Aceptar",
+                    style = AppTextStyle.LabelMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        },
+    )
 }
 
 @Suppress("ktlint:standard:function-naming")

@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.views.designsystem.atoms
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
@@ -54,6 +55,9 @@ object AppIcons {
 
     val CheckMark: ImageVector
         get() = Icons.Default.Check
+
+    val Add: ImageVector
+        get() = Icons.Default.Add
 
     val Search: ImageVector
         get() = Icons.Default.Search

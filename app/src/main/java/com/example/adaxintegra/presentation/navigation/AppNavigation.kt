@@ -67,6 +67,7 @@ import com.example.adaxintegra.presentation.views.screens.cases.ExternalCasesScr
 import com.example.adaxintegra.presentation.views.screens.cases.RecordFromUser
 import com.example.adaxintegra.presentation.views.screens.events.EventDetailScreen
 import com.example.adaxintegra.presentation.views.screens.events.EventsScreen
+import com.example.adaxintegra.presentation.views.screens.events.NewEventScreen
 import com.example.adaxintegra.presentation.views.screens.home.ExternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.home.InternalHomeScreen
 import com.example.adaxintegra.presentation.views.screens.profile.ChangePasswordScreen
@@ -250,7 +251,8 @@ fun AppNavigation(
 
                         // E-01: the events are opened from the carousel of the home
                         currentRoute == "events" ||
-                            currentRoute.startsWith("eventDetail") -> "home"
+                            currentRoute.startsWith("eventDetail") ||
+                            currentRoute.startsWith("createEvent") -> "home"
 
                         else -> currentRoute
                     }
@@ -668,6 +670,26 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
+                        onCreateEvent = {
+                            navController.navigate("createEvent") {
+                                launchSingleTop = true
+                            }
+                        },
+                        canCreateEvent = !isExternal,
+                    )
+                }
+            }
+
+            // E-01: create a new event
+            composable("createEvent") {
+                if (hasValidSession && !isExternal) {
+                    NewEventScreen(
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onEventCreated = {
+                            navController.popBackStack()
+                        },
                     )
                 }
             }
@@ -683,6 +705,7 @@ fun AppNavigation(
                             onBack = {
                                 navController.popBackStack()
                             },
+                            canDisableEvents = isInternal || isAdmin,
                         )
                     } else {
                         Text("No se encontró el identificador del evento")
