@@ -3,10 +3,12 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CaseApi
+import com.example.adaxintegra.data.remote.dto.AssignCollaboratorsRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseErrorDto
 import com.example.adaxintegra.domain.common.FieldValidationException
 import com.example.adaxintegra.domain.entities.CasePage
 import com.example.adaxintegra.domain.model.Case
+import com.example.adaxintegra.domain.model.CollaboratorSummary
 import com.example.adaxintegra.domain.model.NewCase
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.CaseRepository
@@ -186,7 +188,38 @@ constructor(
 
         return FieldValidationException(
             fieldErrors = fieldErrors,
-            message = parsed.error ?: "Invalid case data.",
+
+          message = parsed.error ?: "Invalid case data.",
+        )
+    }
+
+    override suspend fun getAssignableCaseCollaborators(): List<CollaboratorSummary> {
+        val response = api.getAssignableCaseCollaborators(
+            authorization = authorizationHeader(),
+        )
+
+        if (!response.success) {
+            throw IllegalStateException("No fue posible cargar las colaboradoras.")
+        }
+
+        return response.data.map { item ->
+            val id = item.userId?.takeIf { it.isNotBlank() }
+                ?: throw IllegalStateException("Colaboradora sin identificador.")
+
+            CollaboratorSummary(
+                userId = id,
+                name = item.name.orEmpty(),
+                lastName = item.lastName.orEmpty(),
+                email = null,
+                isActive = true,
+            )
+        }.distinctBy { it.userId }
+    }
+    override suspend fun replaceCaseCollaborators(caseId: String, userIds: List<String>) {
+        api.replaceCaseCollaborators(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = AssignCollaboratorsRequestDto(userIds),
         )
     }
 }

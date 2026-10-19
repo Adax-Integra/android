@@ -20,6 +20,17 @@ fun CaseDetailDto.toDomain(): CaseDetail {
             record?.user?.last_name,
         ).joinToString(" ").ifBlank { null }
 
+    val activeAssignments = case_assignment.orEmpty().filter { it.deleted_at == null }
+    val identifiedAssignments = activeAssignments.mapNotNull { assignment ->
+        val id = assignment.user?.user_id?.takeIf { it.isNotBlank() }
+            ?: return@mapNotNull null
+        val name = listOfNotNull(assignment.user?.name, assignment.user?.last_name)
+            .joinToString(" ").trim()
+        id to name
+    }.distinctBy { it.first }
+
+    val assignedIds = identifiedAssignments.map { it.first }
+    val assignedNames = identifiedAssignments.map { it.second }
     return CaseDetail(
         caseId = case_id,
         caseNumber = case_number,
@@ -53,6 +64,10 @@ fun CaseDetailDto.toDomain(): CaseDetail {
                     )
                 }
             },
+        assignedCollaboratorIds = assignedIds,
+        assignedCollaboratorNames = assignedNames,
+        assignmentsLoaded = case_assignment != null &&
+            activeAssignments.all { !it.user?.user_id.isNullOrBlank() },
         helpList =
             case_help.mapNotNull { relation ->
                 val help = relation.help_types ?: CaseDetailHelpTypeDto(

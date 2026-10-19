@@ -3,6 +3,8 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.usecases.AssignCollaboratorsToCaseUseCase
+import com.example.adaxintegra.domain.usecases.GetAssignableCaseCollaboratorsUseCase
 import com.example.adaxintegra.domain.usecases.AssignHelpsToCaseUseCase
 import com.example.adaxintegra.domain.usecases.AssignViolenceToCaseUseCase
 import com.example.adaxintegra.domain.usecases.CloseCaseUseCase
@@ -29,6 +31,8 @@ constructor(
     private val assignHelpsToCaseUseCase: AssignHelpsToCaseUseCase,
     private val getViolenceTypesUseCase: GetViolenceTypesUseCase,
     private val assignViolenceToCaseUseCase: AssignViolenceToCaseUseCase,
+    private val getAssignableCaseCollaboratorsUseCase: GetAssignableCaseCollaboratorsUseCase,
+    private val assignCollaboratorsToCaseUseCase: AssignCollaboratorsToCaseUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CaseDetailUiState())
     val uiState: StateFlow<CaseDetailUiState> = _uiState.asStateFlow()
@@ -40,6 +44,98 @@ constructor(
         loadViolenceTypes()
     }
 
+    fun loadAssignableCaseCollaborators() {
+        val state = _uiState.value
+
+        if (state.isLoadingAssignableCollaborators) return
+
+        if (state.case?.assignmentsLoaded != true) {
+            _uiState.update {
+                it.copy(assignableCollaboratorsError = "No se pudieron verificar las asignaciones del caso.")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            getAssignableCaseCollaboratorsUseCase().collect { result ->
+                _uiState.update { current ->
+                    when (result) {
+                        is Result.Loading -> current.copy(
+                            isLoadingAssignableCollaborators = true,
+                            assignableCollaboratorsLoaded = false,
+                            assignableCollaboratorsError = null,
+                            collaboratorsSaved = false,
+                        )
+                        is Result.Success -> current.copy(
+                            assignableCollaborators = result.data,
+                            isLoadingAssignableCollaborators = false,
+                            assignableCollaboratorsLoaded = true,
+                            assignableCollaboratorsError = null,
+                        )
+                        is Result.Error -> current.copy(
+                            isLoadingAssignableCollaborators = false,
+                            assignableCollaboratorsLoaded = false,
+                            assignableCollaboratorsError = "No fue posible cargar las colaboradoras.",
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun saveCaseCollaborators(caseId: String, userIds: Set<String>) {
+        val state = _uiState.value
+        if (state.isSavingCollaborators) return
+
+        val case = state.case
+        val isClosed = case?.state?.trim()?.lowercase() in setOf("closed", "cerrado")
+
+        if (case == null || case.caseId != caseId ||
+            !case.assignmentsLoaded || !state.assignableCollaboratorsLoaded || isClosed
+        ) {
+            _uiState.update {
+                it.copy(saveCollaboratorsError = "No es posible actualizar las asignaciones de este caso.")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            assignCollaboratorsToCaseUseCase(caseId, userIds.toList()).collect { result ->
+                _uiState.update { current ->
+                    when (result) {
+                        is Result.Loading -> current.copy(
+                            isSavingCollaborators = true,
+                            saveCollaboratorsError = null,
+                            collaboratorsSaved = false,
+                        )
+                        is Result.Success -> current.copy(
+                            isSavingCollaborators = false,
+                            saveCollaboratorsError = null,
+                            collaboratorsSaved = true,
+                        )
+                        is Result.Error -> current.copy(
+                            isSavingCollaborators = false,
+                            saveCollaboratorsError = "No fue posible guardar las asignaciones.",
+                            collaboratorsSaved = false,
+                        )
+                    }
+                }
+
+                if (result is Result.Success) {
+                    loadCaseInternal(caseId, isRefresh = true)
+                }
+            }
+        }
+    }
+
+    fun clearCollaboratorsFeedback() {
+        _uiState.update {
+            it.copy(
+                collaboratorsSaved = false,
+                saveCollaboratorsError = null,
+            )
+        }
+    }
     private fun loadHelpTypes() {
         viewModelScope.launch {
             getHelpTypesUseCase().collect { result ->

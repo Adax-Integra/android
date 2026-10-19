@@ -1,5 +1,7 @@
 package com.example.adaxintegra.data.remote.api
 
+import com.example.adaxintegra.data.remote.dto.AssignCollaboratorsRequestDto
+import com.example.adaxintegra.data.remote.dto.AssignableCaseCollaboratorsResponseDto
 import com.example.adaxintegra.data.remote.dto.AssignHelpRequestDto
 import com.example.adaxintegra.data.remote.dto.AssignHelpResponseDto
 import com.example.adaxintegra.data.remote.dto.AssignViolenceRequestDto
@@ -106,4 +108,16 @@ interface CaseApi {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
     ): CaseListResponseDto
+
+    @PUT("api/cases/{caseId}/assignments")
+    suspend fun replaceCaseCollaborators(
+        @Path("caseId") caseId: String,
+        @Header("Authorization") authorization: String,
+        @Body request: AssignCollaboratorsRequestDto,
+    ): Unit
+
+    @GET("api/cases/collaborators")
+    suspend fun getAssignableCaseCollaborators(
+        @Header("Authorization") authorization: String,
+    ): AssignableCaseCollaboratorsResponseDto
 }
