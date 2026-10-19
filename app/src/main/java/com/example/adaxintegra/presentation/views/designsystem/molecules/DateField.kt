@@ -46,9 +46,7 @@ fun DateField(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() },
+            modifier = Modifier.fillMaxWidth(),
         ) {
             AppTextField(
                 value = displayValue,
@@ -64,6 +62,11 @@ fun DateField(
                 },
                 isError = errorMessage != null,
                 readOnly = true,
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { onClick() },
             )
         }
         if (errorMessage != null) {

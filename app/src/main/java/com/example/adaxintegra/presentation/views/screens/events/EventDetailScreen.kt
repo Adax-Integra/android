@@ -147,7 +147,10 @@ fun EventDetailContent(
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.medium, Alignment.CenterVertically),
+                    verticalArrangement = Arrangement.spacedBy(
+                        spacing.medium,
+                        Alignment.CenterVertically
+                    ),
                 ) {
                     Text(
                         text = errorMessage,
