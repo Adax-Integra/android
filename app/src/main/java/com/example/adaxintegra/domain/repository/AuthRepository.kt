@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 // Auth contracts. Every flow ends in Result.Error(AuthError) when it fails
-interface  AuthRepository {
+interface AuthRepository {
     // Exposes session changes. Null value means no user is signed in
     val session: StateFlow<UserSession?>
 
@@ -22,20 +22,20 @@ interface  AuthRepository {
     // Clears the session from storage and memory
     suspend fun logout()
 
-    //no session is needed for this action
+    // no session is needed for this action
     suspend fun forgotPassword(
-        email: String
+        email: String,
     ): Result<Unit>
 
     suspend fun validateRecoveryCode(
         email: String,
-        code: String
+        code: String,
     ): Result<Unit>
 
     suspend fun resetPassword(
         email: String,
         code: String,
-        newPassword: String
+        newPassword: String,
     ): Result<Unit>
 
     // G-01: creates the account; the backend emails a 6 digit code.
@@ -43,6 +43,7 @@ interface  AuthRepository {
     fun register(
         name: String,
         lastname: String,
+        countryCode: String,
         phone: String,
         email: String,
         password: String,

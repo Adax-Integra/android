@@ -3,6 +3,7 @@ package com.example.adaxintegra.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.common.AuthError
+import com.example.adaxintegra.domain.common.PasswordValidator
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.RegisterUseCase
 import com.example.adaxintegra.presentation.mapper.toAuthMessage
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.adaxintegra.domain.common.PasswordValidator
 
 /**
  * // G-09-Register: ViewModel managing user registration form input, per-field validations,
@@ -195,6 +195,7 @@ class RegisterViewModel @Inject constructor(
             registerUseCase(
                 name = state.name.trim(),
                 lastname = state.lastname.trim(),
+                countryCode = state.countryCode,
                 phone = state.phone.trim(),
                 email = state.email.trim(),
                 password = state.password,
