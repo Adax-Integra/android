@@ -124,6 +124,9 @@ dependencies {
     // Coil: loads the event images from their URL (E-01)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+
+    // Security
+    implementation(libs.androidx.security.crypto)
 }
 
 // Automatically install the git hook before building
