@@ -13,5 +13,8 @@ interface EventRepository {
 
     suspend fun createEvent(event: Event): Event
 
+    // E-02: saves the changes of an existing event
+    suspend fun updateEvent(event: Event): Event
+
     suspend fun uploadEventImage(eventId: String, imageFile: UploadDocumentFile): String
 }
