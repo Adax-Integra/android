@@ -241,7 +241,7 @@ fun CreateEvent(
                 options = listOf("Presencial", "Virtual", "Mixto"),
                 onOptionSelected = onModalityChange,
                 placeholder = "Presencial",
-                error = uiState.modalityError,
+                errorMessage = uiState.modalityError,
             )
 
             // Field "Lugar"
@@ -287,7 +287,7 @@ fun CreateEvent(
                 placeholder = "Describe el evento...",
                 maxLength = 2000,
                 minLines = 4,
-                error = uiState.descriptionError,
+                errorMessage = uiState.descriptionError,
             )
 
             // Field "Notas (opcional)"
@@ -298,7 +298,7 @@ fun CreateEvent(
                 placeholder = "Escribe notas adicionales...",
                 maxLength = 1000,
                 minLines = 4,
-                error = uiState.notesError,
+                errorMessage = uiState.notesError,
             )
 
             // Field "Imagen del evento (opcional)"
