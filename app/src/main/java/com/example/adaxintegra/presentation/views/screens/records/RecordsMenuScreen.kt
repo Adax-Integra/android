@@ -47,35 +47,27 @@ fun RecordsMenuScreen(
         )
 
         MenuOptionCard(
-            title = "Todos los Casos",
-            subtitle = "Consulta los casos por urgencia",
-            onClick = onAllCasesClick,
-            icon = AppIcons.Folder,
-        )
-
-        MenuOptionCard(
-            title = "Todos los expedientes",
+            title = "Expedientes",
             subtitle = "Consulta todos los expedientes",
             onClick = onAllRecordsClick,
             icon = AppIcons.UserAttributes,
         )
 
         MenuOptionCard(
-            title = "Reportes",
-            subtitle = "Consulta los reportes de casos",
-            onClick = onReportsClick,
-            icon = AppIcons.Reports,
+            title = "Todos los Casos",
+            subtitle = "Consulta los casos",
+            onClick = onAllCasesClick,
+            icon = AppIcons.Folder,
         )
 
         // V-12: cases assigned to the logged in collaborator
         MenuOptionCard(
-            title = "Mis Casos",
+            title = "Todos los casos",
             subtitle = "Casos que yo llevo",
             onClick = onMyCasesCLick,
-            icon = AppIcons.Profile,
+            icon = AppIcons.InboxText,
         )
 
-        // B-02: The staff reviews the verifications from the list
         onExternalUsersClick?.let { onClick ->
             MenuOptionCard(
                 title = "Cuentas externas",
@@ -84,6 +76,15 @@ fun RecordsMenuScreen(
                 icon = AppIcons.Profile,
             )
         }
+
+        MenuOptionCard(
+            title = "Reportes",
+            subtitle = "Genera reportes sobre casos",
+            onClick = onReportsClick,
+            icon = AppIcons.Reports,
+        )
+
+        // B-02: The staff reviews the verifications from the list
     }
 }
 

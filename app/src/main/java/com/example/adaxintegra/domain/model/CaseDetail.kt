@@ -11,6 +11,7 @@ data class CaseDetail(
     val helpWanted: String?,
     val hasLawyer: Boolean?,
     val recordId: String?,
+    val recordNumber: String? = null,
     val userName: String?,
     val createdAt: Date?,
     val updatedAt: Date?,

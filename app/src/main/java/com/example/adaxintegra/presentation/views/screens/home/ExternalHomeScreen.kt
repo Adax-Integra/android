@@ -17,16 +17,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.presentation.viewmodel.CaseProgressViewModel
 import com.example.adaxintegra.presentation.viewmodel.EventsViewModel
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
-import com.example.adaxintegra.presentation.viewmodel.ExternalHomeViewModel
+import com.example.adaxintegra.presentation.viewmodel.VerificationStatusViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
+import com.example.adaxintegra.presentation.views.designsystem.atoms.VerificationStatus
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
 import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.EventsCarousel
+import com.example.adaxintegra.presentation.views.designsystem.organisms.VerificationBanner
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -37,29 +40,26 @@ fun ExternalHomeScreen(
     onEventClick: (String) -> Unit,
     onSeeAllEventsClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onUploadDocumentsClick: () -> Unit = {},
     viewModel: ExternalCasesViewModel = hiltViewModel(),
     eventsViewModel: EventsViewModel = hiltViewModel(),
-    homeViewModel: ExternalHomeViewModel = hiltViewModel(),
+    verificationViewModel: VerificationStatusViewModel = hiltViewModel(),
+    progressViewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.uiState.collectAsStateWithLifecycle()
-    val userName by homeViewModel.userName.collectAsStateWithLifecycle()
+    val verificationStatus by verificationViewModel.status.collectAsStateWithLifecycle()
+    val progressState by progressViewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
     val context = LocalContext.current
 
-    // NV-01: shows the name when it is available, a generic greeting otherwise
-    val greeting = if (userName.isNullOrBlank()) {
-        "¡Hola!"
-    } else {
-        "¡Hola, ${userName?.trim()}!"
-    }
-
     // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
-        homeViewModel.loadUserName()
         viewModel.loadCases()
         // E-01: the carousel only shows the events of the current month
         eventsViewModel.loadEvents(EventScope.MONTH)
+        // B-01: coming back from "Mis documentos" the notice shows the new status
+        verificationViewModel.load()
     }
 
     // NV-01: V-04 already hands the list sorted by updatedAt, so the case in progress is
@@ -69,12 +69,19 @@ fun ExternalHomeScreen(
         !"closed".equals(case.state, ignoreCase = true)
     }
 
+    // V-07: the case list doesn't bring the steps, so the case in progress is fetched by id (same as iOS)
+    LaunchedEffect(currentCase?.caseId) {
+        currentCase?.caseId?.let { progressViewModel.loadCase(it) }
+    }
+
     PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing,
+        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing || progressState.isRefreshing,
         // Pulling the home down reloads the cases and the events together
         onRefresh = {
             viewModel.refresh()
             eventsViewModel.refresh()
+            verificationViewModel.load()
+            currentCase?.let { progressViewModel.refresh(it.caseId) }
         },
         modifier = modifier
             .fillMaxSize(),
@@ -88,14 +95,25 @@ fun ExternalHomeScreen(
         ) {
             Spacer(modifier = Modifier.height(spacing.small))
 
-            HomeHeader(greeting = greeting)
+            HomeHeader()
+
+            // B-01: same as iOS, the notice disappears once the account is verified
+            verificationStatus
+                ?.takeIf { it != VerificationStatus.VERIFIED }
+                ?.let { status ->
+                    VerificationBanner(
+                        status = status,
+                        onUploadClick = onUploadDocumentsClick,
+                    )
+                }
 
             CurrentCaseCard(
                 currentCase = currentCase,
+                caseSteps = progressState.case?.caseSteps.orEmpty(),
                 onCaseClick = onCaseClick,
                 onRegisterCaseClick = onRegisterCaseClick,
-                isLoading = uiState.isLoading,
-                error = uiState.error,
+                isLoading = uiState.isLoading || progressState.isLoading,
+                error = uiState.error ?: progressState.error,
             )
 
             EventsCarousel(

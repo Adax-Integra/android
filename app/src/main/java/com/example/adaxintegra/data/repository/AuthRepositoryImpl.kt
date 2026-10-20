@@ -10,8 +10,8 @@ import com.example.adaxintegra.data.remote.dto.LoginRequestDto
 import com.example.adaxintegra.data.remote.dto.RegisterRequestDto
 import com.example.adaxintegra.data.remote.dto.ResendVerificationRequestDto
 import com.example.adaxintegra.data.remote.dto.ResetPasswordRequestDto
-import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
 import com.example.adaxintegra.data.remote.dto.ValidateCodeRequestDto
+import com.example.adaxintegra.data.remote.dto.VerifyEmailRequestDto
 import com.example.adaxintegra.data.remote.toAuthError
 import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
@@ -25,9 +25,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
-import retrofit2.HttpException
 
 /*
  * Auth against the Node backend (G-01, G-02, G-09, G-12) with the session saved
@@ -98,73 +98,74 @@ class AuthRepositoryImpl @Inject constructor(
         _session.value = null
     }
 
-    //g-05 password recovery flow
+    // g-05 password recovery flow
     override suspend fun forgotPassword(
         email: String,
-    ): Result<Unit> {
-        return try {
-            val response = api.forgotPassword(ForgotPasswordRequestDto(email.trim()))
+    ): Result<Unit> = try {
+        val response = api.forgotPassword(ForgotPasswordRequestDto(email.trim()))
 
-            if (!response.success) {
-                throw AuthError.Unknown("forgot-password returned success=false")
-            }
-
-            Result.Success(Unit)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Result.Error(exception.toAuthError())
+        if (!response.success) {
+            throw AuthError.Unknown("forgot-password returned success=false")
         }
+
+        Result.Success(Unit)
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Exception) {
+        Result.Error(exception.toAuthError())
     }
 
     override suspend fun validateRecoveryCode(
         email: String,
         code: String,
-    ): Result<Unit> {
-        return try {
-            val response = api.validateRecoveryCode(ValidateCodeRequestDto(
+    ): Result<Unit> = try {
+        val response = api.validateRecoveryCode(
+            ValidateCodeRequestDto(
                 email = email.trim(),
-                code = code.trim()))
+                code = code.trim(),
+            ),
+        )
 
-            if (!response.success) {
-                throw AuthError.Unknown("validate-code returned success=false")
-            }
-
-            Result.Success(Unit)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Result.Error(exception.toAuthError())
+        if (!response.success) {
+            throw AuthError.Unknown("validate-code returned success=false")
         }
+
+        Result.Success(Unit)
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Exception) {
+        Result.Error(exception.toAuthError())
     }
 
     override suspend fun resetPassword(
         email: String,
         code: String,
         newPassword: String,
-    ): Result<Unit> {
-        return try {
-            val response = api.resetPassword(ResetPasswordRequestDto(
+    ): Result<Unit> = try {
+        val response = api.resetPassword(
+            ResetPasswordRequestDto(
                 email = email.trim(),
                 code = code.trim(),
-                newPassword = newPassword))
+                newPassword = newPassword,
+            ),
+        )
 
-            if (!response.success) {
-                throw AuthError.Unknown("reset-password returned success=false")
-            }
-
-            Result.Success(Unit)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Result.Error(exception.toAuthError())
+        if (!response.success) {
+            throw AuthError.Unknown("reset-password returned success=false")
         }
+
+        Result.Success(Unit)
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Exception) {
+        Result.Error(exception.toAuthError())
     }
 
     // G-01: errors are no longer swallowed; the screen shows what the backend answered
     override fun register(
         name: String,
         lastname: String,
+        countryCode: String,
         phone: String,
         email: String,
         password: String,
@@ -175,6 +176,7 @@ class AuthRepositoryImpl @Inject constructor(
                 RegisterRequestDto(
                     name = name,
                     lastName = lastname,
+                    countryCode = countryCode,
                     phone = phone,
                     email = email,
                     password = password,
@@ -311,14 +313,19 @@ class AuthRepositoryImpl @Inject constructor(
         return when {
             "current password" in lower || "incorrect" in lower ->
                 "La contraseña actual es incorrecta."
+
             "unauthorized" in lower || "token" in lower || "401" in lower ->
                 "Tu sesión ha caducado. Vuelve a iniciar sesión."
+
             "same" in lower || "different" in lower ->
                 "La nueva contraseña debe ser diferente a la actual."
+
             "match" in lower ->
                 "Las contraseñas no coinciden."
+
             "network" in lower || "connect" in lower ->
                 "Sin conexión a internet. Revisa tu red e inténtalo de nuevo."
+
             else ->
                 "No se pudo cambiar la contraseña. Revisa que tu contraseña actual sea correcta."
         }

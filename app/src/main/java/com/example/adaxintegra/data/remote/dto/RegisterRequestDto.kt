@@ -7,6 +7,8 @@ data class RegisterRequestDto(
     val name: String,
     @SerializedName("last_name")
     val lastName: String,
+    @SerializedName("country_code")
+    val countryCode: String,
     @SerializedName("phone")
     val phone: String,
     @SerializedName("email")
