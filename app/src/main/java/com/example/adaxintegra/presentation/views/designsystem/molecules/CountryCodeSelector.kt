@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -63,7 +64,14 @@ fun CountryCodeSelector(
 
     val borderColor = when {
         errorMessage != null -> Color.Red
+        !enabled -> Color.LightGray
         else -> Color.LightGray
+    }
+
+    val backgroundColor = if (enabled) {
+        Color.White
+    } else {
+        Color(0xFFF2F2F2)
     }
 
     val contentColor = if (enabled) {
@@ -85,9 +93,10 @@ fun CountryCodeSelector(
         Box {
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(56.dp)
                     .clip(shape)
-                    .background(colors.surface)
+                    .background(backgroundColor)
                     .border(
                         width = 1.dp,
                         color = borderColor,
