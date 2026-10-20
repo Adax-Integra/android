@@ -284,6 +284,7 @@ class NewEventViewModel @Inject constructor(
         var locationError: String? = null
         var linkError: String? = null
         var descriptionError: String? = null
+        var phoneError: String? = null
 
         if (state.title.isBlank()) {
             titleError = "Ingresa el título del evento"
@@ -343,6 +344,12 @@ class NewEventViewModel @Inject constructor(
             hasError = true
         }
 
+        if (state.phone.length < 10 && state.phone.isNotEmpty()) {
+            phoneError = "El número de teléfono debe tener al menos 10 dígitos"
+            hasError = true
+        }
+
+
         // Check date and time order (Event cannot end before it starts)
         val startDate = state.startDate
         val endDate = state.endDate
@@ -387,6 +394,7 @@ class NewEventViewModel @Inject constructor(
                     locationError = locationError,
                     linkError = linkError,
                     descriptionError = descriptionError,
+                    phoneError = phoneError,
                 )
             }
             return
