@@ -23,4 +23,7 @@ data class ProfileViewDto(
 
     @SerializedName(value = "created_at", alternate = ["createdAt"])
     val createdAt: String? = null,
+
+    @SerializedName(value = "verification_status", alternate = ["verificationStatus"])
+    val verificationStatus: String? = null,
 )

@@ -24,12 +24,14 @@ fun LabeledTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    maxLength: Int? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     errorMessage: String? = null,
+    enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -41,7 +43,11 @@ fun LabeledTextField(
         Spacer(modifier = Modifier.height(8.dp))
         AppTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                if (maxLength == null || newValue.length <= maxLength) {
+                    onValueChange(newValue)
+                }
+            },
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
@@ -49,6 +55,7 @@ fun LabeledTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             isError = errorMessage != null,
+            enabled = enabled,
         )
         if (errorMessage != null) {
             Spacer(modifier = Modifier.height(4.dp))

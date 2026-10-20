@@ -6,12 +6,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcon
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
+import com.example.adaxintegra.ui.theme.Black
+import com.example.adaxintegra.ui.theme.IconGrey
 import com.example.adaxintegra.ui.theme.White
 
 @Suppress("ktlint:standard:function-naming")
@@ -33,6 +34,13 @@ fun SearchBar(
             OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = White,
                 unfocusedContainerColor = White,
+                focusedTextColor = Black,
+                unfocusedTextColor = Black,
+                cursorColor = Black,
+                focusedPlaceholderColor = IconGrey,
+                unfocusedPlaceholderColor = IconGrey,
+                focusedLeadingIconColor = IconGrey,
+                unfocusedLeadingIconColor = IconGrey,
             ),
         modifier = modifier.fillMaxWidth(),
     )

@@ -3,10 +3,12 @@ package com.example.adaxintegra.data.repository
 import com.example.adaxintegra.data.mapper.toDomain
 import com.example.adaxintegra.data.mapper.toRequestDto
 import com.example.adaxintegra.data.remote.api.CaseApi
+import com.example.adaxintegra.data.remote.dto.AssignCollaboratorsRequestDto
 import com.example.adaxintegra.data.remote.dto.CreateCaseErrorDto
 import com.example.adaxintegra.domain.common.FieldValidationException
 import com.example.adaxintegra.domain.entities.CasePage
 import com.example.adaxintegra.domain.model.Case
+import com.example.adaxintegra.domain.model.CollaboratorSummary
 import com.example.adaxintegra.domain.model.NewCase
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.repository.CaseRepository
@@ -15,6 +17,7 @@ import com.google.gson.JsonSyntaxException
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.example.adaxintegra.domain.entities.CaseStatusFilter
 
 @Singleton
 class CaseRepositoryImpl
@@ -62,7 +65,37 @@ constructor(
         )
 
         if (!response.success) {
-            throw IllegalStateException("Unable to retrive cases.")
+            throw IllegalStateException("Unable to retrieve cases.")
+        }
+        val data = response.data
+
+        return CasePage(
+            cases = data.cases.map { it.toDomain() },
+            total = data.total,
+            page = data.page,
+            limit = data.limit,
+        )
+    }
+
+    // V-12: same shape as getCases, filtered to the collaborator's cases
+    override suspend fun getMyCases(
+        status: CaseStatusFilter,
+        search: String,
+        urgency: String,
+        page: Int,
+        limit: Int,
+    ): CasePage {
+        val response = api.getMyCases(
+            authorization = authorizationHeader(),
+            status = status.apiValue,
+            search = search,
+            urgency = urgency,
+            page = page,
+            limit = limit,
+        )
+
+        if (!response.success) {
+            throw IllegalStateException("Unable to retrieve cases.")
         }
         val data = response.data
 
@@ -111,6 +144,27 @@ constructor(
         return created.toDomain()
     }
 
+    // R-11: Creates a case for an external user by an internal/admin user
+    override suspend fun createCaseForExternalUser(userId: String, newCase: NewCase): Case {
+        val response = try {
+            api.createCaseForExternalUser(
+                userId = userId,
+                authorization = authorizationHeader(),
+                request = newCase.toRequestDto(),
+            )
+        } catch (e: HttpException) {
+            throw fieldValidationException(e) ?: e
+        }
+
+        val created = response.data
+
+        if (!response.success || created == null) {
+            throw IllegalStateException("Unable to create the case.")
+        }
+
+        return created.toDomain()
+    }
+
     // Reads { success, error, errors: { campo: motivo } } out of a 400 answer
     private fun fieldValidationException(e: HttpException): FieldValidationException? {
         // 400 is the only status that carries one reason per field
@@ -134,7 +188,38 @@ constructor(
 
         return FieldValidationException(
             fieldErrors = fieldErrors,
-            message = parsed.error ?: "Invalid case data.",
+
+          message = parsed.error ?: "Invalid case data.",
+        )
+    }
+
+    override suspend fun getAssignableCaseCollaborators(): List<CollaboratorSummary> {
+        val response = api.getAssignableCaseCollaborators(
+            authorization = authorizationHeader(),
+        )
+
+        if (!response.success) {
+            throw IllegalStateException("No fue posible cargar las colaboradoras.")
+        }
+
+        return response.data.map { item ->
+            val id = item.userId?.takeIf { it.isNotBlank() }
+                ?: throw IllegalStateException("Colaboradora sin identificador.")
+
+            CollaboratorSummary(
+                userId = id,
+                name = item.name.orEmpty(),
+                lastName = item.lastName.orEmpty(),
+                email = null,
+                isActive = true,
+            )
+        }.distinctBy { it.userId }
+    }
+    override suspend fun replaceCaseCollaborators(caseId: String, userIds: List<String>) {
+        api.replaceCaseCollaborators(
+            caseId = caseId,
+            authorization = authorizationHeader(),
+            request = AssignCollaboratorsRequestDto(userIds),
         )
     }
 }

@@ -296,6 +296,10 @@ fun ChangePasswordContent(
             isMet = rules.hasNumber,
         )
         RequirementBulletItem(
+            text = "Al menos un carácter especial",
+            isMet = rules.hasSpecialCharacter,
+        )
+        RequirementBulletItem(
             text = "Diferente a la contraseña actual",
             isMet = rules.isDifferentFromCurrent,
         )

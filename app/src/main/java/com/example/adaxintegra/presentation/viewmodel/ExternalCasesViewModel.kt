@@ -27,43 +27,65 @@ class ExternalCasesViewModel @Inject constructor(
 
     private var allCases: List<Case> = emptyList()
 
-    fun loadCases() {
+    fun loadCases(isRefresh: Boolean = false) {
         val session = observeSessionUseCase().value
         val userId = session?.userId
 
         // Loads the history only for the external
         if (session?.role == "external" && !userId.isNullOrBlank()) {
-            loadCasesFor(userId)
+            loadCasesFor(userId, isRefresh)
         } else {
             _uiState.update {
                 it.copy(
                     isLoading = false,
+                    isRefreshing = false,
                     error = "No hay una sesión externa válida.",
                 )
             }
         }
     }
 
-    private fun loadCasesFor(userId: String) {
+    //re-fetches case without hiding current content
+    fun refresh() {
+        val state = _uiState.value
+        if (state.isRefreshing || state.isLoading) return
+        loadCases(isRefresh = true)
+    }
+
+    private fun loadCasesFor(userId: String, isRefresh: Boolean) {
+        if (isRefresh) {
+            _uiState.update { it.copy(isRefreshing = true) }
+        }
+
         viewModelScope.launch {
             getExternalUserCasesUseCase(userId).collect { result ->
                 _uiState.update { state ->
                     when (result) {
                         is Result.Loading -> {
-                            state.copy(isLoading = true, error = null)
+                            if (isRefresh) {
+                                state
+                            } else {
+                                state.copy(isLoading = true, error = null)
+                            }
                         }
 
                         is Result.Success -> {
                             // Acceptance criteria: sorted by last update.
                             allCases = result.data.sortedByDescending { it.updatedAt }
-                            state.copy(cases = allCases, isLoading = false, error = null)
+                            state.copy(cases = allCases, isLoading = false, isRefreshing = false, error = null)
                         }
 
                         is Result.Error -> {
-                            state.copy(
-                                isLoading = false,
-                                error = mensajeDeError(result.exception),
-                            )
+                            if (isRefresh) {
+                                //keep current list, just stop indicator
+                                state.copy(isRefreshing = false)
+                            } else {
+                                state.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    error = mensajeDeError(result.exception),
+                                )
+                            }
                         }
                     }
                 }
@@ -74,7 +96,7 @@ class ExternalCasesViewModel @Inject constructor(
     fun onSearchQueryChange(query: String) {
         val filtrados =
             allCases.filter { caso ->
-                caso.caseId.contains(query, ignoreCase = true) ||
+                caso.caseNumber.orEmpty().contains(query, ignoreCase = true) ||
                     caso.violenceList.orEmpty().any { it.type.contains(query, ignoreCase = true) } ||
                     caso.description.orEmpty().contains(query, ignoreCase = true)
             }

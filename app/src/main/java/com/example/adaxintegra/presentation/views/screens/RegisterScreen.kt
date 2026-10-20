@@ -55,6 +55,8 @@ fun RegisterScreen(
     RegisterScreen(
         uiState = uiState,
         onBackClick = { viewModel.onBackPressed(onBackClick) },
+        // "Sí, regresar" already confirmed: navigate without asking again
+        onConfirmLeave = onBackClick,
         onRegisterSuccess = { email ->
             viewModel.resetRegisterSuccess()
             onRegisterSuccess(email)
@@ -71,6 +73,7 @@ fun RegisterScreen(
         onRegisterClick = { viewModel.register() },
         onConfirmRegister = { viewModel.onConfirmRegister() },
         onDismissDialog = { viewModel.onDismissDialog() },
+        onDismissRegistrationError = { viewModel.dismissRegistrationError() },
         onDismissUnsavedChanges = { viewModel.dismissUnsavedChangesDialog() },
         modifier = modifier,
     )
@@ -93,9 +96,11 @@ fun RegisterScreen(
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
     onCountryCodeChange: (String) -> Unit = {},
+    onConfirmLeave: () -> Unit = {},
     onConfirmRegister: () -> Unit = {},
     onDismissDialog: () -> Unit = {},
     onDismissUnsavedChanges: () -> Unit = {},
+    onDismissRegistrationError: () -> Unit = {},
 ) {
     LaunchedEffect(uiState.isRegisterSuccess) {
         if (uiState.isRegisterSuccess) {
@@ -108,7 +113,7 @@ fun RegisterScreen(
         UnsavedChangesDialog(
             onConfirm = {
                 onDismissUnsavedChanges()
-                onBackClick()
+                onConfirmLeave()
             },
             onDismiss = onDismissUnsavedChanges,
         )
@@ -142,6 +147,31 @@ fun RegisterScreen(
                     text = "Cancelar",
                     onClick = onDismissDialog,
                     variant = ButtonVariant.Outlined,
+                )
+            },
+        )
+    }
+
+    uiState.error?.let { message ->
+        AlertDialog(
+            onDismissRequest = onDismissRegistrationError,
+            title = {
+                Text(
+                    text = "No se pudo crear la cuenta",
+                    style = AppTextStyle.TitleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = {
+                Text(
+                    text = message,
+                    style = AppTextStyle.BodyMedium,
+                )
+            },
+            confirmButton = {
+                AppButton(
+                    text = "Aceptar",
+                    onClick = onDismissRegistrationError,
                 )
             },
         )

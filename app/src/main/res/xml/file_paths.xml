@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Expose public Downloads directory for FileProvider -->
+    <external-path
+        name="public_downloads"
+        path="Download/" />
+
+    <!-- R-06: documents shared from "Mis documentos", they stay in the app cache -->
+    <cache-path
+        name="shared_documents"
+        path="documents/" />
+</paths>

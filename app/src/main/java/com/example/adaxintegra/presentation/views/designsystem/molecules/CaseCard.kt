@@ -18,45 +18,25 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.domain.entities.Case
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
-private data class CaseStateUi(
-    val textColor: Color,
-    val bgColor: Color,
-    val accentColor: Color,
-)
-
-private fun getCaseStateUi(state: String): CaseStateUi {
-    return when (state.trim().lowercase()) {
-        "abierto" -> CaseStateUi(
-            textColor = Color(0xFF176B35),
-            bgColor = Color(0xFFE8F5E9),
-            accentColor = Color(0xFF176B35),
-        )
-
-        "cerrado" -> CaseStateUi(
-            textColor = Color(0xFFE85B0F),
-            bgColor = Color(0xFFFDECE3),
-            accentColor = Color(0xFFE85B0F),
-        )
-
-        else -> CaseStateUi(
-            textColor = Color(0xFF595563),
-            bgColor = Color(0xFFF0EFF2),
-            accentColor = Color(0xFF595563),
-        )
+private fun getUrgencyColor(urgency: String): Color {
+    return when (urgency.trim().lowercase()) {
+        "alta" -> Color(0xFFCE2C29)
+        "media" -> Color(0xFFEEAB29)
+        "baja" -> Color(0xFF19C254)
+        else -> Color(0xFF595563)
     }
 }
 
@@ -103,7 +83,10 @@ fun CaseCard(
     case: Case,
     modifier: Modifier = Modifier,
 ) {
-    val stateUi = getCaseStateUi(case.state)
+    val urgencyColor = getUrgencyColor(case.urgency)
+    val isClosed = case.state.trim().lowercase() in
+        listOf("closed", "cerrado")
+
     val violenceLabel = if (case.violenceTypes.size > 1) "Violencias: " else "Violencia: "
     val internsLabel =
         if (case.internsAssigned.size > 1) "Encargadas del caso: " else "Encargada del caso: "
@@ -120,7 +103,9 @@ fun CaseCard(
     )
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (isClosed) 0.5f else 1f),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -129,12 +114,12 @@ fun CaseCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            // Left accent line with the color based on the state of the case
+            // Left accent line with the color based on the urgency of the case
             Box(
                 modifier = Modifier
                     .width(5.dp)
                     .fillMaxHeight()
-                    .background(stateUi.accentColor),
+                    .background(urgencyColor),
             )
             // Main section
             Column(
@@ -157,8 +142,10 @@ fun CaseCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            // If there is no caseNumber then it will instead show the caseId truncated to 12 chars
-                            text = (case.caseNumber ?: case.caseId).take(12),
+                            // Show the complete case number
+                            text = case.caseNumber
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "Sin número de caso",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -174,19 +161,7 @@ fun CaseCard(
                         )
                     }
 
-                    // Pill with the state of the case
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = stateUi.bgColor,
-                    ) {
-                        Text(
-                            text = case.state.ifBlank { "Sin estado" },
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = stateUi.textColor,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+
                 }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -232,14 +207,7 @@ fun CaseCard(
                     }
                 }
 
-                // Section of the last modification
-                Text(
-                    text = "Última modificación: ${case.updatedAt?.substringBefore('T') ?: "Sin registro"}",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                )
+
             }
         }
     }
@@ -257,9 +225,9 @@ private fun CaseCardOpenPreview() {
                 violenceTypes = listOf("Sexual", "Psicológica", "Física"),
                 state = "Abierto",
                 severity = null,
-                urgency = "",
+                urgency = "Alta",
                 updatedAt = "06-01-2026",
-                caseNumber = "CAS-26-0001",
+                caseNumber = "CAS-2026-0001",
                 internsAssigned = listOf("Alejandra Beatriz Benítez Mondragón", "María Gómez"),
             ),
             modifier = Modifier.padding(12.dp),
@@ -281,7 +249,7 @@ private fun CaseCardClosedPreview() {
                 severity = null,
                 urgency = "",
                 updatedAt = "05-01-2026",
-                caseNumber = "CAS-27-0516",
+                caseNumber = "CAS-2027-0516",
                 internsAssigned = listOf("Dana Ortíz"),
             ),
             modifier = Modifier.padding(12.dp),

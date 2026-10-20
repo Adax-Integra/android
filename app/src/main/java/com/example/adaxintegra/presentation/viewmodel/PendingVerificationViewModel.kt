@@ -2,9 +2,11 @@ package com.example.adaxintegra.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.common.AuthError
 import com.example.adaxintegra.domain.common.Result
 import com.example.adaxintegra.domain.usecases.ResendVerificationEmailUseCase
 import com.example.adaxintegra.domain.usecases.VerifyEmailCodeUseCase
+import com.example.adaxintegra.presentation.mapper.toAuthMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,10 +70,11 @@ class PendingVerificationViewModel @Inject constructor(
                     }
 
                     is Result.Error -> {
+                        val exception = result.exception
                         _uiState.update {
                             it.copy(
                                 isVerifying = false,
-                                errorMessage = "Código incorrecto o expirado. Verifica el código e intenta de nuevo.",
+                                errorMessage = exception.toAuthMessage(),
                                 otpCodeError = "Código inválido",
                             )
                         }
@@ -110,11 +113,18 @@ class PendingVerificationViewModel @Inject constructor(
                     }
 
                     is Result.Error -> {
+                        val exception = result.exception
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = "Error al reenviar el código. Inténtalo más tarde.",
+                                errorMessage = exception.toAuthMessage(),
                                 successMessage = null,
+                                // the server says no more emails: show the counter as full
+                                resendAttempts = if (exception == AuthError.TooManySends) {
+                                    it.maxResendAttempts
+                                } else {
+                                    it.resendAttempts
+                                },
                             )
                         }
                     }

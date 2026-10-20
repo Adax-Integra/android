@@ -1,14 +1,20 @@
 package com.example.adaxintegra.presentation.views.screens.cases
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -26,38 +32,70 @@ fun CaseProgressScreen(
     viewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val case = uiState.case
 
     LaunchedEffect(caseId) {
         viewModel.loadCase(caseId)
     }
 
-    val case = uiState.case
-
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppHeader(
             title = "Progreso de caso",
-            subtitle = "ID: ${case?.caseNumber ?: caseId}",
+            subtitle = case?.caseNumber
+                ?.takeIf { it.isNotBlank() }
+                ?: "Sin número de caso",
             onBack = onBack,
         )
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator()
-            }
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh(caseId) },
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        ) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
-            uiState.error != null -> {
-                Text(text = uiState.error!!)
-            }
+                uiState.error != null -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = uiState.error!!)
+                    }
+                }
 
-            case != null -> {
-                CaseProgressTimeline(
-                    caseSteps = case.caseSteps,
-                )
+                case != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        CaseSummaryContent(
+                            description = case.description,
+                            helpWanted = case.helpWanted,
+                        )
+
+                        CaseProgressTimeline(
+                            caseSteps = case.caseSteps.orEmpty(),
+                        )
+                    }
+                }
             }
         }
     }

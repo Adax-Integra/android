@@ -19,7 +19,7 @@ object SupabaseModule {
     fun provideSupabaseClient(): SupabaseClient {
         return createSupabaseClient(
             supabaseUrl = BuildConfig.SUPABASE_URL,
-            supabaseKey = BuildConfig.SUPABASE_ANON_KEY,
+            supabaseKey = BuildConfig.SUPABASE_ANON_KEY
         ) {
             install(Auth) {
                 flowType = FlowType.PKCE

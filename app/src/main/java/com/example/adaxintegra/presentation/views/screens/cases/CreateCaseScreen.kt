@@ -20,6 +20,7 @@ import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenT
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun CreateCaseScreen(
+    targetUserId: String? = null,
     onBack: () -> Unit,
     onCaseCreated: () -> Unit,
     viewModel: CreateCaseViewModel = hiltViewModel(),
@@ -31,7 +32,7 @@ fun CreateCaseScreen(
     // screen and the progress is shown inside "Guardar"
     ScreenTemplate(
         title = "Registrar el caso",
-        subtitle = "Cuéntanos tu situación para poder acompañarte",
+        subtitle = "Cuéntanos la situación para poder dar seguimiento",
         onBack = onBack,
         modifier = Modifier.padding(horizontal = spacing.medium),
     ) {
@@ -53,7 +54,7 @@ fun CreateCaseScreen(
                 onDescriptionChange = viewModel::onDescriptionChange,
                 onHelpsWantedChange = viewModel::onHelpsWantedChange,
                 onExternalSupportChange = viewModel::onExternalSupportChange,
-                onSave = viewModel::save,
+                onSave = { viewModel.save(targetUserId) },
                 onCancel = {
                     viewModel.cancel()
                     onBack()

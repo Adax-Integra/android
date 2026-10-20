@@ -15,6 +15,9 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.HowToReg
+import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +37,13 @@ import com.example.adaxintegra.ui.theme.IconGrey
 import com.example.adaxintegra.ui.theme.LightPurple
 import com.example.adaxintegra.ui.theme.Purple
 
-// V-06: icon of each kind of action, as in the design (creation, edition, comment)
+// V-06: icon of each kind of action, as in the design (creation, edition, comment).
+// G-04 / G-08: the changes of the account access have their own icon,
+// they go before "update" so they are not shown as an edition
 private fun actionIcon(action: String): ImageVector = when {
+    action.startsWith("deactivate") -> Icons.Outlined.PersonOff
+    action.startsWith("reactivate") -> Icons.Outlined.HowToReg
+    action == "update_collaborator_status" -> Icons.Outlined.ManageAccounts
     action.startsWith("create") || action.startsWith("register") -> Icons.Outlined.CreateNewFolder
     action.startsWith("update") || action.startsWith("edit") -> Icons.Outlined.Edit
     action.contains("comment") -> Icons.Outlined.ChatBubbleOutline
@@ -102,10 +110,22 @@ fun ActivityLogCard(
 @Composable
 fun ActivityLogCardPreview() {
     AdaxIntegraTheme {
-        ActivityLogCard(
-            action = "update_external_profile",
-            title = "Edición de datos de usuaria",
-            description = "Mariana Robles Ortega editó los datos de Valeria Prueba Hora",
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ActivityLogCard(
+                action = "update_external_profile",
+                title = "Edición de datos de usuaria",
+                description = "Mariana Robles Ortega editó los datos de Valeria Prueba Hora",
+            )
+            ActivityLogCard(
+                action = "deactivate_collaborator",
+                title = "Desactivación de colaboradora",
+                description = "Mariana Robles Ortega desactivó la cuenta de Ana López",
+            )
+            ActivityLogCard(
+                action = "reactivate_collaborator",
+                title = "Reactivación de colaboradora",
+                description = "Mariana Robles Ortega reactivó la cuenta de Ana López",
+            )
+        }
     }
 }

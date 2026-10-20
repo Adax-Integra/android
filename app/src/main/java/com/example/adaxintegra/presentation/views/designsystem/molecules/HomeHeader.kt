@@ -5,16 +5,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.adaxintegra.presentation.views.designsystem.atoms.AdaxLogo
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
 import com.example.adaxintegra.ui.theme.Black
 import com.example.adaxintegra.ui.theme.Purple
 
-//NV-01: header of the home, the brand over the greeting
+//NV-01: header of the home, the logo over the greeting.
+// Same logo as the internal home and the iOS version
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun HomeHeader(
@@ -23,14 +26,12 @@ fun HomeHeader(
     message: String = "No estás sola, estamos aquí para acompañarte",
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "ADAX INTEGRA",
-            style = AppTextStyle.TitleLarge,
-            fontWeight = FontWeight.Black,
-            color = Purple,
+        AdaxLogo(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            size = 100.dp,
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = greeting,
@@ -54,5 +55,5 @@ fun HomeHeader(
 @Preview(showBackground = true)
 @Composable
 fun HomeHeaderPreview() {
-    HomeHeader()
+    HomeHeader(greeting = "¡Hola, Ana!")
 }
