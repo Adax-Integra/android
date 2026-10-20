@@ -30,7 +30,7 @@ fun CaseProgressTimeline(
                         TimelineStatus.Completed
                     }
 
-                    "in_progress", "in progress", "en curso" -> {
+                    "in_progress", "in progress", "en curso", "en progreso" -> {
                         TimelineStatus.InProgress
                     }
 

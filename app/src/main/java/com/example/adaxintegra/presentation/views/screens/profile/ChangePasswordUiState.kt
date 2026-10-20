@@ -4,6 +4,7 @@ data class PasswordRules(
     val hasValidLength: Boolean = false,
     val hasUpperAndLower: Boolean = false,
     val hasNumber: Boolean = false,
+    val hasSpecialCharacter: Boolean = false,
     val isDifferentFromCurrent: Boolean = false,
     val doPasswordsMatch: Boolean = false,
     val hasNoSpecialAccents: Boolean = false,
@@ -12,6 +13,7 @@ data class PasswordRules(
         get() = hasValidLength &&
             hasUpperAndLower &&
             hasNumber &&
+            hasSpecialCharacter &&
             isDifferentFromCurrent &&
             doPasswordsMatch &&
             hasNoSpecialAccents

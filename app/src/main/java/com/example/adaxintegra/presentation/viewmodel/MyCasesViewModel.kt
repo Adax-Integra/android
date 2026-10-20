@@ -1,0 +1,146 @@
+package com.example.adaxintegra.presentation.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.adaxintegra.domain.common.Result
+import com.example.adaxintegra.domain.entities.CaseStatusFilter
+import com.example.adaxintegra.domain.usecases.GetMyCasesUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+// V-12: cases assigned to the logged in collaborator, with status filter
+@HiltViewModel
+class MyCasesViewModel @Inject constructor(
+    private val getMyCasesUseCase: GetMyCasesUseCase,
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(CasesUiState())
+    val uiState = _uiState.asStateFlow()
+
+    private var loadJob: Job? = null
+
+    init {
+        loadCases()
+    }
+
+    fun searchCases(search: String) {
+        _uiState.update { it.copy(search = search, page = 1, total = 0)
+        }
+        loadCases()
+    }
+
+    // The dialog applies both filters at once
+    fun applyFilters(status: CaseStatusFilter, urgency: String) {
+        _uiState.update {
+            it.copy(status = status, urgency = urgency, page = 1, total = 0)
+        }
+        loadCases()
+    }
+
+    fun clearFilters() {
+        _uiState.update {
+            it.copy(
+                search = "",
+                urgency = "",
+                status = CaseStatusFilter.ALL,
+                page = 1,
+                total = 0,
+            )
+        }
+        loadCases()
+    }
+
+    fun nextPage() {
+        val state = _uiState.value
+        val hasNextPage = state.page.toLong() * state.limit < state.total
+
+        if (!state.isLoading && hasNextPage) {
+            _uiState.update { it.copy(page = it.page + 1) }
+            loadCases()
+        }
+    }
+
+    fun previousPage() {
+        val state = _uiState.value
+
+        if (!state.isLoading && state.page > 1){
+            _uiState.update { it.copy(page = it.page - 1) }
+            loadCases()
+        }
+    }
+
+    fun retry(){
+        loadCases()
+    }
+
+    fun refresh(){
+        if (_uiState.value.isRefreshing || _uiState.value.isLoading) return
+        loadCases(isRefresh = true)
+    }
+
+    private fun loadCases(isRefresh: Boolean = false){
+        // Cancel the previous request so older results cannot replace new ones
+        loadJob?.cancel()
+
+        val request = _uiState.value
+
+        _uiState.update {
+            if (isRefresh) {
+                it.copy(isRefreshing = true)
+            } else {
+                it.copy(cases = emptyList(), isLoading = true, isRefreshing = false, error = null)
+            }
+        }
+
+        loadJob = viewModelScope.launch {
+            getMyCasesUseCase(
+                status = request.status,
+                search = request.search,
+                urgency = request.urgency,
+                page = request.page,
+                limit = request.limit,
+            ).collect { result ->
+                when (result) {
+                    Result.Loading ->
+                        if (!isRefresh)  {
+                        _uiState.update { it.copy(isLoading = true, error = null) }
+                    }
+
+                    is Result.Success -> {
+                        val data = result.data
+
+                        _uiState.update {
+                            it.copy(
+                                cases = data.cases,
+                                total = data.total,
+                                page = data.page,
+                                limit = data.limit,
+                                isLoading = false,
+                                isRefreshing = false,
+                                error = null,
+                            )
+                        }
+                    }
+
+                    is Result.Error -> {
+                        _uiState.update {
+                            if (isRefresh) {
+                                it.copy(isRefreshing = false)
+                            } else {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    error = "No se pudieron cargar tus casos. Intenta nuevamente.",
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

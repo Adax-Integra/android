@@ -1,8 +1,13 @@
 package com.example.adaxintegra.data.remote.api
 
 import com.example.adaxintegra.data.remote.dto.RecordListResponseDto
+import com.example.adaxintegra.data.remote.dto.UpdateExpedientStatusRequestDto
+import com.example.adaxintegra.data.remote.dto.UpdateExpedientStatusResponseDto
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RecordApi {
@@ -15,4 +20,11 @@ interface RecordApi {
         @Query("hasOpenCases") hasOpenCases: Boolean? = null,
         @Query("status") status: String? = null,
     ): RecordListResponseDto
+
+    @PATCH("api/records/{recordId}/status")
+    suspend fun updateRecordStatus(
+        @Path("recordId") recordId: String,
+        @Header("Authorization") authorization: String,
+        @Body body: UpdateExpedientStatusRequestDto
+    ): UpdateExpedientStatusResponseDto
 }

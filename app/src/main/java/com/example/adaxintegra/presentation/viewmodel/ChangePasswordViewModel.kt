@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.adaxintegra.domain.common.PasswordValidator
+import com.example.adaxintegra.presentation.mapper.toAuthMessage
 
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
@@ -80,7 +82,7 @@ class ChangePasswordViewModel @Inject constructor(
 
                         is Result.Error -> currentState.copy(
                             isLoading = false,
-                            errorMessage = result.exception.message ?: "Ocurrió un error al cambiar la contraseña.",
+                            errorMessage = result.exception.toAuthMessage(),
                         )
                     }
                 }
@@ -107,6 +109,7 @@ class ChangePasswordViewModel @Inject constructor(
             hasValidLength = hasValidLength,
             hasUpperAndLower = hasUpperAndLower,
             hasNumber = hasNumber,
+            hasSpecialCharacter = PasswordValidator.hasSpecialCharacter(newPass),
             isDifferentFromCurrent = isDifferentFromCurrent,
             doPasswordsMatch = doPasswordsMatch,
             hasNoSpecialAccents = hasNoSpecialAccents,

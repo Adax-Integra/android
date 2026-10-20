@@ -69,18 +69,23 @@ class CasesViewModel @Inject constructor(
         loadCases()
     }
 
-    private fun loadCases() {
+    fun refresh() {
+        if (_uiState.value.isRefreshing || _uiState.value.isLoading) return
+        loadCases(isRefresh = true)
+    }
+
+    private fun loadCases(isRefresh: Boolean = false) {
         // Cancel the previous request so older results cannot replace new ones.
         loadJob?.cancel()
 
         val request = _uiState.value
 
         _uiState.update {
-            it.copy(
-                cases = emptyList(),
-                isLoading = true,
-                error = null,
-            )
+            if (isRefresh) {
+                it.copy(isRefreshing = true)
+            } else {
+                it.copy(cases = emptyList(), isLoading = true, isRefreshing = false, error = null)
+            }
         }
 
         loadJob = viewModelScope.launch {
@@ -92,10 +97,11 @@ class CasesViewModel @Inject constructor(
             ).collect { result ->
                 when (result) {
                     is Result.Loading -> {
+                        if (!isRefresh) {
                         _uiState.update {
                             it.copy(isLoading = true, error = null)
                         }
-                    }
+                    } }
 
                     is Result.Success -> {
                         val data = result.data
@@ -107,6 +113,7 @@ class CasesViewModel @Inject constructor(
                                 page = data.page,
                                 limit = data.limit,
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = null,
                             )
                         }
@@ -114,14 +121,18 @@ class CasesViewModel @Inject constructor(
 
                     is Result.Error -> {
                         _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = "No se pudieron cargar los casos. Intenta nuevamente.",
-                            )
+                            if (isRefresh) {
+                                it.copy(isRefreshing = false)
+                            } else {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    error = "No se pudieron cargar los casos. Intenta nuevamente.",
+                                )
+                            }
                         }
                     }
-                }
             }
         }
     }
-}
+}}

@@ -1,5 +1,7 @@
 package com.example.adaxintegra.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 // backend response used specifically by the V-11 case detail flow
 data class CaseDetailResponseDto(
     val success: Boolean,
@@ -15,17 +17,31 @@ data class CaseDetailDto(
     val has_lawyer: Boolean? = null,
     val state: String? = null,
     val record_id: String? = null,
+    @SerializedName(value = "record_number", alternate = ["recordNumber", "expedient_number", "expedientNumber"])
+    val record_number: String? = null,
     val created_at: String? = null,
     val updated_at: String? = null,
     val record: CaseDetailRecordDto? = null,
     val case_steps: List<CaseStepDto> = emptyList(),
     val case_violence: List<CaseDetailViolenceDto> = emptyList(),
     val case_help: List<CaseDetailHelpDto> = emptyList(),
+    val case_assignment: List<CaseDetailAssignmentDto>? = null,
+)
+
+// R-12: the case detail sends only the user_id of each assigned collaborator,
+// the backend already leaves out the removed ones. user stays optional in case
+// the names are added later
+data class CaseDetailAssignmentDto(
+    val user_id: String? = null,
+    val user: CaseDetailUserDto? = null,
 )
 
 // record information associated with the selected case
 data class CaseDetailRecordDto(
+    @SerializedName(value = "record_id", alternate = ["recordId"])
     val record_id: String? = null,
+    @SerializedName(value = "record_number", alternate = ["recordNumber", "expedient_number", "expedientNumber"])
+    val record_number: String? = null,
     val user: CaseDetailUserDto? = null,
 )
 
@@ -38,10 +54,12 @@ data class CaseDetailUserDto(
 
 // violence information returned by the case relation
 data class CaseDetailViolenceDto(
+    @SerializedName("violence_types")
     val violence_types: CaseDetailViolenceTypeDto? = null,
 )
 
 data class CaseDetailViolenceTypeDto(
+    @SerializedName("violence_id")
     val violence_id: String? = null,
     val description: String? = null,
     val severity: Int? = null,
@@ -49,10 +67,16 @@ data class CaseDetailViolenceTypeDto(
 
 // requested help information returned by the case relation
 data class CaseDetailHelpDto(
+    @SerializedName("help_types")
     val help_types: CaseDetailHelpTypeDto? = null,
+
+    @SerializedName("help_id")
+    val help_id: String? = null,
+    val description: String? = null,
 )
 
 data class CaseDetailHelpTypeDto(
+    @SerializedName("help_id")
     val help_id: String? = null,
     val description: String? = null,
 )

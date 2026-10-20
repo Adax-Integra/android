@@ -6,9 +6,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import com.example.adaxintegra.domain.model.CollaboratorSummary
+import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
+import com.example.adaxintegra.presentation.views.designsystem.organisms.AssignCollaboratorDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,18 +25,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.CaseProgressStep
+import com.example.adaxintegra.domain.model.HelpType
+import com.example.adaxintegra.domain.model.Violence
 import com.example.adaxintegra.presentation.model.CaseStatusUi
 import com.example.adaxintegra.presentation.util.DateFormatter
 import com.example.adaxintegra.presentation.viewmodel.CaseDetailViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppButton
-import com.example.adaxintegra.presentation.views.designsystem.atoms.ButtonVariant
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseCloseDialog
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDescriptionCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseDetailCard
-import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseEvidenceCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHeaderCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseHelpCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseProgressUpdateCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CaseRecordSummaryCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.CheckboxesInDropdown
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 import com.example.adaxintegra.ui.theme.IconGrey
@@ -46,6 +56,7 @@ fun CaseDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showCloseDialog by remember { mutableStateOf(false) }
+    var showAssignDialog by remember { mutableStateOf(false) }
 
     // reloads the selected case whenever its identifier changes
     LaunchedEffect(caseId) {
@@ -68,7 +79,7 @@ fun CaseDetailScreen(
 
     val statusColor =
         when (normalizedState) {
-            "open" -> Color(0xFF34C759)
+            "open" -> CaseStatusUi.OPEN.color
             "cerrado" -> CaseStatusUi.CLOSED.color
             else -> status?.color ?: IconGrey
         }
@@ -82,6 +93,8 @@ fun CaseDetailScreen(
         onBack = onBack,
         isLoading = uiState.isLoading,
         error = uiState.error,
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = { viewModel.refresh(caseId) }
     ) {
         if (case != null) {
             CaseDetailContent(
@@ -102,25 +115,143 @@ fun CaseDetailScreen(
                 hasLawyer = case.hasLawyer ?: false,
                 description = case.description,
 
-                // evidence stays hidden until its backend source is available
-                showEvidenceSection = false,
-
                 helpWanted = case.helpWanted,
 
                 // record information returned by the V-11 backend detail response
                 userName = case.userName,
-                recordId = case.recordId,
+                recordId = case.recordNumber?.takeIf { it.isNotBlank() } ?: case.recordId,
 
                 isCaseClosed = isCaseClosed,
+
+                availableViolences = uiState.availableViolences,
+                assignedViolences = case.violenceList.mapNotNull { caseViolence ->
+                    val match = uiState.availableViolences.find {
+                        it.id == caseViolence.id || it.type.trim()
+                            .equals(caseViolence.type.trim(), ignoreCase = true)
+                    }
+                    match?.type ?: caseViolence.type.takeIf { it.isNotBlank() }
+                }.toSet(),
+                onAssignViolences = { selectedDescriptions ->
+                    val violenceIds = uiState.availableViolences
+                        .filter { available ->
+                            selectedDescriptions.any { sel ->
+                                sel.trim().equals(available.type.trim(), ignoreCase = true)
+                            }
+                        }
+                        .map { it.id }
+                    viewModel.assignViolences(caseId, violenceIds)
+                },
+
+                availableHelps = uiState.availableHelps,
+                assignedHelps = case.helpList.mapNotNull { caseHelp ->
+                    val matchById = uiState.availableHelps.find { it.helpId == caseHelp.id }
+                    matchById?.description ?: caseHelp.description
+                }.toSet(),
+                onAssignHelps = { selectedDescriptions ->
+                    val helpIds = uiState.availableHelps
+                        .filter { it.description in selectedDescriptions }
+                        .map { it.helpId }
+                    viewModel.assignHelps(caseId, helpIds)
+                },
                 onBack = onBack,
                 onEdit = onEdit,
+                onAssignCollaboratorsClick = {
+                    showAssignDialog = true
+                    viewModel.clearCollaboratorsFeedback()
+                    viewModel.loadAssignableCaseCollaborators()
+                },
                 onRequestClose = {
                     showCloseDialog = true
+                },
+                caseSteps = case.caseSteps,
+                isUpdatingStep = uiState.isUpdatingStep,
+                updateStepSuccess = uiState.updateStepSuccess,
+                updateStepError = uiState.updateStepError,
+                onUpdateStep = { stepNumber ->
+                    viewModel.updateCaseStep(case.caseId, stepNumber)
                 },
             )
         }
     }
 
+    LaunchedEffect(uiState.collaboratorsSaved) {
+        if (uiState.collaboratorsSaved && showAssignDialog) {
+            showAssignDialog = false
+            viewModel.clearCollaboratorsFeedback()
+        }
+    }
+
+    if (showAssignDialog && !isCaseClosed) {
+        if (case == null || !case.assignmentsLoaded || !uiState.assignableCollaboratorsLoaded) {
+            AlertDialog(
+                onDismissRequest = { showAssignDialog = false },
+                title = { Text("Administrar colaboradoras") },
+                text = {
+                    Text(
+                        when {
+                            case?.assignmentsLoaded != true ->
+                                "No se pudieron verificar las asignaciones actuales."
+                            uiState.isLoadingAssignableCollaborators ->
+                                "Cargando colaboradoras..."
+                            else ->
+                                uiState.assignableCollaboratorsError
+                                    ?: "No fue posible cargar las colaboradoras."
+                        },
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (case?.assignmentsLoaded == true) {
+                                viewModel.loadAssignableCaseCollaborators()
+                            } else {
+                                viewModel.refresh(caseId)
+                            }
+                        },
+                        enabled = !uiState.isLoadingAssignableCollaborators,
+                    ) {
+                        Text("Reintentar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAssignDialog = false }) {
+                        Text("Cancelar")
+                    }
+                },
+            )
+        } else {
+            val catalog = uiState.assignableCollaborators
+            val missingAssigned = case.assignedCollaboratorIds.mapIndexedNotNull { index, id ->
+                if (catalog.any { it.userId == id }) {
+                    null
+                } else {
+                    CollaboratorSummary(
+                        userId = id,
+                        name = case.assignedCollaboratorNames.getOrNull(index)
+                            ?.ifBlank { "Colaboradora asignada" }
+                            ?: "Colaboradora asignada",
+                        lastName = "",
+                        email = null,
+                        isActive = false,
+                    )
+                }
+            }
+
+            AssignCollaboratorDialog(
+                collaborators = catalog + missingAssigned,
+                assignedIds = case.assignedCollaboratorIds.toSet(),
+                isSaving = uiState.isSavingCollaborators,
+                errorMessage = uiState.saveCollaboratorsError,
+                onConfirm = { ids ->
+                    viewModel.saveCaseCollaborators(caseId, ids)
+                },
+                onDismiss = {
+                    showAssignDialog = false
+                    viewModel.clearCollaboratorsFeedback()
+                },
+            )
+        }
+    }
     // displays the V-11 confirmation interface before requesting the closure
     if (showCloseDialog) {
         CaseCloseDialog(
@@ -152,14 +283,25 @@ private fun CaseDetailContent(
     location: String?,
     hasLawyer: Boolean,
     description: String?,
-    showEvidenceSection: Boolean,
     helpWanted: String?,
     userName: String?,
     recordId: String?,
     isCaseClosed: Boolean,
+    availableViolences: List<Violence>,
+    assignedViolences: Set<String>,
+    onAssignViolences: (Set<String>) -> Unit,
+    availableHelps: List<HelpType>,
+    assignedHelps: Set<String>,
+    onAssignHelps: (Set<String>) -> Unit,
+    caseSteps: List<CaseProgressStep>,
+    isUpdatingStep: Boolean,
+    updateStepSuccess: Boolean,
+    updateStepError: String?,
+    onUpdateStep: (Int) -> Unit,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onRequestClose: () -> Unit,
+    onAssignCollaboratorsClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier =
@@ -209,12 +351,34 @@ private fun CaseDetailContent(
             }
         }
 
-        // evidence is prepared for V-11 but stays hidden until its source is integrated
-        if (showEvidenceSection) {
-            item {
-                CaseEvidenceCard()
-            }
+        // Section of R-07, assigning the violence a case has
+        item {
+            val violenceOptions = availableViolences.map { it.type }
+            val selectedState =
+                remember(assignedViolences) { mutableStateListOf(*assignedViolences.toTypedArray()) }
+
+            CheckboxesInDropdown(
+                title = "Tipos de violencia del caso",
+                options = violenceOptions,
+                selectedOptions = selectedState.toSet(),
+                onOptionToggle = { option ->
+                    if (option in selectedState) {
+                        selectedState.remove(option)
+                    } else {
+                        selectedState.add(option)
+                    }
+                },
+                saveButtonAction = {
+                    onAssignViolences(selectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // We cancel the actions and take the values from backend
+                    selectedState.clear()
+                    selectedState.addAll(assignedViolences)
+                },
+            )
         }
+
 
         // requested help appears only when information is available
         if (!helpWanted.isNullOrBlank()) {
@@ -225,6 +389,56 @@ private fun CaseDetailContent(
             }
         }
 
+        // Section of R-08, assigning the help requested by the case
+        item {
+            val helpOptions = availableHelps.map { it.description }
+            val helpSelectedState =
+                remember(assignedHelps) { mutableStateListOf(*assignedHelps.toTypedArray()) }
+
+            CheckboxesInDropdown(
+                title = "Tipos de ayuda asignados",
+                options = helpOptions,
+                selectedOptions = helpSelectedState.toSet(),
+                onOptionToggle = { option ->
+                    if (option in helpSelectedState) {
+                        helpSelectedState.remove(option)
+                    } else {
+                        helpSelectedState.add(option)
+                    }
+                },
+                saveButtonAction = {
+                    onAssignHelps(helpSelectedState.toSet())
+                },
+                cancelButtonAction = {
+                    // We cancel the actions and take the values from backend
+                    helpSelectedState.clear()
+                    helpSelectedState.addAll(assignedHelps)
+                },
+            )
+        }
+
+        //add case step progress update selector
+        item {
+            CaseProgressUpdateCard(
+                caseSteps = caseSteps,
+                isUpdating = isUpdatingStep,
+                updateSuccess = updateStepSuccess,
+                updateError = updateStepError,
+                isCaseClosed = isCaseClosed,
+                onUpdateStep = onUpdateStep,
+            )
+        }
+
+        if (!isCaseClosed) {
+            item {
+                AppButton(
+                    text = "Administrar colaboradoras",
+                    onClick = onAssignCollaboratorsClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
         // actions defined by the V-11 case detail acceptance criteria
         item {
             Row(
@@ -239,21 +453,13 @@ private fun CaseDetailContent(
                         modifier = Modifier.weight(1f),
                     )
                 }
-
-                // cancel always returns to the previous screen
-                AppButton(
-                    text = "Cancelar",
-                    onClick = onBack,
-                    modifier = Modifier.weight(1f),
-                    variant = ButtonVariant.Outlined,
-                )
             }
         }
     }
 }
 
 // mock values are used only to validate the open-case V-11 layout
-@Suppress("ktlint:standard:function-naming")
+/*@Suppress("ktlint:standard:function-naming")
 @Preview(
     name = "V-11 Open Case Detail",
     showBackground = true,
@@ -280,20 +486,28 @@ private fun OpenCaseDetailScreenPreview() {
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
 
-                // preview-only value used to validate the Figma evidence section
-                showEvidenceSection = true,
-
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
-                recordId = "EXP-2024-1024",
+                recordId = "EXP-2026-1024",
 
                 // open cases expose the close-case action
                 isCaseClosed = false,
-
+                availableViolences = emptyList(),
+                assignedViolences = emptySet(),
+                onAssignViolences = {},
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
+                onAssignCollaboratorsClick = {},
                 onRequestClose = {},
+                caseSteps = TODO(),
+                isUpdatingStep = TODO(),
+                updateStepSuccess = TODO(),
+                updateStepError = TODO(),
+                onUpdateStep = TODO(),
             )
         }
     }
@@ -326,19 +540,24 @@ private fun ClosedCaseDetailScreenPreview() {
                 hasLawyer = true,
                 description =
                     "La usuaria reporta una situación de violencia y requiere seguimiento del caso.",
-                showEvidenceSection = true,
                 helpWanted =
                     "Asesoría legal y acompañamiento psicológico",
                 userName = "María García López",
-                recordId = "EXP-2024-1024",
+                recordId = "EXP-2026-1024",
 
                 // closed cases must not expose the close-case action again
                 isCaseClosed = true,
-
+                availableViolences = emptyList(),
+                assignedViolences = emptySet(),
+                onAssignViolences = {},
+                availableHelps = emptyList(),
+                assignedHelps = emptySet(),
+                onAssignHelps = {},
                 onBack = {},
                 onEdit = {},
+                onAssignCollaboratorsClick = {},
                 onRequestClose = {},
             )
         }
     }
-}
+}*/

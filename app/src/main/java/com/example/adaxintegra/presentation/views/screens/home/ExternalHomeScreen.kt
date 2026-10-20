@@ -1,6 +1,5 @@
 package com.example.adaxintegra.presentation.views.screens.home
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,24 +8,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.adaxintegra.domain.model.EventScope
+import com.example.adaxintegra.presentation.viewmodel.CaseProgressViewModel
+import com.example.adaxintegra.presentation.viewmodel.EventsViewModel
 import com.example.adaxintegra.presentation.viewmodel.ExternalCasesViewModel
+import com.example.adaxintegra.presentation.viewmodel.VerificationStatusViewModel
 import com.example.adaxintegra.presentation.views.designsystem.atoms.SectionTitle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Spacing
+import com.example.adaxintegra.presentation.views.designsystem.atoms.VerificationStatus
 import com.example.adaxintegra.presentation.views.designsystem.molecules.HomeHeader
 import com.example.adaxintegra.presentation.views.designsystem.molecules.PodcastCard
+import com.example.adaxintegra.presentation.views.designsystem.molecules.SocialMediaCard
 import com.example.adaxintegra.presentation.views.designsystem.organisms.CurrentCaseCard
-
-//NV-01: link the team left, the podcast card is the only way into it
-private const val PODCAST_URL =
-    "https://open.spotify.com/show/5yaZdYjbR36lrDmaJ0WhVk?si=pbLJm3ifQIuItgKcnyN08Q&utm_source=copy-link"
+import com.example.adaxintegra.presentation.views.designsystem.organisms.EventsCarousel
+import com.example.adaxintegra.presentation.views.designsystem.organisms.VerificationBanner
 
 // V-01: home of the external user, reached from the bottom nav bar and after signing in
 @Suppress("ktlint:standard:function-naming")
@@ -34,16 +37,29 @@ private const val PODCAST_URL =
 fun ExternalHomeScreen(
     onCaseClick: (String) -> Unit,
     onRegisterCaseClick: () -> Unit,
+    onEventClick: (String) -> Unit,
+    onSeeAllEventsClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onUploadDocumentsClick: () -> Unit = {},
     viewModel: ExternalCasesViewModel = hiltViewModel(),
+    eventsViewModel: EventsViewModel = hiltViewModel(),
+    verificationViewModel: VerificationStatusViewModel = hiltViewModel(),
+    progressViewModel: CaseProgressViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val eventsState by eventsViewModel.uiState.collectAsStateWithLifecycle()
+    val verificationStatus by verificationViewModel.status.collectAsStateWithLifecycle()
+    val progressState by progressViewModel.uiState.collectAsStateWithLifecycle()
     val spacing = Spacing()
     val context = LocalContext.current
 
-    //Reloaded on every entry, so a case registered in R-02 shows up here
+    // Reloaded on every entry, so a case registered in R-02 shows up here
     LaunchedEffect(Unit) {
         viewModel.loadCases()
+        // E-01: the carousel only shows the events of the current month
+        eventsViewModel.loadEvents(EventScope.MONTH)
+        // B-01: coming back from "Mis documentos" the notice shows the new status
+        verificationViewModel.load()
     }
 
     // NV-01: V-04 already hands the list sorted by updatedAt, so the case in progress is
@@ -53,41 +69,77 @@ fun ExternalHomeScreen(
         !"closed".equals(case.state, ignoreCase = true)
     }
 
-    Column(
+    // V-07: the case list doesn't bring the steps, so the case in progress is fetched by id (same as iOS)
+    LaunchedEffect(currentCase?.caseId) {
+        currentCase?.caseId?.let { progressViewModel.loadCase(it) }
+    }
+
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing || eventsState.isRefreshing || progressState.isRefreshing,
+        // Pulling the home down reloads the cases and the events together
+        onRefresh = {
+            viewModel.refresh()
+            eventsViewModel.refresh()
+            verificationViewModel.load()
+            currentCase?.let { progressViewModel.refresh(it.caseId) }
+        },
         modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing.medium),
-        verticalArrangement = Arrangement.spacedBy(spacing.medium),
+            .fillMaxSize(),
     ) {
-        Spacer(modifier = Modifier.height(spacing.small))
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            Spacer(modifier = Modifier.height(spacing.small))
 
-        HomeHeader()
+            HomeHeader()
 
-        CurrentCaseCard(
-            currentCase = currentCase,
-            onCaseClick = onCaseClick,
-            onRegisterCaseClick = onRegisterCaseClick,
-            isLoading = uiState.isLoading,
-            error = uiState.error,
-        )
-
-        SectionTitle(text = "Eventos")
-
-        //NV-01: there is no events endpoint yet, the section stays empty as in iOS
-        Spacer(modifier = Modifier.height(spacing.extraLarge))
-
-        SectionTitle(text = "Podcast")
-
-        PodcastCard(
-            onClick = {
-                //Spotify if it is installed, the browser otherwise
-                runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, PODCAST_URL.toUri()))
+            // B-01: same as iOS, the notice disappears once the account is verified
+            verificationStatus
+                ?.takeIf { it != VerificationStatus.VERIFIED }
+                ?.let { status ->
+                    VerificationBanner(
+                        status = status,
+                        onUploadClick = onUploadDocumentsClick,
+                    )
                 }
-            },
-        )
 
-        Spacer(modifier = Modifier.height(spacing.large))
+            CurrentCaseCard(
+                currentCase = currentCase,
+                caseSteps = progressState.case?.caseSteps.orEmpty(),
+                onCaseClick = onCaseClick,
+                onRegisterCaseClick = onRegisterCaseClick,
+                isLoading = uiState.isLoading || progressState.isLoading,
+                error = uiState.error ?: progressState.error,
+            )
+
+            EventsCarousel(
+                uiState = eventsState,
+                onSeeAllClick = onSeeAllEventsClick,
+                onEventClick = onEventClick,
+                onRetry = eventsViewModel::loadEvents,
+            )
+
+            SectionTitle(text = "Podcast")
+
+            PodcastCard(
+                onSpotifyClick = { HomeLinks.open(context, HomeLinks.PODCAST_URL) },
+                onYouTubeClick = { HomeLinks.open(context, HomeLinks.YOUTUBE_URL) },
+            )
+
+            SectionTitle(text = "Redes sociales")
+
+            SocialMediaCard(
+                onFacebookClick = { HomeLinks.open(context, HomeLinks.FACEBOOK_URL) },
+                onInstagramClick = { HomeLinks.open(context, HomeLinks.INSTAGRAM_URL) },
+                onXClick = { HomeLinks.open(context, HomeLinks.X_URL) },
+                onTikTokClick = { HomeLinks.open(context, HomeLinks.TIKTOK_URL) },
+            )
+
+            Spacer(modifier = Modifier.height(spacing.large))
+        }
     }
 }

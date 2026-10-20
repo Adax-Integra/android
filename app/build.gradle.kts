@@ -23,20 +23,49 @@ android {
     defaultConfig {
         applicationId = "com.adaxintegra"
         minSdk = 29
+
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        val supabaseUrl = (localProperties.getProperty("SUPABASE_URL") ?: "").trim()
-        val supabaseKey = (localProperties.getProperty("SUPABASE_ANON_KEY") ?: "").trim()
-        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseKey\"")
+    flavorDimensions += "env"
+
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                "\"${localProperties.getProperty("SUPABASE_URL_DEV", "")}\"",
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                "\"${localProperties.getProperty("SUPABASE_ANON_KEY_DEV", "")}\"",
+            )
+        }
+        create("prod") {
+            dimension = "env"
+            buildConfigField(
+                "String",
+                "SUPABASE_URL",
+                "\"${localProperties.getProperty("SUPABASE_URL_PROD", "")}\"",
+            )
+            buildConfigField(
+                "String",
+                "SUPABASE_ANON_KEY",
+                "\"${localProperties.getProperty("SUPABASE_ANON_KEY_PROD", "")}\"",
+            )
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }
@@ -70,6 +99,7 @@ dependencies {
 
     // Supabase
     implementation(platform(libs.supabase.bom))
+    implementation(libs.protolite.well.known.types)
     implementation(libs.supabase.auth)
     implementation(libs.ktor.client.android)
 
@@ -78,7 +108,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.ui.tooling)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -90,6 +120,13 @@ dependencies {
     implementation(libs.converter.gson)
 
     implementation(libs.okhttp.logging.interceptor)
+
+    // Coil: loads the event images from their URL (E-01)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
+    // Security
+    implementation(libs.androidx.security.crypto)
 }
 
 // Automatically install the git hook before building

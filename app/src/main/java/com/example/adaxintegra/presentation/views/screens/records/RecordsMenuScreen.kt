@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.molecules.RecordMenuOptionCard
+import com.example.adaxintegra.presentation.views.designsystem.organisms.MenuOptionCard
 import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
 @Suppress("ktlint:standard:function-naming")
@@ -20,11 +23,15 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 fun RecordsMenuScreen(
     onAllCasesClick: () -> Unit,
     onAllRecordsClick: () -> Unit = {},
+    onReportsClick: () -> Unit = {},
+    onMyCasesCLick: () -> Unit = {},
+    onExternalUsersClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
@@ -39,19 +46,45 @@ fun RecordsMenuScreen(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        RecordMenuOptionCard(
+        MenuOptionCard(
+            title = "Expedientes",
+            subtitle = "Consulta todos los expedientes",
+            onClick = onAllRecordsClick,
+            icon = AppIcons.UserAttributes,
+        )
+
+        MenuOptionCard(
             title = "Todos los Casos",
-            description = "Consulta los casos por urgencia",
-            nextScreen = onAllCasesClick,
+            subtitle = "Consulta los casos",
+            onClick = onAllCasesClick,
             icon = AppIcons.Folder,
         )
 
-        RecordMenuOptionCard(
-            title = "Todos los expedientes",
-            description = "Consulta todos los expedientes",
-            nextScreen = onAllRecordsClick,
-            icon = AppIcons.UserAttributes,
+        // V-12: cases assigned to the logged in collaborator
+        MenuOptionCard(
+            title = "Todos los casos",
+            subtitle = "Casos que yo llevo",
+            onClick = onMyCasesCLick,
+            icon = AppIcons.InboxText,
         )
+
+        onExternalUsersClick?.let { onClick ->
+            MenuOptionCard(
+                title = "Cuentas externas",
+                subtitle = "Control de cuentas",
+                onClick = onClick,
+                icon = AppIcons.Profile,
+            )
+        }
+
+        MenuOptionCard(
+            title = "Reportes",
+            subtitle = "Genera reportes sobre casos",
+            onClick = onReportsClick,
+            icon = AppIcons.Reports,
+        )
+
+        // B-02: The staff reviews the verifications from the list
     }
 }
 
