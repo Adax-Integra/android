@@ -34,7 +34,6 @@ class EditableProfileViewModel @Inject constructor(
     //seen during read only mode
     private var originalName = ""
     private var originalLastName = ""
-    private var originalPhoneCountryCode = "+52"
     private var originalPhone = ""
     private var originalCountry = ""
     private var originalState = ""
@@ -74,13 +73,13 @@ class EditableProfileViewModel @Inject constructor(
                 originalLastName = profile.lastName
                 originalPhone = profile.phone
 
-                val (phoneCode, localPhone) = splitPhoneNumber(profile.phone)
-                originalPhoneCountryCode = phoneCode
 
                 //only seen by external, but could be empty
                 originalCountry = profile.address?.country.orEmpty()
                 originalState = profile.address?.state.orEmpty()
                 originalMunicipality = profile.address?.municipality.orEmpty()
+
+                val (phoneCode, localPhone) = splitPhoneNumber(profile.phone)
 
                 _uiState.update {
                     it.copy(
@@ -153,6 +152,14 @@ class EditableProfileViewModel @Inject constructor(
         }
     }
 
+    fun onPhoneCountryCodeChange(value: String) {
+        _uiState.update {
+            it.copy(
+                phoneCountryCode = value
+            )
+        }
+    }
+
     fun onCountryChange(value: String) {
         _uiState.update {
             it.copy(
@@ -174,12 +181,6 @@ class EditableProfileViewModel @Inject constructor(
             it.copy(
                 municipality = value
             )
-        }
-    }
-
-    fun onPhoneCountryCodeChange(code: String) {
-        _uiState.update { state ->
-            state.copy(phoneCountryCode = code)
         }
     }
 
@@ -225,7 +226,8 @@ class EditableProfileViewModel @Inject constructor(
     fun requestSaveConfirmation() {
         _uiState.update {
             it.copy(
-                showSaveConfirmation = true
+                showSaveConfirmation = true,
+                error = null
             )
         }
     }
@@ -255,7 +257,6 @@ class EditableProfileViewModel @Inject constructor(
 
         if (state.isSaving || !state.isEditing) return
 
-        val fullPhone = state.phoneCountryCode + state.phone.trim()
         //name, lastname and phone must have data validation
         if (
             state.name.isBlank() ||
@@ -278,6 +279,7 @@ class EditableProfileViewModel @Inject constructor(
             fields["last_name"] = state.lastName.trim()
         }
 
+        val fullPhone = state.phoneCountryCode + state.phone.trim()
         if (fullPhone != originalPhone) {
             fields["phone"] = fullPhone
         }
@@ -302,6 +304,7 @@ class EditableProfileViewModel @Inject constructor(
         if (fields.isEmpty()) {
             val (originalCode, originalLocalPhone) =
                 splitPhoneNumber(originalPhone)
+
             _uiState.update {
                 it.copy(
                     name = originalName,
@@ -332,13 +335,12 @@ class EditableProfileViewModel @Inject constructor(
                 updateProfileUseCase(currentUserId, fields)
 
                 val profile = getEditableProfileUseCase(currentUserId)
+                val (phoneCode, localPhone) =
+                    splitPhoneNumber(profile.phone)
 
                 originalName = profile.name
                 originalLastName = profile.lastName
                 originalPhone = profile.phone
-
-                val (phoneCode, localPhone) = splitPhoneNumber(profile.phone)
-                originalPhoneCountryCode = phoneCode
 
                 originalCountry = profile.address?.country.orEmpty()
                 originalState = profile.address?.state.orEmpty()
@@ -374,6 +376,7 @@ class EditableProfileViewModel @Inject constructor(
     }
 
 
+    //phone num w country code must be split
     private fun splitPhoneNumber(phone: String): Pair<String, String> {
         val matchingCode = CountryCodeOptions
             .map { it.code }
@@ -384,7 +387,7 @@ class EditableProfileViewModel @Inject constructor(
         return if (matchingCode != null) {
             matchingCode to phone.removePrefix(matchingCode)
         } else {
-            // Fallback for numbers without a recognized calling code.
+            //fallback for numbers without a recognized calling code
             "+52" to phone
         }
     }

@@ -1,14 +1,10 @@
 package com.example.adaxintegra.presentation.views.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -17,7 +13,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,8 +26,8 @@ import com.example.adaxintegra.presentation.views.designsystem.atoms.AppIcons
 import com.example.adaxintegra.presentation.views.designsystem.atoms.AppTextStyle
 import com.example.adaxintegra.presentation.views.designsystem.atoms.IconSize
 import com.example.adaxintegra.presentation.views.designsystem.atoms.Text
-import com.example.adaxintegra.presentation.views.designsystem.molecules.CountryCodeSelector
 import com.example.adaxintegra.presentation.views.designsystem.molecules.LabeledTextField
+import com.example.adaxintegra.presentation.views.designsystem.molecules.PhoneField
 import com.example.adaxintegra.presentation.views.designsystem.templates.ScreenTemplate
 
 @Composable
@@ -130,30 +125,13 @@ fun EditableProfileScreen (
                     enabled = uiState.isEditing && !uiState.isSaving
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(modifier = Modifier.width(112.dp)) {
-                        CountryCodeSelector(
-                            selectedCode = uiState.phoneCountryCode,
-                            onCodeSelected = viewModel::onPhoneCountryCodeChange,
-                            enabled = uiState.isEditing && !uiState.isSaving,
-                            label = "Código",
-                        )
-                    }
-
-
-                    Box(modifier = Modifier.weight(1f)) {
-                        LabeledTextField(
-                            label = "Teléfono celular",
-                            value = uiState.phone,
-                            onValueChange = viewModel::onPhoneChange,
-                            enabled = uiState.isEditing && !uiState.isSaving,
-                        )
-                    }
-                }
+                PhoneField(
+                    countryCode = uiState.phoneCountryCode,
+                    phoneValue = uiState.phone,
+                    onPhoneChange = viewModel::onPhoneChange,
+                    onCountryCodeChange = viewModel::onPhoneCountryCodeChange,
+                    enabled = uiState.isEditing && !uiState.isSaving,
+                )
 
                 if (uiState.hasAddressFields) {
                     LabeledTextField(

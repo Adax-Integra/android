@@ -4,7 +4,7 @@ data class EditableProfileUiState (
     //everyone sees
     val name: String = "",
     val lastName: String = "",
-    val phoneCountryCode: String = "+52",
+    val phoneCountryCode: String = "",
     val phone: String = "",
 
     //external can see
