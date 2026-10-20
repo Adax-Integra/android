@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,8 +64,7 @@ class RecordDocumentsViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                error = result.exception.message
-                                    ?: "No se pudieron cargar los documentos",
+                                error = errorMessage(result.exception),
                             )
                         }
                     }
@@ -99,7 +100,7 @@ class RecordDocumentsViewModel @Inject constructor(
 
     private suspend fun loadPreview(document: RecordDocument?): DocumentPreviewState {
         val url = document?.url
-        if (document == null || url == null) return document.initialState()
+        if ((document == null) || (url == null)) return document.initialState()
 
         return try {
             val bytes = downloadRecordDocumentUseCase(url)
@@ -113,7 +114,13 @@ class RecordDocumentsViewModel @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            DocumentPreviewState.Error("No se pudo cargar el documento")
+            val message = when (e) {
+                is IOException -> "No se pudo conectar con el servidor"
+                is IllegalStateException -> e.message.takeIf { !it.isNullOrBlank() }
+                    ?: "No se pudo cargar el documento"
+                else -> "No se pudo cargar el documento"
+            }
+            DocumentPreviewState.Error(message)
         }
     }
 
@@ -121,5 +128,18 @@ class RecordDocumentsViewModel @Inject constructor(
         this == null -> DocumentPreviewState.Empty
         url == null -> DocumentPreviewState.Error("No se pudo cargar el documento")
         else -> DocumentPreviewState.Loading
+    }
+
+    private fun errorMessage(e: Throwable): String = when (e) {
+        is IllegalStateException -> e.message ?: "No se pudieron cargar los documentos"
+        is HttpException -> when (e.code()) {
+            401 -> "Tu sesión expiró. Vuelve a iniciar sesión."
+            403 -> "No tienes permiso para ver estos documentos."
+            404 -> "No se encontró el expediente."
+            500, 502, 503, 504 -> "El servidor no está disponible en este momento. Inténtalo más tarde."
+            else -> "No se pudieron cargar los documentos. Inténtalo de nuevo."
+        }
+        is IOException -> "Sin conexión a internet. Inténtalo de nuevo."
+        else -> "No se pudieron cargar los documentos. Inténtalo de nuevo."
     }
 }
