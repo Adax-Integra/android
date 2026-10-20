@@ -65,7 +65,7 @@ fun RecordsMenuScreen(
             title = "Todos los casos",
             subtitle = "Casos que yo llevo",
             onClick = onMyCasesCLick,
-            icon = AppIcons.Profile,
+            icon = AppIcons.InboxText,
         )
 
         onExternalUsersClick?.let { onClick ->

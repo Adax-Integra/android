@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.test.inbox_text_person
 import com.example.test.user_attributes
 
 // icons available to use
@@ -64,6 +65,9 @@ object AppIcons {
 
     val UserAttributes: ImageVector
         get() = user_attributes
+
+    val InboxText: ImageVector
+        get() = inbox_text_person
 
     val Lock: ImageVector
         get() = Icons.Default.Lock
@@ -113,11 +117,9 @@ object AppIcons {
     val Close: ImageVector
         get() = Icons.Default.Close
 
-    // G-10: phone of the collaborator in her detail
     val Phone: ImageVector
         get() = Icons.Default.Phone
 
-    // R-06: "Mis documentos" in the profile and its sections
     val IdCard: ImageVector
         get() = Icons.Default.Badge
 
