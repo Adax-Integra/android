@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.adaxintegra.domain.repository.AuthRepository
 import com.example.adaxintegra.domain.usecases.GetEditableProfileUseCase
 import com.example.adaxintegra.domain.usecases.UpdateProfileUseCase
+import com.example.adaxintegra.presentation.views.designsystem.molecules.CountryCodeOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,7 @@ class EditableProfileViewModel @Inject constructor(
     //seen during read only mode
     private var originalName = ""
     private var originalLastName = ""
+    private var originalPhoneCountryCode = "+52"
     private var originalPhone = ""
     private var originalCountry = ""
     private var originalState = ""
@@ -72,6 +74,9 @@ class EditableProfileViewModel @Inject constructor(
                 originalLastName = profile.lastName
                 originalPhone = profile.phone
 
+                val (phoneCode, localPhone) = splitPhoneNumber(profile.phone)
+                originalPhoneCountryCode = phoneCode
+
                 //only seen by external, but could be empty
                 originalCountry = profile.address?.country.orEmpty()
                 originalState = profile.address?.state.orEmpty()
@@ -81,7 +86,8 @@ class EditableProfileViewModel @Inject constructor(
                     it.copy(
                         name = profile.name,
                         lastName = profile.lastName,
-                        phone = profile.phone,
+                        phoneCountryCode = phoneCode,
+                        phone = localPhone,
                         country = originalCountry,
                         state = originalState,
                         municipality = originalMunicipality,
@@ -171,7 +177,13 @@ class EditableProfileViewModel @Inject constructor(
         }
     }
 
-    //pop up handling final confirmation from user to sexit editing mode and discard changes
+    fun onPhoneCountryCodeChange(code: String) {
+        _uiState.update { state ->
+            state.copy(phoneCountryCode = code)
+        }
+    }
+
+    //pop up handling final confirmation from user to exit editing mode and discard changes
     fun requestDiscardConfirmation() {
         _uiState.update {
             it.copy(
@@ -189,11 +201,14 @@ class EditableProfileViewModel @Inject constructor(
     }
 
     fun confirmDiscard() {
+        val (originalCode, originalLocalPhone) =
+            splitPhoneNumber(originalPhone)
         _uiState.update {
             it.copy(
                 name = originalName,
                 lastName = originalLastName,
-                phone = originalPhone,
+                phoneCountryCode = originalCode,
+                phone = originalLocalPhone,
                 country = originalCountry,
                 state = originalState,
                 municipality = originalMunicipality,
@@ -240,6 +255,7 @@ class EditableProfileViewModel @Inject constructor(
 
         if (state.isSaving || !state.isEditing) return
 
+        val fullPhone = state.phoneCountryCode + state.phone.trim()
         //name, lastname and phone must have data validation
         if (
             state.name.isBlank() ||
@@ -262,8 +278,8 @@ class EditableProfileViewModel @Inject constructor(
             fields["last_name"] = state.lastName.trim()
         }
 
-        if (state.phone.trim() != originalPhone) {
-            fields["phone"] = state.phone.trim()
+        if (fullPhone != originalPhone) {
+            fields["phone"] = fullPhone
         }
 
         if (state.hasAddressFields) {
@@ -284,11 +300,14 @@ class EditableProfileViewModel @Inject constructor(
 
         //if nothing happens, just exit editing mode
         if (fields.isEmpty()) {
+            val (originalCode, originalLocalPhone) =
+                splitPhoneNumber(originalPhone)
             _uiState.update {
                 it.copy(
                     name = originalName,
                     lastName = originalLastName,
-                    phone = originalPhone,
+                    phoneCountryCode = originalCode,
+                    phone = originalLocalPhone,
                     country = originalCountry,
                     state = originalState,
                     municipality = originalMunicipality,
@@ -317,6 +336,10 @@ class EditableProfileViewModel @Inject constructor(
                 originalName = profile.name
                 originalLastName = profile.lastName
                 originalPhone = profile.phone
+
+                val (phoneCode, localPhone) = splitPhoneNumber(profile.phone)
+                originalPhoneCountryCode = phoneCode
+
                 originalCountry = profile.address?.country.orEmpty()
                 originalState = profile.address?.state.orEmpty()
                 originalMunicipality =
@@ -326,7 +349,8 @@ class EditableProfileViewModel @Inject constructor(
                     it.copy(
                         name = profile.name,
                         lastName = profile.lastName,
-                        phone = profile.phone,
+                        phoneCountryCode = phoneCode,
+                        phone = localPhone,
                         country = originalCountry,
                         state = originalState,
                         municipality = originalMunicipality,
@@ -348,4 +372,21 @@ class EditableProfileViewModel @Inject constructor(
             }
         }
     }
+
+
+    private fun splitPhoneNumber(phone: String): Pair<String, String> {
+        val matchingCode = CountryCodeOptions
+            .map { it.code }
+            .distinct()
+            .sortedByDescending { it.length }
+            .firstOrNull { phone.startsWith(it) }
+
+        return if (matchingCode != null) {
+            matchingCode to phone.removePrefix(matchingCode)
+        } else {
+            // Fallback for numbers without a recognized calling code.
+            "+52" to phone
+        }
+    }
+
 }
