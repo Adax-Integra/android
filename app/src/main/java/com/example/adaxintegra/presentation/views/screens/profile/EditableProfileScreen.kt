@@ -1,6 +1,7 @@
 package com.example.adaxintegra.presentation.views.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -131,22 +132,27 @@ fun EditableProfileScreen (
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CountryCodeSelector(
-                        selectedCode = uiState.phoneCountryCode,
-                        onCodeSelected = viewModel::onPhoneCountryCodeChange,
-                        enabled = uiState.isEditing && !uiState.isSaving,
-                    )
+                    Box(modifier = Modifier.width(112.dp)) {
+                        CountryCodeSelector(
+                            selectedCode = uiState.phoneCountryCode,
+                            onCodeSelected = viewModel::onPhoneCountryCodeChange,
+                            enabled = uiState.isEditing && !uiState.isSaving,
+                            label = "Código",
+                        )
+                    }
 
-                    Spacer(modifier = Modifier.width(8.dp))
 
-                    LabeledTextField(
-                        label = "Teléfono celular",
-                        value = uiState.phone,
-                        onValueChange = viewModel::onPhoneChange,
-                        enabled = uiState.isEditing && !uiState.isSaving,
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        LabeledTextField(
+                            label = "Teléfono celular",
+                            value = uiState.phone,
+                            onValueChange = viewModel::onPhoneChange,
+                            enabled = uiState.isEditing && !uiState.isSaving,
+                        )
+                    }
                 }
 
                 if (uiState.hasAddressFields) {
