@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,9 +33,9 @@ import com.example.adaxintegra.ui.theme.AdaxIntegraTheme
 
 private fun getUrgencyColor(urgency: String): Color {
     return when (urgency.trim().lowercase()) {
-        "alta" -> Color(0xFFB3261E)
-        "media" -> Color(0xFF805600)
-        "baja" -> Color(0xFF176B35)
+        "alta" -> Color(0xFFCE2C29)
+        "media" -> Color(0xFFEEAB29)
+        "baja" -> Color(0xFF19C254)
         else -> Color(0xFF595563)
     }
 }
